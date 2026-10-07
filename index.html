@@ -159,6 +159,23 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .sheet .fieldset{display:grid;gap:10px}
 .sheet .preview{margin:12px 4px 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);min-height:1.4em}
 .sheet .preview.err{color:var(--led)}
+/* Feierabend-Planer */
+.plan .lcd{padding:12px 14px 10px;margin-bottom:14px}
+.plan .ldig{font-size:58px;margin:4px 0 2px}
+.plan .range{position:relative;height:56px;border-radius:18px;background:var(--well);box-shadow:inset 0 3px 8px rgba(0,0,0,.22);padding:0 4px;display:flex;align-items:center}
+.plan input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:48px;background:transparent;margin:0;touch-action:pan-x}
+.plan input[type=range]::-webkit-slider-runnable-track{height:48px;background:transparent}
+.plan input[type=range]::-moz-range-track{height:48px;background:transparent}
+.plan input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:64px;height:46px;margin-top:1px;border-radius:14px;border:0;background:linear-gradient(#F8F6F2,#DCD8D1);box-shadow:0 2px 0 var(--edge),0 6px 12px rgba(0,0,0,.2)}
+.plan input[type=range]::-moz-range-thumb{width:64px;height:46px;border-radius:14px;border:0;background:linear-gradient(#F8F6F2,#DCD8D1);box-shadow:0 2px 0 var(--edge),0 6px 12px rgba(0,0,0,.2)}
+.plan .scale{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.1em;color:var(--muted);margin:6px 6px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chips button{padding:8px 11px;border-radius:11px;background:var(--body);box-shadow:inset 0 1px 0 #fff,0 2px 0 var(--edge);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.chips button:active{transform:translateY(1px);box-shadow:0 1px 0 var(--edge)}
+.facts{display:grid;grid-template-columns:1fr auto;gap:7px 12px;margin:14px 4px 0;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.facts dt{color:var(--muted)} .facts dd{margin:0;text-align:right;font-weight:600}
+.verdict{margin:12px 4px 0;padding:10px 12px;border-radius:12px;font-size:11px;line-height:1.5;letter-spacing:.06em;text-transform:uppercase;background:var(--body);border-left:4px solid var(--ink)}
+.verdict.ok{border-color:var(--ok)} .verdict.warn{border-color:var(--led)}
 .entry .t{font-size:10.5px;color:var(--muted);margin-top:2px}
 .entry .n{font:900 20px/1 var(--dots);text-align:right}
 .entry .del{width:36px;height:36px;border-radius:11px;background:var(--body);box-shadow:inset 0 1px 0 #fff,0 2px 0 var(--edge);font-size:16px;color:var(--muted);line-height:1}
@@ -205,7 +222,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     </div>
     <div class="read">
       <div class="main">Netto heute<b id="r-net">0:00</b><small id="r-net-s">&nbsp;</small></div>
-      <div><span id="r-goal-l">Ziel heute</span><b id="r-goal">–</b><small id="r-goal-s">&nbsp;</small></div>
+      <button type="button" class="edit" id="r-goal-btn" aria-label="Feierabend planen"><span id="r-goal-l">Ziel heute</span><b id="r-goal">–</b><small id="r-goal-s">&nbsp;</small></button>
       <button type="button" class="edit" id="r-start-btn" aria-label="Beginn ändern">Beginn<b id="r-start">–</b><small id="r-start-s">&nbsp;</small></button>
     </div>
     <div class="weekhead"><span id="w-kw">KW</span><span id="w-sum">Woche 0:00</span></div>
@@ -397,7 +414,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   function restore(j){ state = JSON.parse(j); save(); renderAll(); }
   function sheet(title, html, actions){
     $("sheet-h").textContent = title; $("sheet-b").innerHTML = html;
-    const box = $("sheet-a"); box.innerHTML = "";
+    const box = $("sheet-a"); box.innerHTML = ""; box.style.gridTemplateColumns = "";
     actions.forEach(a => { const b = document.createElement("button"); b.type = "button"; b.textContent = a.label; if (a.cls) b.className = a.cls;
       b.onclick = () => { if (a.run && a.run() === false) return; closeSheet(); }; box.appendChild(b); });
     $("scrim").classList.add("show"); $("sheet").classList.add("show");
@@ -688,6 +705,97 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   })();
 
   // Beginn ändern
+  // ---------- Feierabend-Planer ----------
+  // Eingestempelt: Ende von jetzt bis 12 Std nach Beginn. Sonst: nächsten Tag mit Beginn und Ende planen.
+  $("r-goal-btn").onclick = openPlanner;
+  function openPlanner(){
+    const s = today(), active = !!s.a, STEP = 5;
+    const lastStart = [...state.entries].sort((x, y) => y.start - x.start)[0];
+    const startDefault = lastStart ? clock(lastStart.start) : "08:00";
+    const daysAfterBase = active ? s.daysLeft - 1 : s.daysLeftNext - 1;
+    const baseWeek = s.prior;                       // Woche ohne die geplante Schicht
+    const target = active ? s.dayTarget - (s.todayNet - s.net) : s.nextTarget;
+    let start = active ? s.a.start : null;
+    sheet(active ? "Feierabend planen" : "Nächsten Tag planen", `
+      <div class="plan">
+        <div class="lcd">
+          <div class="lrow"><span id="pl-lbl">Wenn ich gehe um</span><span id="pl-pres">Anw. –</span></div>
+          <div class="ldig" id="pl-time">--:--</div>
+          <div class="lrow"><span id="pl-net">Netto –</span><span id="pl-pause">–</span></div>
+        </div>
+        ${active ? "" : `<div class="field" style="margin-bottom:12px"><label for="pl-start">Beginn</label><input type="time" id="pl-start" value="${startDefault}"></div>`}
+        <div class="range"><input type="range" id="pl-range" step="${STEP}" aria-label="Ende"></div>
+        <div class="scale"><span id="pl-min">–</span><span id="pl-max">–</span></div>
+        <div class="chips" id="pl-chips"></div>
+        <dl class="facts">
+          <dt>Woche danach</dt><dd id="pl-week">–</dd>
+          <dt>Restliche Tage</dt><dd id="pl-rest">–</dd>
+        </dl>
+        <p class="verdict" id="pl-verdict"></p>
+      </div>`, [{ label: "Fertig", cls: "primary" }]);
+    $("sheet-a").style.gridTemplateColumns = "1fr";
+    const rg = $("pl-range");
+    let lastStep = null;
+    function bounds(){
+      if (active) {
+        const nowMin = Math.ceil(minsBetween(start, Date.now()) / STEP) * STEP;
+        return [Math.max(STEP, nowMin), Math.max(nowMin + 60, 12 * 60)];
+      }
+      return [60, 12 * 60];
+    }
+    function startOf(){
+      if (active) return start;
+      const v = $("pl-start").value || "08:00", [h, m] = v.split(":").map(Number);
+      const d = new Date(); d.setHours(h, m, 0, 0); return d.getTime();
+    }
+    function setRange(minutes){
+      const [lo, hi] = bounds(); rg.min = lo; rg.max = hi;
+      rg.value = Math.min(hi, Math.max(lo, Math.round(minutes / STEP) * STEP));
+    }
+    function chips(){
+      const st = startOf(), list = [];
+      if (target > 0) list.push(["Tagesziel", presenceFor(target)]);
+      if (active) list.push(["Jetzt", minsBetween(st, Date.now())]);
+      if (!active || minsBetween(st, Date.now()) < PAUSE_AB_MIN) list.push(["6 Std, keine Pause", PAUSE_AB_MIN]);
+      if (!active || minsBetween(st, Date.now()) < presenceFor(Math.max(0, WOCHE_MAX - baseWeek))) list.push(["Max. Woche", presenceFor(Math.max(0, WOCHE_MAX - baseWeek))]);
+      $("pl-chips").innerHTML = list.map(([l, v]) => `<button type="button" data-v="${Math.round(v)}">${l}</button>`).join("");
+      $("pl-chips").querySelectorAll("button").forEach(b => b.onclick = () => { setRange(+b.dataset.v); upd(); buzz(8); });
+    }
+    function upd(){
+      const st = startOf(), pres = +rg.value, net = netOf(pres), end = st + pres * 60000;
+      const [lo, hi] = bounds();
+      $("pl-min").textContent = clock(st + lo * 60000); $("pl-max").textContent = clock(st + hi * 60000);
+      $("pl-time").textContent = clock(end);
+      $("pl-pres").textContent = "Anw. " + dig(pres);
+      $("pl-net").textContent = "Netto " + dig(net) + " Std";
+      $("pl-pause").textContent = pauseOf(pres) ? "Pause −45" : "Keine Pause";
+      const weekAfter = baseWeek + net;
+      const daysAfter = Math.max(0, daysAfterBase);
+      $("pl-week").textContent = `${dig(weekAfter)} von 19 Std`;
+      const missing = WOCHE_MIN - weekAfter;
+      $("pl-rest").textContent = missing <= 0 ? "Nichts mehr nötig" : daysAfter ? `${dig(missing / daysAfter)} Std × ${daysAfter}` : `Es fehlen ${dig(missing)}`;
+      const v = $("pl-verdict");
+      if (pres > PAUSE_AB_MIN && pres < PAUSE_AB_MIN + PAUSE_MIN) {
+        v.className = "verdict warn"; v.textContent = `Pausenfalle: Wegen der 45 Min Pause hast du weniger als beim Gehen um ${clock(st + PAUSE_AB_MIN * 60000)}. Gleich viel erst ab ${clock(st + (PAUSE_AB_MIN + PAUSE_MIN) * 60000)}.`;
+      } else if (weekAfter > WOCHE_MAX) {
+        v.className = "verdict warn"; v.textContent = `Zu viel: ${dig(weekAfter - WOCHE_MAX)} Std über 19,5. Spätestens um ${clock(st + presenceFor(Math.max(0, WOCHE_MAX - baseWeek)) * 60000)} gehen.`;
+      } else if (weekAfter >= WOCHE_MIN) {
+        v.className = "verdict ok"; v.textContent = daysAfter ? "Woche schon im Ziel. Die restlichen Tage kannst du frei lassen." : "Woche im Ziel. Perfekt!";
+      } else if (!daysAfter) {
+        v.className = "verdict warn"; v.textContent = `Letzter Tag: Es fehlen dann noch ${dig(missing)} Std bis 19. Gehe frühestens um ${clock(st + presenceFor(WOCHE_MIN - baseWeek) * 60000)}.`;
+      } else if (net >= target - .5) {
+        v.className = "verdict ok"; v.textContent = `Tagesziel geschafft. Danach noch ${dig(missing / daysAfter)} Std an ${daysAfter === 1 ? "einem Tag" : daysAfter + " Tagen"}.`;
+      } else {
+        v.className = "verdict"; v.textContent = `Unter dem Tagesziel. Die restlichen ${daysAfter === 1 ? "Tag muss" : daysAfter + " Tage müssen"} dann je ${dig(missing / daysAfter)} Std schaffen.`;
+      }
+      const step = Math.round(pres / 15); if (lastStep !== null && step !== lastStep) buzz(4); lastStep = step;
+    }
+    setRange(target > 0 ? presenceFor(target) : (active ? minsBetween(start, Date.now()) : 6 * 60));
+    chips(); upd();
+    rg.addEventListener("input", upd);
+    if (!active) $("pl-start").addEventListener("input", () => { chips(); upd(); });
+  }
+
   $("r-start-btn").onclick = () => {
     if (!state.active) return;
     sheet("Beginn ändern", `<p>Wann hast du heute angefangen?</p><div class="field"><label for="edit-time">Beginn</label><input type="time" id="edit-time" value="${clock(state.active.start)}"></div>`, [
