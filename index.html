@@ -7,8 +7,15 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Stempelkarte">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#D8D5CF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1D1E1B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" id="meta-theme" content="#D8D5CF">
+<script>
+  // Gespeichertes Erscheinungsbild sofort setzen, damit nichts aufblitzt
+  try {
+    var t = localStorage.getItem("stempelkarte:theme"), p = localStorage.getItem("stempelkarte:palette");
+    if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    if (p === "pink") document.documentElement.dataset.palette = "pink";
+  } catch (e) {}
+</script>
 <title>Stempelkarte</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -27,7 +34,8 @@
   --accent:#FF5B23; --accent-fg:#fff; --danger:#FF5B23; --danger-edge:#B53A10;
   --hi:#fff; --hi-strong:#fff; --knob1:#F8F6F2; --knob2:#DCD8D1; --dot:#B7B2A9;
   --main-bg:#24231F; --main-fg:#ECEAE5; --main-label:#A7A298;
-  color-scheme:light dark;
+  --glitter:0; --bow:0;
+  color-scheme:light;
   --mono:"Chivo Mono", ui-monospace, Menlo, monospace;
   --dots:"Doto", ui-monospace, Menlo, monospace;
   --sys:-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
@@ -35,7 +43,7 @@
 }
 /* Dunkelmodus: dunkles Gehäuse, Display im klassischen Game-Boy-Grün */
 @media (prefers-color-scheme:dark){
-  :root{
+  :root:not([data-theme="light"]){
     --stage:#0A0A09;
     --body:#1D1E1B; --panel:#2A2B27; --edge:#111210; --well:#151613; --ink:#ECE9E0; --muted:#9A968C; --faint:#6E6B63;
     --lcd:#A4C21A; --led:#0B2B0B; --led-half:#3E7A2E; --led-off:#9BB916; --ok:#9BBC0F; --px-square:1;
@@ -43,7 +51,54 @@
     --accent:#9BBC0F; --accent-fg:#0F380F; --danger:#E5533D; --danger-edge:#8E2A1B;
     --hi:rgba(255,255,255,.07); --hi-strong:#5A5C54; --knob1:#45473F; --knob2:#33352F; --dot:#4A4C45;
     --main-bg:#0F380F; --main-fg:#9BBC0F; --main-label:#8BAC0F;
+    color-scheme:dark;
   }
+}
+:root[data-theme="dark"]{
+    --stage:#0A0A09;
+    --body:#1D1E1B; --panel:#2A2B27; --edge:#111210; --well:#151613; --ink:#ECE9E0; --muted:#9A968C; --faint:#6E6B63;
+    --lcd:#A4C21A; --led:#0B2B0B; --led-half:#3E7A2E; --led-off:#9BB916; --ok:#9BBC0F; --px-square:1;
+    --lcd-shadow:rgba(0,0,0,.45); --lrow:#1F4A1A; --glow-txt:transparent; --glow-a:0;
+    --accent:#9BBC0F; --accent-fg:#0F380F; --danger:#E5533D; --danger-edge:#8E2A1B;
+    --hi:rgba(255,255,255,.07); --hi-strong:#5A5C54; --knob1:#45473F; --knob2:#33352F; --dot:#4A4C45;
+    --main-bg:#0F380F; --main-fg:#9BBC0F; --main-label:#8BAC0F;
+  color-scheme:dark;
+}
+/* Pink („Barbie“): hell mit pink leuchtender LED, dunkel mit zuckerrosa Display; dezenter Glitzer */
+:root[data-palette="pink"]{
+  --stage:#2A0F1E;
+  --body:#F7C6DC; --panel:#FFE4F0; --edge:#E79BBE; --well:#F2B5D0; --ink:#4A0F2E; --muted:#A04A75; --faint:#C77DA0;
+  --lcd:#2B0618; --led:#FF4FB3; --led-half:#9C2468; --led-off:#3E0C25; --ok:#C2187A; --px-square:0;
+  --lcd-shadow:rgba(60,0,30,.7); --lrow:#FF8AC9; --glow-txt:rgba(255,79,179,.55); --glow-a:.5;
+  --accent:#E0218A; --accent-fg:#fff; --danger:#D7263D; --danger-edge:#8E1426;
+  --hi:#fff; --hi-strong:#fff; --knob1:#FFF5FA; --knob2:#F6CFE1; --dot:#E8A9C6;
+  --main-bg:#E0218A; --main-fg:#fff; --main-label:#FFD0E8;
+  --glitter:1; --bow:1; color-scheme:light;
+  --sp1:rgba(255,255,255,.95); --sp2:rgba(255,255,255,.7); --sp3:rgba(255,190,225,.9);
+}
+@media (prefers-color-scheme:dark){
+  :root[data-palette="pink"]:not([data-theme="light"]){
+    --stage:#0E0509;
+    --body:#2A1120; --panel:#3A1A2D; --edge:#160810; --well:#200C18; --ink:#FFE1EF; --muted:#D08BAE; --faint:#8E5574;
+    --lcd:#FFB8DA; --led:#5C0A35; --led-half:#C2307E; --led-off:#F7A8CF; --ok:#FF7AC2; --px-square:1;
+    --lcd-shadow:rgba(0,0,0,.45); --lrow:#7A1446; --glow-txt:transparent; --glow-a:0;
+    --accent:#FF5CB8; --accent-fg:#3A0A22; --danger:#FF4D6D; --danger-edge:#8E1A30;
+    --hi:rgba(255,255,255,.08); --hi-strong:#7A4A63; --knob1:#5A2E45; --knob2:#43213A; --dot:#5C3249;
+    --main-bg:#5C0A35; --main-fg:#FFB8DA; --main-label:#F7A8CF;
+    --glitter:.6; --bow:1; color-scheme:dark;
+    --sp1:rgba(255,190,225,.22); --sp2:rgba(255,255,255,.12); --sp3:rgba(255,120,190,.2);
+  }
+}
+:root[data-palette="pink"][data-theme="dark"]{
+    --stage:#0E0509;
+    --body:#2A1120; --panel:#3A1A2D; --edge:#160810; --well:#200C18; --ink:#FFE1EF; --muted:#D08BAE; --faint:#8E5574;
+    --lcd:#FFB8DA; --led:#5C0A35; --led-half:#C2307E; --led-off:#F7A8CF; --ok:#FF7AC2; --px-square:1;
+    --lcd-shadow:rgba(0,0,0,.45); --lrow:#7A1446; --glow-txt:transparent; --glow-a:0;
+    --accent:#FF5CB8; --accent-fg:#3A0A22; --danger:#FF4D6D; --danger-edge:#8E1A30;
+    --hi:rgba(255,255,255,.08); --hi-strong:#7A4A63; --knob1:#5A2E45; --knob2:#43213A; --dot:#5C3249;
+    --main-bg:#5C0A35; --main-fg:#FFB8DA; --main-label:#F7A8CF;
+    --glitter:.6; --bow:1; color-scheme:dark;
+    --sp1:rgba(255,190,225,.22); --sp2:rgba(255,255,255,.12); --sp3:rgba(255,120,190,.2);
 }
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -205,6 +260,41 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .empty{margin:12px 14px 0;padding:22px 18px;border:2px dashed var(--edge);border-radius:22px;color:var(--muted);text-align:center;font-size:11px;letter-spacing:.06em;line-height:1.6;text-transform:uppercase}
 .sync{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:center;margin:18px 14px 4px}
 
+/* ---------- Glitzer (nur Pink) ---------- */
+:root[data-palette="pink"] :is(.device,.plate,.switchwrap,.key,.fields,.wk,.sheet,.read > :not(.main)){
+  background-image:
+    radial-gradient(circle,var(--sp1) 0 .6px,transparent 1.3px),
+    radial-gradient(circle,var(--sp2) 0 .5px,transparent 1.2px),
+    radial-gradient(circle,var(--sp3) 0 .6px,transparent 1.3px);
+  background-size:23px 29px,37px 31px,17px 21px;
+  background-position:3px 5px,11px 17px,7px 2px}
+.twinkles{display:none}
+:root[data-palette="pink"] .twinkles{display:block;position:absolute;inset:0;pointer-events:none;z-index:30}
+.twinkles i{position:absolute;width:11px;height:11px;background:#fff;clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);opacity:0;animation:twinkle 4.2s ease-in-out infinite;filter:drop-shadow(0 0 3px rgba(255,120,200,.9))}
+@keyframes twinkle{0%,70%,100%{opacity:0;transform:scale(.3) rotate(0)}80%{opacity:calc(var(--glitter) * .95);transform:scale(1) rotate(45deg)}90%{opacity:0;transform:scale(.4) rotate(90deg)}}
+
+/* ---------- Einstellungen ---------- */
+.gear{width:30px;height:30px;border-radius:10px;background:var(--well);box-shadow:inset 0 1px 3px rgba(0,0,0,.18);display:grid;place-items:center;color:var(--muted);flex:none}
+.gear:active{transform:scale(.92)}
+.gear svg{width:17px;height:17px}
+.brand .tools{display:flex;gap:6px;align-items:center}
+.setting{margin:0 4px 16px}
+.setting h3{margin:0 0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.setting .kinds{grid-template-columns:repeat(3,1fr)}
+.setting .kinds.two{grid-template-columns:1fr 1fr}
+.swatches{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.swatch{border-radius:16px;padding:10px;background:var(--body);box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);display:grid;gap:8px;text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;border:2px solid transparent}
+.swatch[aria-pressed="true"]{border-color:var(--accent)}
+.swatch .chip{height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden}
+.swatch .chip i{width:14px;height:14px;border-radius:50%}
+.swatch.classic .chip{background:#D8D5CF}
+.swatch.classic .chip i:nth-child(1){background:#140F0B;box-shadow:inset 0 0 0 3px #FF5B23}
+.swatch.classic .chip i:nth-child(2){background:#A4C21A;box-shadow:inset 0 0 0 3px #0B2B0B}
+.swatch.pink .chip{background:linear-gradient(135deg,#F7C6DC,#FF9ACB);
+  background-image:radial-gradient(circle,#fff 0 .7px,transparent 1.4px),linear-gradient(135deg,#F7C6DC,#FF9ACB);background-size:9px 11px,100% 100%}
+.swatch.pink .chip i:nth-child(1){background:#2B0618;box-shadow:inset 0 0 0 3px #FF4FB3}
+.swatch.pink .chip i:nth-child(2){background:#FFB8DA;box-shadow:inset 0 0 0 3px #5C0A35}
+
 /* ---------- Sheet & Hinweis ---------- */
 .scrim{position:absolute;inset:0;background:rgba(20,18,14,.35);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
 .scrim.show{opacity:1;pointer-events:auto}
@@ -228,6 +318,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 </head>
 <body>
 <div class="device" id="dev">
+  <div class="twinkles" aria-hidden="true">
+    <i style="left:7%;top:5%;animation-delay:0s"></i><i style="right:9%;top:31%;animation-delay:1.3s"></i>
+    <i style="left:4%;top:52%;animation-delay:2.6s;width:8px;height:8px"></i><i style="right:6%;top:62%;animation-delay:.7s;width:9px;height:9px"></i>
+    <i style="left:46%;bottom:13%;animation-delay:3.4s;width:8px;height:8px"></i><i style="left:30%;top:2%;animation-delay:2s;width:7px;height:7px"></i>
+  </div>
   <div class="toast" id="toast" role="status"><span id="toast-t"></span><button type="button" id="toast-undo">Rückgängig</button></div>
 
   <!-- ================= Stempeluhr ================= -->
@@ -235,7 +330,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     <div class="plate">
       <span class="screw l"></span><span class="screw r"></span>
       <div class="brand"><b>Stempelkarte · SK-1</b>
-        <div class="fmt" role="group" aria-label="Zeitformat"><button type="button" data-view="hm" aria-pressed="true">H:M</button><button type="button" data-view="dec" aria-pressed="false">Dez</button></div>
+        <div class="tools">
+          <div class="fmt" role="group" aria-label="Zeitformat"><button type="button" data-view="hm" aria-pressed="true">H:M</button><button type="button" data-view="dec" aria-pressed="false">Dez</button></div>
+          <button type="button" class="gear" id="btn-settings" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+        </div>
       </div>
       <div class="lcd">
         <div class="scene"><canvas id="cv" role="img" aria-label="Monster zeigt deinen Fortschritt"></canvas></div>
@@ -465,12 +563,25 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const C = {};
   function readColors(){
     const css = getComputedStyle(document.documentElement), v = n => css.getPropertyValue(n).trim();
-    Object.assign(C, { bg: v("--lcd"), off: v("--led-off"), half: v("--led-half"), full: v("--led"), glow: parseFloat(v("--glow-a")) || 0, square: v("--px-square") === "1" });
+    Object.assign(C, { bg: v("--lcd"), off: v("--led-off"), half: v("--led-half"), full: v("--led"), glow: parseFloat(v("--glow-a")) || 0, square: v("--px-square") === "1", bow: v("--bow") === "1" });
+    $("meta-theme").setAttribute("content", v("--body"));
   }
   readColors();
   // Hell/Dunkel folgt dem System; das Display wechselt dann zwischen LED-Orange und Game-Boy-Grün
   const darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
   (darkMQ.addEventListener ? darkMQ.addEventListener.bind(darkMQ, "change") : darkMQ.addListener.bind(darkMQ))(readColors);
+
+  // ---------- Erscheinungsbild ----------
+  const LS_THEME = "stempelkarte:theme", LS_PALETTE = "stempelkarte:palette";
+  let theme = "auto", palette = "classic";
+  try { const t = localStorage.getItem(LS_THEME); if (t === "light" || t === "dark") theme = t; if (localStorage.getItem(LS_PALETTE) === "pink") palette = "pink"; } catch(e){}
+  function applyAppearance(){
+    const root = document.documentElement;
+    if (theme === "auto") delete root.dataset.theme; else root.dataset.theme = theme;
+    if (palette === "pink") root.dataset.palette = "pink"; else delete root.dataset.palette;
+    try { localStorage.setItem(LS_THEME, theme); localStorage.setItem(LS_PALETTE, palette); } catch(e){}
+    readColors();
+  }
 
   // Breite bestimmt die Punktgröße; mehr Höhe bedeutet mehr Himmel
   function fitCanvas(){
@@ -552,8 +663,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   ];
   const SIT = [".###.......###."];
   const ARMS = ["#.............#", "#.............#"];
+  const BOW = ["##.##", "#.#.#", "##.##"];
   function monster(x, y, eyes, mouth, legs, armsUp, flip){
     BODY.forEach((r, j) => { if (r) sprite([r], x, y + j, flip); });
+    if (C.bow) sprite(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, x + 5, y - 1);   // Pink: Schleife zwischen den Hörnchen
     sprite(EYES[eyes], x, y + 5, flip);
     sprite(MOUTH[mouth], x, y + 9, flip);
     sprite(legs, x, y + 14, flip);
@@ -580,6 +693,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     const d = new Date(), hour = d.getHours() + d.getMinutes() / 60;
     const sky = Math.max(8, GROUND - 24);          // nutzbare Himmelshöhe über dem Monster
     if (hour >= 6 && hour <= 20) { const u = (hour - 6) / 14; sprite(SUN, 2 + u * 44, 2 + (1 - Math.sin(u * Math.PI)) * sky); }
+    if (C.bow) for (let i = 0; i < 5; i++) {        // Pink: ein paar funkelnde Glitzerpunkte am Himmel
+      const k = (Math.floor(t / 700) + i * 3) % 7; if (k > 1) continue;
+      const gx = (i * 19 + 7) % COLS, gy = 3 + (i * 11) % Math.max(4, sky);
+      put(gx, gy, 2); if (k === 0) { put(gx - 1, gy, 1); put(gx + 1, gy, 1); put(gx, gy - 1, 1); put(gx, gy + 1, 1); }
+    }
     else {
       sprite(MOON, 44, 2);
       for (let i = 0; i < 14; i++) { const sx = (i * 37 + 11) % COLS, sy = (i * 23 + 5) % (sky + 6); if (sx < 42 || sy > 6) put(sx, sy, (Math.floor(t / 600) + i) % 5 ? 1 : 2); }
@@ -1067,8 +1185,32 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 
   function renderAll(){ renderClock(); renderCalc(); renderHist(); }
 
+  // ---------- Einstellungen ----------
+  $("btn-settings").onclick = () => {
+    buzz(6);
+    const seg = (name, opts, cur) => `<div class="kinds${opts.length === 2 ? " two" : ""}" data-set="${name}">${opts.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${v === cur}">${l}</button>`).join("")}</div>`;
+    sheet("Einstellungen", `
+      <div class="setting"><h3>Erscheinungsbild</h3>${seg("theme", [["auto", "Automatisch"], ["light", "Hell"], ["dark", "Dunkel"]], theme)}</div>
+      <div class="setting"><h3>Farbe</h3>
+        <div class="swatches" data-set="palette">
+          <button type="button" class="swatch classic" data-v="classic" aria-pressed="${palette === "classic"}"><span class="chip"><i></i><i></i></span>Klassik</button>
+          <button type="button" class="swatch pink" data-v="pink" aria-pressed="${palette === "pink"}"><span class="chip"><i></i><i></i></span>Pink</button>
+        </div>
+      </div>
+      <div class="setting"><h3>Zeitformat</h3>${seg("view", [["hm", "Std : Min"], ["dec", "Dezimal"]], view)}</div>`,
+      [{ label: "Fertig", cls: "primary" }]);
+    $("sheet-a").style.gridTemplateColumns = "1fr";
+    $("sheet-b").querySelectorAll("[data-set]").forEach(group => group.querySelectorAll("button").forEach(b => b.onclick = () => {
+      group.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      const v = b.dataset.v, what = group.dataset.set; buzz(6);
+      if (what === "theme") { theme = v; applyAppearance(); }
+      if (what === "palette") { palette = v; applyAppearance(); }
+      if (what === "view") setView(v);
+    }));
+  };
+
   // ---------- Start ----------
-  fitCanvas(); renderAll(); setTimeout(checkForgot, 600);
+  applyAppearance(); fitCanvas(); renderAll(); setTimeout(checkForgot, 600);
   addEventListener("resize", fitCanvas);
   if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe(cv);
   // Kein Zoomen per Geste (iOS)
