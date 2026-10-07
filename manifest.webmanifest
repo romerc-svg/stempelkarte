@@ -1,6 +1,6 @@
 {
-  "name": "Stempelkarte",
-  "short_name": "Stempelkarte",
+  "name": "TICKO",
+  "short_name": "TICKO",
   "description": "Arbeitszeit stempeln, ausrechnen und die Wochenstunden im Blick behalten.",
   "lang": "de",
   "start_url": "./",

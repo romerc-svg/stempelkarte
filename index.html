@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Stempelkarte">
+<meta name="apple-mobile-web-app-title" content="TICKO">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" id="meta-theme" content="#D8D5CF">
 <script>
@@ -16,7 +16,7 @@
     if (p === "pink") document.documentElement.dataset.palette = "pink";
   } catch (e) {}
 </script>
-<title>Stempelkarte</title>
+<title>TICKO</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Chivo+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-/* Ein Gerät ("SK-1"): oben die Platte mit LED-Matrix, darunter der Bildschirm-Inhalt, unten drei Tasten.
+/* TICKO – ein Gerät ("TK-1"): oben die Platte mit LED-Matrix, darunter der Bildschirm-Inhalt, unten drei Tasten.
    Auf dem Handy randlos, am Desktop als Gerät im Rahmen. */
 :root{
   --stage:#121210;
@@ -347,7 +347,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   <main class="screen" id="scr-clock">
     <div class="plate">
       <span class="screw l"></span><span class="screw r"></span>
-      <div class="brand"><b>Stempelkarte · SK-1</b>
+      <div class="brand"><b>TICKO · TK-1</b>
         <div class="tools">
           <div class="fmt" role="group" aria-label="Zeitformat"><button type="button" data-view="hm" aria-pressed="true">H:M</button><button type="button" data-view="dec" aria-pressed="false">Dez</button></div>
           <button type="button" class="gear" id="btn-settings" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -1319,7 +1319,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     function need(h){ if (yy + h > 272) { foot(); doc.addPage(); page++; yy = 22; tableHead(); } }
     function foot(){
       doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...mute);
-      doc.text(`Erstellt am ${dmy(Date.now())} mit Stempelkarte SK-1`, L, 287);
+      doc.text(`Erstellt am ${dmy(Date.now())} mit TICKO`, L, 287);
       doc.text(`Seite ${page}`, L + W, 287, { align: "right" });
     }
     head();
@@ -1374,7 +1374,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   // Formatierte Excel-Tabelle: Kopf, feste Kopfzeile, echte Zahlen, Wochensummen als Formeln, Monatsübersicht
   async function buildXlsx(y, m, name){
     const R = monthRows(y, m), hrs = min => Math.round(min / 60 * 100) / 100;
-    const wb = new xlsLib.Workbook(); wb.creator = "Stempelkarte SK-1"; wb.created = new Date();
+    const wb = new xlsLib.Workbook(); wb.creator = "TICKO"; wb.created = new Date();
     const ws = wb.addWorksheet(`${MONTHS[m]} ${y}`, {
       views: [{ state: "frozen", ySplit: 4, showGridLines: false }],
       pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: .5, right: .5, top: .6, bottom: .6, header: .3, footer: .3 } }
@@ -1442,7 +1442,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     if (R.urlaub) extra.push(`${R.urlaub} × Urlaub`); if (R.krank) extra.push(`${R.krank} × Krank`); if (R.feiertag) extra.push(`${R.feiertag} × Feiertag`);
     if (contract.urlaubTage) { const v = vacation(y); extra.push(`Urlaub ${y}: ${v.taken} von ${v.total} genommen, ${v.left} übrig`); }
     [extra.join("  ·  "), `Soll: ${dec2(SOLL_TAG)} Std je Tag  ·  Pause: ${PAUSE_MIN} Min ab ${H(PAUSE_AB_MIN)} Std Anwesenheit  ·  Urlaub/Krank/Feiertag: ${dec2(GUTSCHRIFT)} Std`,
-     `Erstellt am ${dmy(Date.now())} mit Stempelkarte SK-1`].forEach((t, i) => {
+     `Erstellt am ${dmy(Date.now())} mit TICKO`].forEach((t, i) => {
       ws.mergeCells(`A${r + i}:I${r + i}`); ws.getCell(`A${r + i}`).value = t; ws.getCell(`A${r + i}`).font = font({ size: 9, color: { argb: MUTE } });
     });
     const buf = await wb.xlsx.writeBuffer();

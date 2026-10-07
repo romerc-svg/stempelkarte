@@ -1,10 +1,10 @@
-# Stempelkarte
+# TICKO
 
 Kleine Web-App für den persönlichen Gebrauch: Arbeitszeit stempeln, einzelne Tage ausrechnen und die Wochenstunden im Blick behalten.
 
 ## Look
 
-Die App sieht aus wie ein kleines Gerät („SK-1“) mit LED-Display. Im Display wohnt ein Monster, das deinen Tag mitläuft:
+Die App sieht aus wie ein kleines Gerät („TK-1“) mit LED-Display. Im Display wohnt ein Monster, das deinen Tag mitläuft:
 es geht vom Häuschen zur 19-Std-Fahne, macht bei der Pause Kaffeepause, jubelt am Ziel, gerät über 19,5 Std in Panik und schläft nach Feierabend.
 Gestempelt wird mit einem Schiebeschalter.
 
@@ -57,7 +57,7 @@ Dann <http://localhost:8000> öffnen.
 ## Auf dem Handy nutzen
 
 Die App läuft über **GitHub Pages** (Settings → Pages → Branch `main`, Ordner `/ (root)`).
-Adresse: <https://romerc-svg.github.io/stempelkarte/>
+Adresse: <https://romerc-svg.github.io/stempelkarte/> (Repo-Name aus der Anfangszeit, die App heißt TICKO)
 
 - **iPhone**: Adresse in Safari öffnen → Teilen → „Zum Home-Bildschirm“
 - **Android**: Adresse in Chrome öffnen → Menü → „App installieren“
