@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stempelkarte">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#E3EBE4">
+<title>Stempelkarte</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --card:#E3EBE4; --paper:#F3F7F2; --ink:#16283A; --muted:#55666E; --rule:#B7C8BC;
+  --stamp:#B8124F; --stamp-soft:rgba(184,18,79,.12); --ok:#24704A; --ok-soft:rgba(36,112,74,.14);
+  --warn:#9A5B00; --zone:rgba(36,112,74,.28);
+  --font:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --card:#15201B; --paper:#1E2B25; --ink:#E4ECE6; --muted:#9AAAA2; --rule:#33463C;
+    --stamp:#F0689A; --stamp-soft:rgba(240,104,154,.14); --ok:#6CCB95; --ok-soft:rgba(108,203,149,.14);
+    --warn:#F2B24C; --zone:rgba(108,203,149,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --card:#15201B; --paper:#1E2B25; --ink:#E4ECE6; --muted:#9AAAA2; --rule:#33463C;
+  --stamp:#F0689A; --stamp-soft:rgba(240,104,154,.14); --ok:#6CCB95; --ok-soft:rgba(108,203,149,.14);
+  --warn:#F2B24C; --zone:rgba(108,203,149,.3);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100%;background:var(--card);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;font-variant-numeric:tabular-nums}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+
+.app{max-width:480px;margin:0 auto;padding:16px 18px 104px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0 14px;border-bottom:2px solid var(--ink)}
+h1{margin:0;font-size:1.35rem;font-weight:800;font-stretch:125%;letter-spacing:-.01em}
+.toggle{display:flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.toggle button{border:0;background:transparent;padding:6px 12px;font-size:.85rem;font-weight:600}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+
+section[hidden]{display:none}
+.clock{padding:28px 0 22px;text-align:center;position:relative}
+.label{font-size:.9rem;color:var(--muted);margin:0}
+.big{font-size:clamp(2.6rem,13vw,3.6rem);font-weight:800;font-stretch:112%;line-height:1.05;margin:6px 0 4px;letter-spacing:-.02em}
+.big small{font-size:.38em;font-weight:600;color:var(--muted);letter-spacing:0}
+.sub{color:var(--muted);margin:0;font-size:.95rem}
+.stamp{display:inline-block;margin:0 0 18px;padding:6px 14px;border:2.5px solid var(--stamp);color:var(--stamp);border-radius:6px;font-weight:800;font-stretch:125%;font-size:1.05rem;transform:rotate(-3deg);background:var(--stamp-soft)}
+.stamp.fresh{animation:press .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes press{0%{transform:rotate(-3deg) scale(1.6);opacity:0}100%{transform:rotate(-3deg) scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.stamp.fresh{animation:none}}
+
+.punch{display:block;width:100%;margin-top:22px;padding:20px;border:0;border-radius:18px;background:var(--stamp);color:#fff;font-size:1.25rem;font-weight:800;font-stretch:115%;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+.punch:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.punch.out{background:var(--ink);color:var(--card)}
+.linkbtn{background:none;border:0;padding:8px;color:var(--muted);text-decoration:underline;font-size:.9rem}
+
+.hint{margin:16px 0 0;padding:10px 12px;border-left:4px solid var(--warn);background:var(--paper);text-align:left;font-size:.92rem;border-radius:0 8px 8px 0}
+.goals{margin:16px 0 0;text-align:left;display:grid;gap:6px}
+.goals p{margin:0;display:flex;justify-content:space-between;gap:12px;font-size:.95rem;border-bottom:1px dashed var(--rule);padding-bottom:6px}
+.goals b{font-weight:700}
+.editstart{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:8px}
+.editstart input{padding:8px;border:2px solid var(--rule);border-radius:8px;background:var(--paper)}
+
+.week{margin-top:8px;padding:18px 0 0;border-top:2px solid var(--ink)}
+.weekhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.weekhead h2{margin:0;font-size:1rem;font-weight:700}
+.weektotal{font-size:1.6rem;font-weight:800;font-stretch:112%}
+.bar{position:relative;height:22px;margin:12px 0 6px;background:var(--paper);border:2px solid var(--ink);border-radius:6px;overflow:hidden}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--ink);width:0;transition:width .3s}
+.bar .zone{position:absolute;top:0;bottom:0;background:var(--zone);border-left:2px solid var(--ok);border-right:2px solid var(--ok)}
+.bar.over .fill{background:var(--stamp)}
+.scale{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted)}
+.status{margin:10px 0 0;font-weight:600}
+.status.ok{color:var(--ok)} .status.over{color:var(--stamp)}
+
+h2.sec{font-size:1.15rem;font-weight:800;font-stretch:115%;margin:24px 0 4px}
+.form{display:grid;gap:14px;margin-top:16px}
+.field{display:grid;gap:4px}
+.field label{font-size:.9rem;font-weight:600}
+.field input{padding:12px;border:2px solid var(--rule);border-radius:10px;background:var(--paper);font-size:1.05rem;width:100%;min-height:48px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.result{margin-top:18px;background:var(--paper);border:2px solid var(--ink);border-radius:14px;padding:16px}
+.result dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:6px 12px}
+.result dt{color:var(--muted)} .result dd{margin:0;text-align:right;font-weight:600}
+.result .net dt,.result .net dd{font-size:1.25rem;font-weight:800;color:var(--ink)}
+.result .net{display:contents}
+.btn{padding:14px;border-radius:12px;border:2px solid var(--ink);background:var(--ink);color:var(--card);font-weight:700;font-size:1rem;width:100%}
+.btn.ghost{background:transparent;color:var(--ink)}
+.msg{margin:10px 0 0;font-size:.92rem;min-height:1.3em}
+.msg.err{color:var(--stamp)} .msg.ok{color:var(--ok)}
+
+.wk{margin-top:22px}
+.wk h3{margin:0 0 6px;display:flex;justify-content:space-between;gap:8px;font-size:1rem;font-weight:700;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+.wk h3 span:last-child{font-weight:800}
+.wk h3 .ok{color:var(--ok)} .wk h3 .low{color:var(--warn)} .wk h3 .over{color:var(--stamp)}
+.entry{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--rule)}
+.entry .d{font-weight:600}
+.entry .t{font-size:.86rem;color:var(--muted)}
+.entry .n{font-weight:700;text-align:right}
+.entry .del{border:0;background:transparent;color:var(--muted);font-size:1.3rem;padding:6px 8px;line-height:1}
+.empty{margin-top:20px;padding:18px;border:2px dashed var(--rule);border-radius:12px;color:var(--muted);text-align:center}
+
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav button{border:0;background:transparent;padding:14px 4px;font-weight:600;font-size:.95rem;color:var(--muted);border-top:4px solid transparent;margin-top:-2px}
+nav button[aria-current="page"]{color:var(--ink);border-top-color:var(--stamp)}
+.sync{font-size:.78rem;color:var(--muted);text-align:center;margin-top:28px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Stempelkarte</h1>
+    <div class="toggle" role="group" aria-label="Zeitformat">
+      <button type="button" data-view="hm" aria-pressed="true">Std / Min</button>
+      <button type="button" data-view="dec" aria-pressed="false">Dezimal</button>
+    </div>
+  </header>
+
+  <!-- Stempeluhr -->
+  <section id="tab-clock">
+    <div class="clock" id="clock"></div>
+    <div class="week" id="week"></div>
+  </section>
+
+  <!-- Rechner -->
+  <section id="tab-calc" hidden>
+    <h2 class="sec">Arbeitszeit ausrechnen</h2>
+    <p class="sub">Über 6 Std Anwesenheit am Stück werden automatisch 45 Min Pause abgezogen.</p>
+    <div class="form">
+      <div class="field"><label for="c-date">Datum</label><input type="date" id="c-date"></div>
+      <div class="row2">
+        <div class="field"><label for="c-start">Beginn</label><input type="time" id="c-start"></div>
+        <div class="field"><label for="c-end">Ende</label><input type="time" id="c-end"></div>
+      </div>
+    </div>
+    <div class="result" id="c-result" hidden></div>
+    <div style="margin-top:14px"><button class="btn" id="c-save" type="button" hidden>Als Arbeitstag speichern</button></div>
+    <p class="msg" id="c-msg" role="status"></p>
+  </section>
+
+  <!-- Verlauf -->
+  <section id="tab-hist" hidden>
+    <h2 class="sec">Verlauf</h2>
+    <div id="hist"></div>
+  </section>
+
+  <p class="sync" id="sync"></p>
+</div>
+
+<nav aria-label="Bereiche">
+  <div class="in">
+    <button type="button" data-tab="clock" aria-current="page">Stempeluhr</button>
+    <button type="button" data-tab="calc">Rechner</button>
+    <button type="button" data-tab="hist">Verlauf</button>
+  </div>
+</nav>
+
+<script>
+(function(){
+  // ---------- Regeln ----------
+  const PAUSE_AB_MIN = 360;   // über 6 Std Anwesenheit am Stück ...
+  const PAUSE_MIN = 45;       // ... werden 45 Min abgezogen
+  const WOCHE_MIN = 19 * 60;  // 19 Std
+  const WOCHE_MAX = 19.5 * 60;// 19,5 Std
+
+  const LS_KEY = "stempelkarte:v1";
+  const LS_VIEW = "stempelkarte:view";
+
+  // ---------- Zustand ----------
+  let state = { entries: [], active: null };
+  let view = "hm";
+  let tab = "clock";
+  let db = null, docRef = null;
+  let justStamped = false;
+
+  try { const raw = localStorage.getItem(LS_KEY); if (raw) { const s = JSON.parse(raw); if (s && Array.isArray(s.entries)) state = { entries: s.entries, active: s.active || null }; } } catch(e){}
+  try { const v = localStorage.getItem(LS_VIEW); if (v === "hm" || v === "dec") view = v; } catch(e){}
+
+  function save(){
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){}
+    if (docRef) docRef.set({ entries: state.entries, active: state.active, v: 1 }).catch(()=>{});
+  }
+
+  // ---------- Rechnen ----------
+  // Minuten (mit Sekundenanteil) -> Netto-Minuten
+  function netOf(presenceMin){ return presenceMin > PAUSE_AB_MIN ? presenceMin - PAUSE_MIN : presenceMin; }
+  function pauseOf(presenceMin){ return presenceMin > PAUSE_AB_MIN ? PAUSE_MIN : 0; }
+  function minsBetween(a, b){ return (b - a) / 60000; }
+  function entryNet(e){ return netOf(minsBetween(e.start, e.end)); }
+
+  function fmt(min, opts){
+    opts = opts || {};
+    const neg = min < 0; min = Math.abs(min);
+    let out;
+    if (view === "dec") {
+      const h = Math.round(min / 60 * 100) / 100;
+      out = h.toLocaleString("de-DE", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " Std";
+    } else {
+      const total = Math.floor(min + 1e-9);
+      const h = Math.floor(total / 60), m = total % 60;
+      out = h && m ? `${h} Std ${m} Min` : h ? `${h} Std` : `${m} Min`;
+    }
+    return (neg ? "−" : "") + out;
+  }
+  function bigTime(min){
+    if (view === "dec") {
+      const h = Math.floor(min / 60 * 100) / 100;
+      return h.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "<small> Std</small>";
+    }
+    const total = Math.floor(min);
+    const h = Math.floor(total / 60), m = total % 60;
+    return `${h}<small> Std </small>${String(m).padStart(2,"0")}<small> Min</small>`;
+  }
+  const clock = t => new Date(t).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const dayLabel = t => new Date(t).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "numeric" });
+
+  function weekStart(t){
+    const d = new Date(t); d.setHours(0,0,0,0);
+    const dow = (d.getDay() + 6) % 7; // Montag = 0
+    d.setDate(d.getDate() - dow); return d.getTime();
+  }
+  function isoWeek(t){
+    const d = new Date(t); d.setHours(0,0,0,0);
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+    const w1 = new Date(d.getFullYear(), 0, 4);
+    return 1 + Math.round(((d - w1) / 864e5 - 3 + (w1.getDay() + 6) % 7) / 7);
+  }
+  function weekDoneMin(ws){
+    return state.entries.filter(e => weekStart(e.start) === ws).reduce((s, e) => s + entryNet(e), 0);
+  }
+  // Anwesenheit, die nötig ist, um "need" Netto-Minuten zu erreichen
+  function presenceFor(need){ return need <= PAUSE_AB_MIN ? need : need + PAUSE_MIN; }
+
+  // ---------- Stempeluhr ----------
+  const $clock = document.getElementById("clock");
+  const $week = document.getElementById("week");
+
+  function renderClock(){
+    const now = Date.now();
+    if (!state.active) {
+      $clock.innerHTML = `
+        <p class="label">Nicht eingestempelt</p>
+        <p class="big">${bigTime(0)}</p>
+        <button class="punch" id="btn-in" type="button">Einstempeln</button>`;
+      document.getElementById("btn-in").onclick = clockIn;
+      return;
+    }
+    const start = state.active.start;
+    const pres = Math.max(0, minsBetween(start, now));
+    const net = netOf(pres);
+    const done = weekDoneMin(weekStart(start));
+
+    let hint = "";
+    if (pres <= PAUSE_AB_MIN && pres >= PAUSE_AB_MIN - 30) {
+      hint = `In ${Math.ceil(PAUSE_AB_MIN - pres)} Min überschreitest du 6 Std Anwesenheit, dann werden 45 Min Pause abgezogen.`;
+    } else if (pres > PAUSE_AB_MIN && pres < PAUSE_AB_MIN + PAUSE_MIN) {
+      hint = `Durch den Pausenabzug liegst du gerade unter 6 Std netto. Ab ${clock(start + (PAUSE_AB_MIN + PAUSE_MIN) * 60000)} Uhr bist du wieder bei 6 Std.`;
+    }
+
+    const goal = (target, name) => {
+      const need = target - done;
+      if (need - net <= 0) return `<p><span>${name}</span><b>erreicht</b></p>`;
+      return `<p><span>${name}</span><b>um ${clock(start + presenceFor(need) * 60000)} Uhr</b></p>`;
+    };
+
+    $clock.innerHTML = `
+      <span class="stamp${justStamped ? " fresh" : ""}">EIN ${clock(start)}</span>
+      <p class="label">Netto bisher</p>
+      <p class="big">${bigTime(net)}</p>
+      <p class="sub">Anwesend ${fmt(pres)}${pauseOf(pres) ? ", davon 45 Min Pause" : ""}</p>
+      ${hint ? `<p class="hint">${hint}</p>` : ""}
+      <div class="goals">${goal(WOCHE_MIN, "19 Std diese Woche")}${goal(WOCHE_MAX, "19,5 Std diese Woche")}</div>
+      <button class="punch out" id="btn-out" type="button">Ausstempeln</button>
+      <div><button class="linkbtn" id="btn-edit" type="button">Beginn korrigieren</button></div>
+      <div id="editbox"></div>`;
+    justStamped = false;
+    document.getElementById("btn-out").onclick = clockOut;
+    document.getElementById("btn-edit").onclick = showEditStart;
+  }
+
+  function showEditStart(){
+    const box = document.getElementById("editbox");
+    if (!box || box.innerHTML) return;
+    stopTick();
+    box.innerHTML = `<div class="editstart"><input type="time" id="edit-time" aria-label="Neuer Beginn" value="${clock(state.active.start)}">
+      <button class="btn" style="width:auto;padding:8px 14px" id="edit-ok" type="button">Übernehmen</button>
+      <button class="btn ghost" style="width:auto;padding:8px 14px" id="edit-cancel" type="button">Abbrechen</button></div>`;
+    document.getElementById("edit-ok").onclick = () => {
+      const v = document.getElementById("edit-time").value;
+      if (!v) return;
+      const [h, m] = v.split(":").map(Number);
+      const d = new Date(state.active.start); d.setHours(h, m, 0, 0);
+      if (d.getTime() > Date.now()) d.setDate(d.getDate() - 1);
+      state.active.start = d.getTime(); save(); renderAll(); startTick();
+    };
+    document.getElementById("edit-cancel").onclick = () => { renderClock(); startTick(); };
+  }
+
+  function clockIn(){
+    state.active = { start: Date.now() }; justStamped = true; save(); renderAll();
+  }
+  function clockOut(){
+    const start = state.active.start, end = Date.now();
+    if (end - start >= 60000) state.entries.push({ id: "e" + end.toString(36), start, end });
+    state.active = null; save(); renderAll();
+  }
+
+  function renderWeek(){
+    const now = Date.now();
+    const ws = weekStart(now);
+    let total = weekDoneMin(ws);
+    if (state.active && weekStart(state.active.start) === ws) total += netOf(minsBetween(state.active.start, now));
+    const maxScale = WOCHE_MAX * 1.1;
+    const pct = Math.min(100, total / maxScale * 100);
+    let status, cls = "";
+    if (total > WOCHE_MAX) { status = `${fmt(total - WOCHE_MAX)} über dem Maximum`; cls = "over"; }
+    else if (total >= WOCHE_MIN) { status = `Im Ziel. Noch ${fmt(WOCHE_MAX - total)} bis zum Maximum`; cls = "ok"; }
+    else status = `Noch ${fmt(WOCHE_MIN - total)} bis 19 Std`;
+    $week.innerHTML = `
+      <div class="weekhead"><h2>Diese Woche (KW ${isoWeek(now)})</h2><span class="weektotal">${fmt(total)}</span></div>
+      <div class="bar${total > WOCHE_MAX ? " over" : ""}" role="img" aria-label="${fmt(total)} von 19 bis 19,5 Std">
+        <div class="zone" style="left:${WOCHE_MIN/maxScale*100}%;width:${(WOCHE_MAX-WOCHE_MIN)/maxScale*100}%"></div>
+        <div class="fill" style="width:${pct}%"></div>
+      </div>
+      <div class="scale"><span>0</span><span>Ziel 19 – 19,5 Std</span></div>
+      <p class="status ${cls}">${status}</p>`;
+  }
+
+  // ---------- Rechner ----------
+  const $cd = document.getElementById("c-date"), $cs = document.getElementById("c-start"), $ce = document.getElementById("c-end");
+  const $cres = document.getElementById("c-result"), $csave = document.getElementById("c-save"), $cmsg = document.getElementById("c-msg");
+  const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+  $cd.value = todayISO();
+
+  function calcRange(){
+    if (!$cs.value || !$ce.value || !$cd.value) return null;
+    const [y, mo, da] = $cd.value.split("-").map(Number);
+    const [sh, sm] = $cs.value.split(":").map(Number), [eh, em] = $ce.value.split(":").map(Number);
+    const s = new Date(y, mo - 1, da, sh, sm).getTime();
+    let e = new Date(y, mo - 1, da, eh, em).getTime();
+    if (e <= s) e += 864e5; // über Mitternacht
+    return { s, e, overnight: e - s > 0 && new Date(e).getDate() !== new Date(s).getDate() };
+  }
+  function renderCalc(){
+    $cmsg.textContent = ""; $cmsg.className = "msg";
+    const r = calcRange();
+    if (!r) { $cres.hidden = true; $csave.hidden = true; return; }
+    const pres = minsBetween(r.s, r.e);
+    $cres.hidden = false; $csave.hidden = false;
+    $cres.innerHTML = `<dl>
+      <dt>Anwesenheit</dt><dd>${fmt(pres)}</dd>
+      <dt>Pause</dt><dd>${pauseOf(pres) ? "− 45 Min" : "keine"}</dd>
+      <div class="net"><dt>Netto</dt><dd>${fmt(netOf(pres))}</dd></div>
+    </dl>${r.overnight ? `<p class="sub" style="margin-top:8px">Ende liegt am nächsten Tag.</p>` : ""}`;
+  }
+  [$cd, $cs, $ce].forEach(el => el.addEventListener("input", renderCalc));
+  $csave.onclick = () => {
+    const r = calcRange(); if (!r) return;
+    const clash = state.entries.some(e => r.s < e.end && r.e > e.start);
+    if (clash && !confirm("Dieser Zeitraum überschneidet sich mit einem gespeicherten Arbeitstag. Trotzdem speichern?")) return;
+    state.entries.push({ id: "m" + Date.now().toString(36), start: r.s, end: r.e });
+    save(); renderAll();
+    $cmsg.textContent = `Gespeichert: ${dayLabel(r.s)}, ${fmt(netOf(minsBetween(r.s, r.e)))}`; $cmsg.className = "msg ok";
+  };
+
+  // ---------- Verlauf ----------
+  const $hist = document.getElementById("hist");
+  function renderHist(){
+    if (!state.entries.length) {
+      $hist.innerHTML = `<div class="empty">Noch keine Arbeitstage. Stempel dich ein oder trag einen Tag im Rechner nach.</div>`;
+      return;
+    }
+    const sorted = [...state.entries].sort((a, b) => b.start - a.start);
+    const groups = new Map();
+    sorted.forEach(e => { const k = weekStart(e.start); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(e); });
+    let html = "";
+    groups.forEach((list, ws) => {
+      const sum = list.reduce((s, e) => s + entryNet(e), 0);
+      const cls = sum > WOCHE_MAX ? "over" : sum >= WOCHE_MIN ? "ok" : "low";
+      html += `<div class="wk"><h3><span>KW ${isoWeek(ws)}, ab ${dayLabel(ws)}</span><span class="${cls}">${fmt(sum)}</span></h3>`;
+      list.forEach(e => {
+        const pres = minsBetween(e.start, e.end);
+        html += `<div class="entry"><div><div class="d">${dayLabel(e.start)}</div>
+          <div class="t">${clock(e.start)} – ${clock(e.end)}${pauseOf(pres) ? ", 45 Min Pause" : ""}</div></div>
+          <div class="n">${fmt(entryNet(e))}</div>
+          <button class="del" type="button" data-del="${e.id}" aria-label="Eintrag vom ${dayLabel(e.start)} löschen">×</button></div>`;
+      });
+      html += `</div>`;
+    });
+    $hist.innerHTML = html;
+    $hist.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+      const e = state.entries.find(x => x.id === b.dataset.del);
+      if (!e || !confirm(`Eintrag vom ${dayLabel(e.start)} (${clock(e.start)} – ${clock(e.end)}) löschen?`)) return;
+      state.entries = state.entries.filter(x => x.id !== e.id); save(); renderAll();
+    });
+  }
+
+  // ---------- Navigation & Ansicht ----------
+  document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll("[data-tab]").forEach(x => x === b ? x.setAttribute("aria-current", "page") : x.removeAttribute("aria-current"));
+    ["clock", "calc", "hist"].forEach(t => document.getElementById("tab-" + t).hidden = t !== tab);
+    renderAll(); window.scrollTo(0, 0);
+  });
+  document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => {
+    view = b.dataset.view;
+    try { localStorage.setItem(LS_VIEW, view); } catch(e){}
+    document.querySelectorAll("[data-view]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    renderAll();
+  });
+  document.querySelectorAll("[data-view]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.view === view)));
+
+  function renderAll(){ renderClock(); renderWeek(); renderCalc(); renderHist(); }
+
+  let timer = null;
+  function startTick(){ stopTick(); timer = setInterval(() => { if (tab === "clock" && state.active) { renderClock(); renderWeek(); } }, 15000); }
+  function stopTick(){ if (timer) clearInterval(timer); timer = null; }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) renderAll(); });
+
+  renderAll(); startTick();
+
+  // ---------- Synchronisierung über claude.ai (falls verfügbar) ----------
+  const $sync = document.getElementById("sync");
+  $sync.textContent = "Daten werden auf diesem Gerät gespeichert.";
+  (async () => {
+    if (!window.claude || typeof window.claude.use !== "function") return;
+    try {
+      const [d, u] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (!d || !u) return;
+      const uid = await u.id(); if (!uid) return;
+      const ref = d.doc("data/users/" + uid + "/stempelkarte");
+      const snap = await ref.get();
+      if (snap.exists) {
+        const data = snap.data() || {};
+        state = { entries: Array.isArray(data.entries) ? data.entries.slice() : [], active: data.active ? { start: data.active.start } : null };
+        try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){}
+      }
+      db = d; docRef = ref;
+      if (!snap.exists) save();
+      $sync.textContent = "Daten sind mit deinem Claude-Konto synchronisiert.";
+      renderAll();
+    } catch (e) { /* bleibt lokal */ }
+  })();
+})();
+
+// ---------- Offline-Unterstützung ----------
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
