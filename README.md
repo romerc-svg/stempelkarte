@@ -45,7 +45,7 @@ Dann <http://localhost:8000> öffnen.
 ## Auf dem Handy nutzen
 
 Die App läuft über **GitHub Pages** (Settings → Pages → Branch `main`, Ordner `/ (root)`).
-Adresse: `https://<benutzername>.github.io/stempelkarte/`
+Adresse: <https://romerc-svg.github.io/stempelkarte/>
 
 - **iPhone**: Adresse in Safari öffnen → Teilen → „Zum Home-Bildschirm“
 - **Android**: Adresse in Chrome öffnen → Menü → „App installieren“
