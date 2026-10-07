@@ -2,9 +2,15 @@
 
 Kleine Web-App für den persönlichen Gebrauch: Arbeitszeit stempeln, einzelne Tage ausrechnen und die Wochenstunden im Blick behalten.
 
+## Look
+
+Die App sieht aus wie ein kleines Gerät („SK-1“) mit LED-Display. Im Display wohnt ein Monster, das deinen Tag mitläuft:
+es geht vom Häuschen zur 19-Std-Fahne, macht bei der Pause Kaffeepause, jubelt am Ziel, gerät über 19,5 Std in Panik und schläft nach Feierabend.
+Gestempelt wird mit einem Schiebeschalter.
+
 ## Funktionen
 
-- **Stempeluhr**: ein- und ausstempeln, Netto-Zeit live, Uhrzeit, wann das Wochenziel erreicht ist
+- **Stempeluhr**: ein- und ausstempeln per Schiebeschalter, Netto-Zeit live, Uhrzeit, wann das Wochenziel erreicht ist, Woche als Stempelabdrücke
 - **Rechner**: Beginn und Ende eintragen, Netto-Zeit ausrechnen und als Arbeitstag speichern
 - **Verlauf**: alle Tage nach Kalenderwoche, mit Wochensumme
 - Anzeige in Std/Min oder dezimal, Hell- und Dunkelmodus
