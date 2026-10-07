@@ -1,6 +1,6 @@
 // Service Worker: macht die App offline nutzbar.
 // Neue Dateien bei FILES eintragen und die Versionsnummer bei CACHE erhöhen.
-const CACHE = "stempelkarte-v10";
+const CACHE = "stempelkarte-v11";
 const FILES = [
   "./",
   "./index.html",
@@ -10,7 +10,7 @@ const FILES = [
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png"
 ];
-const FONT_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com"];
+const FONT_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -28,7 +28,7 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
 
-  // Schriften: aus dem Cache, sonst einmal laden und merken
+  // Schriften und PDF-Modul: aus dem Cache, sonst einmal laden und merken
   if (FONT_HOSTS.includes(url.hostname)) {
     e.respondWith(
       caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {

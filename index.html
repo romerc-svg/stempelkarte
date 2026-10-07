@@ -295,6 +295,14 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .swatch.pink .chip i:nth-child(1){background:#2B0618;box-shadow:inset 0 0 0 3px #FF4FB3}
 .swatch.pink .chip i:nth-child(2){background:#FFB8DA;box-shadow:inset 0 0 0 3px #5C0A35}
 
+/* ---------- Export ---------- */
+.monthnav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;background:var(--well);border-radius:14px;padding:4px;box-shadow:inset 0 1px 3px rgba(0,0,0,.18)}
+.monthnav button{height:40px;border-radius:11px;background:var(--panel);box-shadow:0 1px 0 var(--edge);font-size:16px}
+.monthnav button:disabled{opacity:.35}
+.monthnav b{text-align:center;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.exsum{display:flex;justify-content:space-between;margin:10px 4px 0;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.exsum b{color:var(--ink)}
+
 /* ---------- Sheet & Hinweis ---------- */
 .scrim{position:absolute;inset:0;background:rgba(20,18,14,.35);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
 .scrim.show{opacity:1;pointer-events:auto}
@@ -385,7 +393,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   <main class="screen" id="scr-hist" hidden>
     <div class="plate">
       <span class="screw l"></span><span class="screw r"></span>
-      <div class="brand"><b>Verlauf</b><span id="h-count">0 Tage</span></div>
+      <div class="brand"><b>Verlauf</b>
+        <div class="tools"><span id="h-count">0 Tage</span>
+          <button type="button" class="gear" id="btn-export" aria-label="Stundenzettel exportieren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
+        </div>
+      </div>
       <div class="lcd">
         <div class="lrow"><span id="h-kw">Diese Woche</span><span id="h-state">–</span></div>
         <div class="ldig" id="h-sum">0:00</div>
@@ -1184,6 +1196,180 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   setView(view);
 
   function renderAll(){ renderClock(); renderCalc(); renderHist(); }
+
+  // ---------- Stundenzettel (PDF / CSV) ----------
+  const LS_NAME = "stempelkarte:name";
+  const MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+  const WD = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+  const roundNet = e => Math.round(entryNet(e));
+  const hmm = min => { const t = Math.round(min); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+  const dec2 = min => (min / 60).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const dmy = t => new Date(t).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+  function monthEntries(y, m){
+    return state.entries.filter(e => { const d = new Date(e.start); return d.getFullYear() === y && d.getMonth() === m; }).sort((a, b) => a.start - b.start);
+  }
+  // Zeilen eines Monats, nach Kalenderwoche gruppiert
+  function monthRows(y, m){
+    const list = monthEntries(y, m), weeks = [];
+    list.forEach(e => {
+      const kw = isoWeek(e.start); let w = weeks[weeks.length - 1];
+      if (!w || w.kw !== kw) weeks.push(w = { kw, rows: [], sum: 0 });
+      const pres = minsBetween(e.start, e.end), net = roundNet(e);
+      w.rows.push({ e, date: dmy(e.start), wd: WD[new Date(e.start).getDay()],
+        from: e.type ? "–" : clock(e.start), to: e.type ? "–" : clock(e.end),
+        pause: e.type ? "–" : pauseOf(pres) ? "0:45" : "0:00", net, kind: e.type ? KINDS[e.type].label : "Arbeit" });
+      w.sum += net;
+    });
+    const total = weeks.reduce((a, w) => a + w.sum, 0);
+    const days = new Set(list.map(e => dayStart(e.start))).size;
+    const count = k => list.filter(e => e.type === k).length;
+    return { weeks, total, days, n: list.length, urlaub: count("urlaub"), krank: count("krank"), feiertag: count("feiertag") };
+  }
+
+  // jsPDF wird beim Öffnen des Export-Fensters geladen, damit "Teilen" sofort im Tipp passieren kann (iOS verlangt das)
+  let pdfLib = null;
+  function loadPdfLib(){
+    if (window.jspdf) return Promise.resolve(pdfLib = window.jspdf);
+    return new Promise((ok, fail) => {
+      const sc = document.createElement("script");
+      sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+      sc.onload = () => ok(pdfLib = window.jspdf); sc.onerror = fail;
+      document.head.appendChild(sc);
+    });
+  }
+
+  function buildPdf(y, m, name){
+    const R = monthRows(y, m), doc = new pdfLib.jsPDF({ unit: "mm", format: "a4" });
+    const L = 16, W = 210 - 32, ink = [36, 35, 31], mute = [119, 115, 107], acc = [255, 91, 35];
+    const cols = [{ t: "Datum", x: L }, { t: "Tag", x: L + 26 }, { t: "Beginn", x: L + 40 }, { t: "Ende", x: L + 60 }, { t: "Pause", x: L + 80 },
+                  { t: "Netto", x: L + 100 }, { t: "Dezimal", x: L + 120 }, { t: "Art", x: L + 142 }];
+    let yy = 0, page = 1;
+    // kleines Pixel-Monster als Logo
+    function logo(x0, y0){
+      const px = .75; doc.setFillColor(...ink);
+      const rows = BODY.map((r, j) => r || (j >= 5 && j <= 7 ? EYES.open[j - 5] : MOUTH.smile[j - 8] || r)).concat(LEGS[0]);
+      rows.forEach((r, j) => { if (!r) return; for (let i = 0; i < r.length; i++) if (r[i] === "#") doc.rect(x0 + i * px, y0 + j * px, px * .92, px * .92, "F"); });
+    }
+    function head(){
+      doc.setTextColor(...ink); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+      doc.text("Stundenzettel", L, 24);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(...mute);
+      doc.text(`${MONTHS[m]} ${y}${name ? "  ·  " + name : ""}`, L, 31);
+      logo(210 - L - 12, 14);
+      doc.setDrawColor(...acc); doc.setLineWidth(.8); doc.line(L, 36, L + W, 36);
+      yy = 46; tableHead();
+    }
+    function tableHead(){
+      doc.setFillColor(236, 234, 229); doc.rect(L, yy - 5, W, 7.5, "F");
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...mute);
+      cols.forEach(c => doc.text(c.t.toUpperCase(), c.x + 1.5, yy));
+      yy += 8;
+    }
+    function need(h){ if (yy + h > 272) { foot(); doc.addPage(); page++; yy = 22; tableHead(); } }
+    function foot(){
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...mute);
+      doc.text(`Erstellt am ${dmy(Date.now())} mit Stempelkarte SK-1`, L, 287);
+      doc.text(`Seite ${page}`, L + W, 287, { align: "right" });
+    }
+    head();
+    doc.setFontSize(10);
+    if (!R.weeks.length) { doc.setTextColor(...mute); doc.text("Keine Einträge in diesem Monat.", L + 1.5, yy); yy += 8; }
+    R.weeks.forEach(w => {
+      w.rows.forEach(r => {
+        need(7);
+        doc.setFont("helvetica", "normal"); doc.setTextColor(...ink);
+        const vals = [r.date, r.wd, r.from, r.to, r.pause, hmm(r.net), dec2(r.net), r.kind];
+        vals.forEach((v, i) => doc.text(String(v), cols[i].x + 1.5, yy));
+        doc.setDrawColor(220, 217, 210); doc.setLineWidth(.2); doc.line(L, yy + 2.4, L + W, yy + 2.4);
+        yy += 7;
+      });
+      need(9);
+      doc.setFillColor(248, 246, 242); doc.rect(L, yy - 4.8, W, 7, "F");
+      doc.setFont("helvetica", "bold"); doc.setTextColor(...ink);
+      doc.text(`Summe KW ${w.kw}`, L + 1.5, yy);
+      doc.text(hmm(w.sum), cols[5].x + 1.5, yy); doc.text(dec2(w.sum), cols[6].x + 1.5, yy);
+      yy += 10;
+    });
+    // Monatssumme
+    need(40);
+    doc.setDrawColor(...ink); doc.setLineWidth(.5); doc.line(L, yy - 3, L + W, yy - 3);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(...ink);
+    doc.text("Monatssumme netto", L + 1.5, yy + 4);
+    doc.text(`${hmm(R.total)} Std  (${dec2(R.total)})`, L + W - 1.5, yy + 4, { align: "right" });
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...mute);
+    const extra = [`${R.days} ${R.days === 1 ? "Tag" : "Tage"}`];
+    if (R.urlaub) extra.push(`${R.urlaub} × Urlaub`); if (R.krank) extra.push(`${R.krank} × Krank`); if (R.feiertag) extra.push(`${R.feiertag} × Feiertag`);
+    doc.text(extra.join("  ·  "), L + 1.5, yy + 10);
+    doc.text(`Pause: ${PAUSE_MIN} Min ab ${PAUSE_AB_MIN / 60} Std Anwesenheit  ·  Urlaub/Krank/Feiertag: ${dec2(GUTSCHRIFT)} Std netto`, L + 1.5, yy + 15);
+    // Unterschriften
+    const sy = Math.max(yy + 38, 250);
+    doc.setDrawColor(...mute); doc.setLineWidth(.3);
+    doc.line(L, sy, L + 75, sy); doc.line(L + W - 75, sy, L + W, sy);
+    doc.setFontSize(8.5); doc.text("Datum, Unterschrift Mitarbeiter/in", L, sy + 4.5); doc.text("Datum, Unterschrift Arbeitgeber", L + W - 75, sy + 4.5);
+    foot();
+    return doc.output("blob");
+  }
+
+  function buildCsv(y, m){
+    const R = monthRows(y, m), q = v => /[;"\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : v;
+    const lines = [["Datum", "Wochentag", "KW", "Beginn", "Ende", "Pause", "Netto (Std:Min)", "Netto (Dezimal)", "Art"].join(";")];
+    R.weeks.forEach(w => {
+      w.rows.forEach(r => lines.push([r.date, r.wd, w.kw, r.from, r.to, r.pause, hmm(r.net), dec2(r.net), r.kind].map(q).join(";")));
+      lines.push(["", "", w.kw, "", "", "", hmm(w.sum), dec2(w.sum), `Summe KW ${w.kw}`].join(";"));
+    });
+    lines.push(["", "", "", "", "", "", hmm(R.total), dec2(R.total), `Summe ${MONTHS[m]} ${y}`].join(";"));
+    return new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  }
+
+  async function shareFile(blob, filename){
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: filename }); return true; }
+      catch (err) { if (err && err.name === "AbortError") return false; }
+    }
+    // Fallback (z. B. am Computer): als Download speichern
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    return true;
+  }
+
+  $("btn-export").onclick = () => {
+    buzz(6);
+    const now = new Date(); let y = now.getFullYear(), m = now.getMonth(), fmtSel = "pdf";
+    let name = ""; try { name = localStorage.getItem(LS_NAME) || ""; } catch(e){}
+    const first = state.entries.length ? new Date(Math.min(...state.entries.map(e => e.start))) : now;
+    loadPdfLib().catch(() => {});
+    sheet("Stundenzettel", `
+      <div class="setting"><h3>Monat</h3>
+        <div class="monthnav"><button type="button" id="ex-prev" aria-label="Vorheriger Monat">‹</button><b id="ex-month"></b><button type="button" id="ex-next" aria-label="Nächster Monat">›</button></div>
+        <div class="exsum"><span id="ex-days"></span><b id="ex-total"></b></div>
+      </div>
+      <div class="setting"><h3>Format</h3>
+        <div class="kinds two" id="ex-fmt"><button type="button" data-v="pdf" aria-pressed="true">PDF</button><button type="button" data-v="csv" aria-pressed="false">Tabelle (CSV)</button></div>
+      </div>
+      <div class="setting field"><label for="ex-name">Name auf dem Stundenzettel</label><input type="text" id="ex-name" autocomplete="name" placeholder="Vor- und Nachname" value="${name.replace(/"/g, "&quot;")}"></div>
+      <p class="preview" id="ex-msg"></p>`,
+      [{ label: "Abbrechen" }, { label: "Teilen", cls: "primary", run: () => {
+        const nm = $("ex-name").value.trim(); try { localStorage.setItem(LS_NAME, nm); } catch(e){}
+        const base = `Stundenzettel-${y}-${String(m + 1).padStart(2, "0")}`;
+        if (fmtSel === "pdf") {
+          if (!pdfLib) { $("ex-msg").textContent = "PDF-Modul lädt noch. Bitte gleich nochmal tippen (einmalig Internet nötig)."; $("ex-msg").className = "preview err"; loadPdfLib().catch(() => {}); return false; }
+          shareFile(buildPdf(y, m, nm), base + ".pdf");
+        } else shareFile(buildCsv(y, m), base + ".csv");
+      } }]);
+    function upd(){
+      $("ex-month").textContent = `${MONTHS[m]} ${y}`;
+      const R = monthRows(y, m);
+      $("ex-days").textContent = R.n ? `${R.days} ${R.days === 1 ? "Tag" : "Tage"}` : "Keine Einträge";
+      $("ex-total").textContent = R.n ? `${hmm(R.total)} Std netto` : "";
+      $("ex-prev").disabled = y * 12 + m <= first.getFullYear() * 12 + first.getMonth();
+      $("ex-next").disabled = y * 12 + m >= now.getFullYear() * 12 + now.getMonth();
+    }
+    $("ex-prev").onclick = () => { if (--m < 0) { m = 11; y--; } buzz(5); upd(); };
+    $("ex-next").onclick = () => { if (++m > 11) { m = 0; y++; } buzz(5); upd(); };
+    $("ex-fmt").querySelectorAll("button").forEach(b => b.onclick = () => { fmtSel = b.dataset.v; buzz(5); $("ex-fmt").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); });
+    upd();
+  };
 
   // ---------- Einstellungen ----------
   $("btn-settings").onclick = () => {
