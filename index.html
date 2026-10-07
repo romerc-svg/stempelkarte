@@ -28,8 +28,9 @@
   --spring:cubic-bezier(.3,1.5,.5,1);
 }
 *,*::before,*::after{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{background:var(--body);color:var(--ink);font-family:var(--mono);-webkit-tap-highlight-color:transparent;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+html{position:fixed;inset:0;width:100%}
+body{background:var(--body);color:var(--ink);font-family:var(--mono);-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;touch-action:manipulation}
 button,input{font:inherit;color:inherit}
 button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulation}
 :focus-visible{outline:2px solid var(--led);outline-offset:3px}
@@ -43,10 +44,9 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 }
 
 /* ---------- Bildschirme ---------- */
-.screen{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;padding-bottom:12px}
+.screen{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:12px}
 .screen::-webkit-scrollbar{display:none}
 .screen[hidden]{display:none}
-.spacer{flex:1;min-height:10px}
 
 /* ---------- Platte & Display ---------- */
 .plate{margin:8px 14px 0;background:var(--panel);border-radius:28px;padding:14px 14px 12px;position:relative;flex:none;
@@ -61,7 +61,29 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .fmt button[aria-pressed="true"]{background:var(--panel);color:var(--ink);font-weight:600;box-shadow:0 1px 0 var(--edge)}
 .lcd{background:var(--lcd);border-radius:16px;padding:10px 10px 9px;box-shadow:inset 0 3px 12px rgba(0,0,0,.7),0 1px 0 #fff;position:relative;overflow:hidden;color:var(--led)}
 .lcd::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.07),transparent 40%);pointer-events:none}
-canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipulation}
+/* Die Stempeluhr-Platte wächst mit dem freien Platz, das Display füllt sie */
+#scr-clock .plate{flex:1 1 auto;min-height:190px;display:flex;flex-direction:column}
+#scr-clock .lcd{flex:1;min-height:0;display:flex;flex-direction:column}
+.scene{flex:1;min-height:0;position:relative}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation}
+#scr-clock .switchwrap{margin-top:14px}
+/* Verlauf: nur die Liste scrollt, im eigenen Fenster */
+.list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;padding-bottom:6px;
+  -webkit-mask-image:linear-gradient(transparent,#000 12px,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(transparent,#000 12px,#000 calc(100% - 18px),transparent)}
+.list::-webkit-scrollbar{display:none}
+/* Kleine Bildschirme (z. B. iPhone SE): alles etwas kompakter */
+@media (max-height:720px){
+  .plate{padding:10px 12px 10px}
+  .brand{padding-bottom:7px}
+  .read{margin-top:9px}.read > *{padding:7px 9px 6px}.read b{font-size:22px}
+  .weekhead{margin:10px 18px 6px}
+  .imp{font-size:11px}.imp small{display:none}
+  .track{height:56px}.thumb{height:46px}
+  .switchwrap{padding:9px}.switchlbl{padding-bottom:6px}
+  .key{height:44px}
+  .ldig{font-size:60px}
+  .fields{gap:9px;padding:12px}.field input{min-height:46px}
+}
 .ticker{height:18px;margin-top:6px;overflow:hidden;font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;text-overflow:ellipsis;text-shadow:0 0 8px rgba(255,91,35,.5)}
 .ticker .car{display:inline-block;width:7px;height:11px;background:var(--led);vertical-align:-1px;margin-left:2px;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
@@ -168,7 +190,7 @@ canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipula
         <div class="fmt" role="group" aria-label="Zeitformat"><button type="button" data-view="hm" aria-pressed="true">H:M</button><button type="button" data-view="dec" aria-pressed="false">Dez</button></div>
       </div>
       <div class="lcd">
-        <canvas id="cv" width="520" height="380" role="img" aria-label="Monster zeigt deinen Fortschritt"></canvas>
+        <div class="scene"><canvas id="cv" role="img" aria-label="Monster zeigt deinen Fortschritt"></canvas></div>
         <div class="ticker"><span id="tick-t"></span><span class="car"></span></div>
       </div>
     </div>
@@ -179,7 +201,6 @@ canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipula
     </div>
     <div class="weekhead"><span id="w-kw">KW</span><span id="w-sum">Woche 0:00</span></div>
     <div class="week" id="week"></div>
-    <div class="spacer"></div>
     <div class="switchwrap">
       <div class="switchlbl"><span id="l-off" class="act">Aus</span><span>Zum Stempeln schieben</span><span id="l-on">Ein</span></div>
       <div class="track" id="track" role="switch" aria-checked="false" aria-label="Eingestempelt" tabindex="0">
@@ -222,8 +243,7 @@ canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipula
         <div class="lrow"><span>Ziel 19 – 19,5 Std</span><span id="h-rest">–</span></div>
       </div>
     </div>
-    <div id="hist"></div>
-    <p class="sync" id="sync"></p>
+    <div class="list"><div id="hist"></div><p class="sync" id="sync"></p></div>
   </main>
 
   <nav class="keys" aria-label="Bereiche">
@@ -355,29 +375,36 @@ canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipula
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
 
   // ---------- LED-Matrix ----------
-  const COLS = 52, ROWS = 38;
+  const COLS = 52; let ROWS = 38, P = 1, OX = 0, OY = 0;
   const cv = $("cv"), ctx = cv.getContext("2d");
   const off = document.createElement("canvas"), octx = off.getContext("2d");
-  const buf = new Uint8Array(COLS * ROWS);           // 0 aus, 1 halb, 2 voll
+  let buf = new Uint8Array(COLS * ROWS);             // 0 aus, 1 halb, 2 voll
   const css = getComputedStyle(document.documentElement);
   const C = { bg: css.getPropertyValue("--lcd").trim(), off: css.getPropertyValue("--led-off").trim(), half: css.getPropertyValue("--led-half").trim(), full: css.getPropertyValue("--led").trim() };
 
+  // Breite bestimmt die Punktgröße; mehr Höhe bedeutet mehr Himmel
   function fitCanvas(){
-    const w = cv.clientWidth; if (!w) return;
+    const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
     const dpr = Math.min(3, window.devicePixelRatio || 1);
-    cv.width = Math.round(w * dpr); cv.height = Math.round(w * ROWS / COLS * dpr);
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
     off.width = cv.width; off.height = cv.height;
+    P = cv.width / COLS;
+    ROWS = Math.floor(cv.height / P);
+    if (ROWS < 28) { ROWS = 28; P = cv.height / ROWS; }
+    OX = (cv.width - COLS * P) / 2; OY = cv.height - ROWS * P;
+    GROUND = ROWS - 4;
+    buf = new Uint8Array(COLS * ROWS);
   }
   const put = (x, y, v) => { x |= 0; y |= 0; if (x >= 0 && x < COLS && y >= 0 && y < ROWS && v > buf[y * COLS + x]) buf[y * COLS + x] = v; };
   function sprite(rows, x, y, flip){
     rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) { const ch = flip ? r[r.length - 1 - i] : r[i]; if (ch === "#") put(x + i, y + j, 2); else if (ch === "+") put(x + i, y + j, 1); } });
   }
   function present(){
-    const p = cv.width / COLS, r = p * .36;
+    const p = P, r = p * .36;
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, cv.width, cv.height);
     octx.clearRect(0, 0, off.width, off.height);
     for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-      const v = buf[y * COLS + x], cx = (x + .5) * p, cy = (y + .5) * p;
+      const v = buf[y * COLS + x], cx = OX + (x + .5) * p, cy = OY + (y + .5) * p;
       ctx.fillStyle = v === 2 ? C.full : v === 1 ? C.half : C.off;
       ctx.beginPath(); ctx.arc(cx, cy, v ? r * 1.08 : r, 0, 6.2832); ctx.fill();
       if (v === 2) { octx.fillStyle = C.full; octx.beginPath(); octx.arc(cx, cy, r * 1.3, 0, 6.2832); octx.fill(); }
@@ -441,16 +468,21 @@ canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipula
   const BANG = ["#", "#", "#", ".", "#"];
 
   // ---------- Szene ----------
-  const GROUND = 34, WALK0 = 10, WALK1 = 28, FLAGX = 44;
+  let GROUND = 34; const WALK0 = 10, WALK1 = 28, FLAGX = 44;
   let charX = null, jumpT = 0, blinkUntil = 0, confetti = [], tapMsg = null, tapUntil = 0;
 
   function draw(t){
     buf.fill(0);
     const s = today();
     const d = new Date(), hour = d.getHours() + d.getMinutes() / 60;
-    if (hour >= 6 && hour <= 20) { const u = (hour - 6) / 14; sprite(SUN, 2 + u * 44, 10 - Math.sin(u * Math.PI) * 8); }
-    else sprite(MOON, 44, 2);
-    sprite(CLOUD, ((t / 900) % 66) - 9, 6); sprite(CLOUD, ((t / 1400 + 33) % 66) - 9, 14);
+    const sky = Math.max(8, GROUND - 24);          // nutzbare Himmelshöhe über dem Monster
+    if (hour >= 6 && hour <= 20) { const u = (hour - 6) / 14; sprite(SUN, 2 + u * 44, 2 + (1 - Math.sin(u * Math.PI)) * sky); }
+    else {
+      sprite(MOON, 44, 2);
+      for (let i = 0; i < 14; i++) { const sx = (i * 37 + 11) % COLS, sy = (i * 23 + 5) % (sky + 6); if (sx < 42 || sy > 6) put(sx, sy, (Math.floor(t / 600) + i) % 5 ? 1 : 2); }
+    }
+    sprite(CLOUD, ((t / 900) % 66) - 9, 4 + Math.round(sky * .2));
+    sprite(CLOUD, ((t / 1400 + 33) % 66) - 9, 4 + Math.round(sky * .75));
     for (let x = 0; x < COLS; x++) put(x, GROUND + 1, x % 2 ? 0 : 1);
     sprite(HOUSE, 0, GROUND - 8);
     const need = Math.max(1, s.need);
@@ -681,7 +713,7 @@ canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipula
     tab = b.dataset.tab; buzz(5);
     document.querySelectorAll("[data-tab]").forEach(x => x === b ? x.setAttribute("aria-current", "page") : x.removeAttribute("aria-current"));
     ["clock", "calc", "hist"].forEach(t => $("scr-" + t).hidden = t !== tab);
-    $("scr-" + tab).scrollTop = 0;
+    const l = $("scr-" + tab).querySelector(".list"); if (l) l.scrollTop = 0;
     if (tab === "clock") requestAnimationFrame(fitCanvas);
     renderAll();
   });
@@ -699,6 +731,9 @@ canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipula
   // ---------- Start ----------
   fitCanvas(); renderAll();
   addEventListener("resize", fitCanvas);
+  if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe(cv);
+  // Kein Zoomen per Geste (iOS)
+  ["gesturestart", "gesturechange"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
   let last = 0;
   (function loop(t){
     if (tab === "clock" && t - last > 33) { draw(t); last = t; }
