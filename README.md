@@ -28,6 +28,7 @@ Stehen oben im Script in `index.html`:
 | `WOCHE_MAX` | 19,5 Std | Obere Grenze Wochenziel |
 | `TAGE_PRO_WOCHE` | 3 | Arbeitstage pro Woche, an beliebigen Wochentagen |
 | `GUTSCHRIFT` | 6:20 Std (6,33) | Netto-Gutschrift für Urlaub, Krank und Feiertag |
+| `SOLL_TAG` | 6:20 Std (6,33) | SOLL je Tag mit Eintrag (IST = Netto) |
 
 Das **Tagesziel** ist das, was in der Woche noch bis 19 Std fehlt, geteilt durch die verbleibenden Arbeitstage (der heutige mitgezählt). Am ersten Tag sind das 6 Std 20 Min.
 
