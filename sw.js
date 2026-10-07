@@ -1,6 +1,6 @@
 // Service Worker: macht die App offline nutzbar.
 // Neue Dateien bei FILES eintragen und die Versionsnummer bei CACHE erhöhen.
-const CACHE = "stempelkarte-v13";
+const CACHE = "stempelkarte-v14";
 const FILES = [
   "./",
   "./index.html",
@@ -28,7 +28,7 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
 
-  // Schriften und PDF-Modul: aus dem Cache, sonst einmal laden und merken
+  // Schriften, PDF- und Excel-Modul: aus dem Cache, sonst einmal laden und merken
   if (FONT_HOSTS.includes(url.hostname)) {
     e.respondWith(
       caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {

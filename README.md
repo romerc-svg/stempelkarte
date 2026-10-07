@@ -12,7 +12,7 @@ Gestempelt wird mit einem Schiebeschalter.
 
 - **Stempeluhr**: ein- und ausstempeln per Schiebeschalter, Netto-Zeit live, Uhrzeit, wann das Wochenziel erreicht ist, Woche als Stempelabdrücke
 - **Rechner**: Beginn und Ende eintragen, Netto-Zeit ausrechnen und als Arbeitstag speichern; Urlaub, Krank und Feiertag eintragen (Gutschrift 6,33 Std)
-- **Verlauf**: alle Tage nach Kalenderwoche, mit Wochensumme; Stundenzettel pro Monat als PDF oder CSV über das Teilen-Menü
+- **Verlauf**: alle Tage nach Kalenderwoche, mit Wochensumme; Stundenzettel pro Monat als PDF oder formatierte Excel-Datei über das Teilen-Menü
 - Anzeige in Std/Min oder dezimal, Hell- und Dunkelmodus
 - Funktioniert offline und lässt sich wie eine App auf den Home-Bildschirm legen
 

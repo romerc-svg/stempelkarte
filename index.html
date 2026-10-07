@@ -1321,15 +1321,92 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     return doc.output("blob");
   }
 
-  function buildCsv(y, m){
-    const R = monthRows(y, m), q = v => /[;"\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : v;
-    const lines = [["Datum", "Wochentag", "KW", "Beginn", "Ende", "Pause (Std)", "Ist (Std)", "Soll (Std)", "Differenz (Std)", "Art"].join(";")];
-    R.weeks.forEach(w => {
-      w.rows.forEach(r => lines.push([r.date, r.wd, w.kw, r.from, r.to, r.pause, dec2(r.net), r.soll === null ? "" : dec2(r.soll), r.diff === null ? "" : decSigned(r.diff), r.kind].map(q).join(";")));
-      lines.push(["", "", w.kw, "", "", "", dec2(w.sum), dec2(w.soll), decSigned(w.sum - w.soll), `Summe KW ${w.kw}`].join(";"));
+  // Excel-Modul (ExcelJS), wie jsPDF bei Bedarf geladen und offline gemerkt
+  let xlsLib = null;
+  function loadXlsLib(){
+    if (window.ExcelJS) return Promise.resolve(xlsLib = window.ExcelJS);
+    return new Promise((ok, fail) => {
+      const sc = document.createElement("script");
+      sc.src = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
+      sc.onload = () => ok(xlsLib = window.ExcelJS); sc.onerror = fail;
+      document.head.appendChild(sc);
     });
-    lines.push(["", "", "", "", "", "", dec2(R.total), dec2(R.soll), decSigned(R.diff), `Summe ${MONTHS[m]} ${y}`].join(";"));
-    return new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  }
+  // Formatierte Excel-Tabelle: Kopf, feste Kopfzeile, echte Zahlen, Wochensummen als Formeln, Monatsübersicht
+  async function buildXlsx(y, m, name){
+    const R = monthRows(y, m), hrs = min => Math.round(min / 60 * 100) / 100;
+    const wb = new xlsLib.Workbook(); wb.creator = "Stempelkarte SK-1"; wb.created = new Date();
+    const ws = wb.addWorksheet(`${MONTHS[m]} ${y}`, {
+      views: [{ state: "frozen", ySplit: 4, showGridLines: false }],
+      pageSetup: { paperSize: 9, orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: .5, right: .5, top: .6, bottom: .6, header: .3, footer: .3 } }
+    });
+    ws.columns = [{ width: 12 }, { width: 6 }, { width: 9 }, { width: 9 }, { width: 11 }, { width: 11 }, { width: 11 }, { width: 14 }, { width: 12 }];
+    const INK = "FF24231F", MUTE = "FF77736B", HEAD = "FFECEAE5", SUM = "FFF8F6F2", LINE = "FFDCD9D2", ACC = "FFFF5B23";
+    const NUM = "0.00", DIFF = '[Color10]+0.00;[Red]-0.00;0.00';
+    const font = (o = {}) => Object.assign({ name: "Calibri", size: 11, color: { argb: INK } }, o);
+    const thin = { style: "thin", color: { argb: LINE } };
+
+    ws.mergeCells("A1:I1"); ws.getCell("A1").value = "Stundenzettel"; ws.getCell("A1").font = font({ size: 18, bold: true });
+    ws.mergeCells("A2:I2"); ws.getCell("A2").value = `${MONTHS[m]} ${y}${name ? "  ·  " + name : ""}`; ws.getCell("A2").font = font({ color: { argb: MUTE } });
+    ws.getRow(1).height = 26;
+    ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2"].forEach(c => ws.getCell(c).border = { bottom: { style: "medium", color: { argb: ACC } } });
+
+    const head = ws.getRow(4);
+    head.values = ["Datum", "Tag", "Beginn", "Ende", "Pause (Std)", "Ist (Std)", "Soll (Std)", "Differenz (Std)", "Art"];
+    head.height = 20;
+    head.eachCell(c => { c.font = font({ bold: true, size: 10, color: { argb: MUTE } }); c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: HEAD } };
+      c.alignment = { vertical: "middle", horizontal: c.col >= 5 && c.col <= 8 ? "right" : "left" }; c.border = { bottom: { style: "thin", color: { argb: MUTE } } }; });
+
+    let r = 5; const sumRows = [];
+    R.weeks.forEach(w => {
+      const first = r;
+      w.rows.forEach(row => {
+        const d = new Date(row.e.start), x = ws.getRow(r);
+        x.values = [new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), row.wd, row.from, row.to,
+          row.e.type ? null : hrs(pauseOf(minsBetween(row.e.start, row.e.end))), hrs(row.net),
+          row.soll === null ? null : hrs(row.soll), row.diff === null ? null : hrs(row.diff), row.kind];
+        x.getCell(1).numFmt = "dd.mm.yyyy";
+        [5, 6, 7].forEach(c => x.getCell(c).numFmt = NUM); x.getCell(8).numFmt = DIFF;
+        x.eachCell({ includeEmpty: true }, c => { if (c.col > 9) return; c.font = font(); c.border = { bottom: thin };
+          c.alignment = { horizontal: c.col >= 3 && c.col <= 8 ? (c.col <= 4 ? "center" : "right") : "left" }; });
+        if (row.e.type) x.getCell(9).font = font({ italic: true, color: { argb: MUTE } });
+        r++;
+      });
+      const x = ws.getRow(r), last = r - 1;
+      x.getCell(1).value = `Summe KW ${w.kw}`;
+      x.getCell(6).value = { formula: `SUM(F${first}:F${last})`, result: hrs(w.sum) };
+      x.getCell(7).value = { formula: `SUM(G${first}:G${last})`, result: hrs(w.soll) };
+      x.getCell(8).value = { formula: `F${r}-G${r}`, result: hrs(w.sum - w.soll) };
+      for (let c = 1; c <= 9; c++) { const cell = x.getCell(c); cell.font = font({ bold: true }); cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: SUM } };
+        cell.border = { top: { style: "thin", color: { argb: MUTE } } }; if (c >= 6 && c <= 8) cell.alignment = { horizontal: "right" }; }
+      [6, 7].forEach(c => x.getCell(c).numFmt = NUM); x.getCell(8).numFmt = DIFF;
+      sumRows.push(r); r += 2;
+    });
+    if (!R.weeks.length) { ws.getCell(`A${r}`).value = "Keine Einträge in diesem Monat."; ws.getCell(`A${r}`).font = font({ italic: true, color: { argb: MUTE } }); r += 2; }
+
+    // Monatsübersicht
+    const ref = col => sumRows.length ? sumRows.map(n => `${col}${n}`).join("+") : "0";
+    const summary = [["Ist-Stunden (netto)", { formula: ref("F"), result: hrs(R.total) }, NUM],
+                     ["Soll-Stunden", { formula: ref("G"), result: hrs(R.soll) }, NUM],
+                     ["Differenz", { formula: `F${r + 1}-F${r + 2}`, result: hrs(R.diff) }, DIFF]];
+    ws.getCell(`A${r}`).value = "Monatsübersicht"; ws.getCell(`A${r}`).font = font({ bold: true, size: 13 });
+    summary.forEach(([label, val, fmt], i) => {
+      const x = ws.getRow(r + 1 + i);
+      ws.mergeCells(`A${r + 1 + i}:E${r + 1 + i}`);
+      x.getCell(1).value = label; x.getCell(6).value = val; x.getCell(6).numFmt = fmt; x.getCell(7).value = "Std";
+      x.getCell(1).font = font({ bold: i === 2 }); x.getCell(6).font = font({ bold: i === 2 }); x.getCell(7).font = font({ color: { argb: MUTE } });
+      x.getCell(6).alignment = { horizontal: "right" };
+      for (let c = 1; c <= 7; c++) x.getCell(c).border = i === 2 ? { top: { style: "thin", color: { argb: INK } } } : {};
+    });
+    r += 5;
+    const extra = [`${R.days} ${R.days === 1 ? "Tag" : "Tage"}`];
+    if (R.urlaub) extra.push(`${R.urlaub} × Urlaub`); if (R.krank) extra.push(`${R.krank} × Krank`); if (R.feiertag) extra.push(`${R.feiertag} × Feiertag`);
+    [extra.join("  ·  "), `Soll: ${dec2(SOLL_TAG)} Std je Tag  ·  Pause: ${PAUSE_MIN} Min ab ${PAUSE_AB_MIN / 60} Std Anwesenheit  ·  Urlaub/Krank/Feiertag: ${dec2(GUTSCHRIFT)} Std`,
+     `Erstellt am ${dmy(Date.now())} mit Stempelkarte SK-1`].forEach((t, i) => {
+      ws.mergeCells(`A${r + i}:I${r + i}`); ws.getCell(`A${r + i}`).value = t; ws.getCell(`A${r + i}`).font = font({ size: 9, color: { argb: MUTE } });
+    });
+    const buf = await wb.xlsx.writeBuffer();
+    return new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   }
 
   async function shareFile(blob, filename){
@@ -1350,13 +1427,24 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     let name = ""; try { name = localStorage.getItem(LS_NAME) || ""; } catch(e){}
     const first = state.entries.length ? new Date(Math.min(...state.entries.map(e => e.start))) : now;
     loadPdfLib().catch(() => {});
+    // Excel wird im Hintergrund vorbereitet, damit "Teilen" sofort im Tipp passieren kann
+    let xlsBlob = null, xlsKey = "", xlsBusy = false;
+    async function prepXlsx(){
+      const key = `${y}-${m}-${$("ex-name").value.trim()}-${state.entries.length}`;
+      if (fmtSel !== "xlsx" || key === xlsKey || xlsBusy) return;
+      xlsBusy = true; xlsBlob = null;
+      try { await loadXlsLib(); xlsBlob = await buildXlsx(y, m, $("ex-name").value.trim()); xlsKey = key; }
+      catch (e) { $("ex-msg").textContent = "Excel-Modul konnte nicht laden (einmalig Internet nötig)."; $("ex-msg").className = "preview err"; }
+      xlsBusy = false;
+      if (key !== `${y}-${m}-${$("ex-name").value.trim()}-${state.entries.length}`) prepXlsx();
+    }
     sheet("Stundenzettel", `
       <div class="setting"><h3>Monat</h3>
         <div class="monthnav"><button type="button" id="ex-prev" aria-label="Vorheriger Monat">‹</button><b id="ex-month"></b><button type="button" id="ex-next" aria-label="Nächster Monat">›</button></div>
         <div class="exsum"><span id="ex-days"></span><b id="ex-total"></b></div>
       </div>
       <div class="setting"><h3>Format</h3>
-        <div class="kinds two" id="ex-fmt"><button type="button" data-v="pdf" aria-pressed="true">PDF</button><button type="button" data-v="csv" aria-pressed="false">Tabelle (CSV)</button></div>
+        <div class="kinds two" id="ex-fmt"><button type="button" data-v="pdf" aria-pressed="true">PDF</button><button type="button" data-v="xlsx" aria-pressed="false">Excel</button></div>
       </div>
       <div class="setting field"><label for="ex-name">Name auf dem Stundenzettel</label><input type="text" id="ex-name" autocomplete="name" placeholder="Vor- und Nachname" value="${name.replace(/"/g, "&quot;")}"></div>
       <p class="preview" id="ex-msg"></p>`,
@@ -1366,7 +1454,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
         if (fmtSel === "pdf") {
           if (!pdfLib) { $("ex-msg").textContent = "PDF-Modul lädt noch. Bitte gleich nochmal tippen (einmalig Internet nötig)."; $("ex-msg").className = "preview err"; loadPdfLib().catch(() => {}); return false; }
           shareFile(buildPdf(y, m, nm), base + ".pdf");
-        } else shareFile(buildCsv(y, m), base + ".csv");
+        } else {
+          if (!xlsBlob || xlsBusy) { $("ex-msg").textContent = "Tabelle wird vorbereitet. Bitte gleich nochmal tippen."; $("ex-msg").className = "preview"; prepXlsx(); return false; }
+          shareFile(xlsBlob, base + ".xlsx");
+        }
       } }]);
     function upd(){
       $("ex-month").textContent = `${MONTHS[m]} ${y}`;
@@ -1375,10 +1466,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       $("ex-total").textContent = R.n ? `Ist ${dec2(R.total)} · Soll ${dec2(R.soll)} · ${decSigned(R.diff)}` : "";
       $("ex-prev").disabled = y * 12 + m <= first.getFullYear() * 12 + first.getMonth();
       $("ex-next").disabled = y * 12 + m >= now.getFullYear() * 12 + now.getMonth();
+      prepXlsx();
     }
     $("ex-prev").onclick = () => { if (--m < 0) { m = 11; y--; } buzz(5); upd(); };
     $("ex-next").onclick = () => { if (++m > 11) { m = 0; y++; } buzz(5); upd(); };
-    $("ex-fmt").querySelectorAll("button").forEach(b => b.onclick = () => { fmtSel = b.dataset.v; buzz(5); $("ex-fmt").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); });
+    $("ex-fmt").querySelectorAll("button").forEach(b => b.onclick = () => { fmtSel = b.dataset.v; buzz(5); $("ex-msg").textContent = ""; $("ex-fmt").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); prepXlsx(); });
+    $("ex-name").addEventListener("change", prepXlsx);
     upd();
   };
 
