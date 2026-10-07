@@ -1202,7 +1202,6 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
   const WD = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
   const roundNet = e => Math.round(entryNet(e));
-  const hmm = min => { const t = Math.round(min); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
   const dec2 = min => (min / 60).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const dmy = t => new Date(t).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
   function monthEntries(y, m){
@@ -1217,7 +1216,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       const pres = minsBetween(e.start, e.end), net = roundNet(e);
       w.rows.push({ e, date: dmy(e.start), wd: WD[new Date(e.start).getDay()],
         from: e.type ? "–" : clock(e.start), to: e.type ? "–" : clock(e.end),
-        pause: e.type ? "–" : pauseOf(pres) ? "0:45" : "0:00", net, kind: e.type ? KINDS[e.type].label : "Arbeit" });
+        pause: e.type ? "–" : dec2(pauseOf(pres)), net, kind: e.type ? KINDS[e.type].label : "Arbeit" });
       w.sum += net;
     });
     const total = weeks.reduce((a, w) => a + w.sum, 0);
@@ -1241,8 +1240,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   function buildPdf(y, m, name){
     const R = monthRows(y, m), doc = new pdfLib.jsPDF({ unit: "mm", format: "a4" });
     const L = 16, W = 210 - 32, ink = [36, 35, 31], mute = [119, 115, 107], acc = [255, 91, 35];
-    const cols = [{ t: "Datum", x: L }, { t: "Tag", x: L + 26 }, { t: "Beginn", x: L + 40 }, { t: "Ende", x: L + 60 }, { t: "Pause", x: L + 80 },
-                  { t: "Netto", x: L + 100 }, { t: "Dezimal", x: L + 120 }, { t: "Art", x: L + 142 }];
+    const cols = [{ t: "Datum", x: L }, { t: "Tag", x: L + 28 }, { t: "Beginn", x: L + 44 }, { t: "Ende", x: L + 66 }, { t: "Pause (Std)", x: L + 88 },
+                  { t: "Netto (Std)", x: L + 116 }, { t: "Art", x: L + 146 }];
     let yy = 0, page = 1;
     // kleines Pixel-Monster als Logo
     function logo(x0, y0){
@@ -1278,7 +1277,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       w.rows.forEach(r => {
         need(7);
         doc.setFont("helvetica", "normal"); doc.setTextColor(...ink);
-        const vals = [r.date, r.wd, r.from, r.to, r.pause, hmm(r.net), dec2(r.net), r.kind];
+        const vals = [r.date, r.wd, r.from, r.to, r.pause, dec2(r.net), r.kind];
         vals.forEach((v, i) => doc.text(String(v), cols[i].x + 1.5, yy));
         doc.setDrawColor(220, 217, 210); doc.setLineWidth(.2); doc.line(L, yy + 2.4, L + W, yy + 2.4);
         yy += 7;
@@ -1287,7 +1286,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       doc.setFillColor(248, 246, 242); doc.rect(L, yy - 4.8, W, 7, "F");
       doc.setFont("helvetica", "bold"); doc.setTextColor(...ink);
       doc.text(`Summe KW ${w.kw}`, L + 1.5, yy);
-      doc.text(hmm(w.sum), cols[5].x + 1.5, yy); doc.text(dec2(w.sum), cols[6].x + 1.5, yy);
+      doc.text(dec2(w.sum), cols[5].x + 1.5, yy);
       yy += 10;
     });
     // Monatssumme
@@ -1295,29 +1294,24 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     doc.setDrawColor(...ink); doc.setLineWidth(.5); doc.line(L, yy - 3, L + W, yy - 3);
     doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(...ink);
     doc.text("Monatssumme netto", L + 1.5, yy + 4);
-    doc.text(`${hmm(R.total)} Std  (${dec2(R.total)})`, L + W - 1.5, yy + 4, { align: "right" });
+    doc.text(`${dec2(R.total)} Std`, L + W - 1.5, yy + 4, { align: "right" });
     doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...mute);
     const extra = [`${R.days} ${R.days === 1 ? "Tag" : "Tage"}`];
     if (R.urlaub) extra.push(`${R.urlaub} × Urlaub`); if (R.krank) extra.push(`${R.krank} × Krank`); if (R.feiertag) extra.push(`${R.feiertag} × Feiertag`);
     doc.text(extra.join("  ·  "), L + 1.5, yy + 10);
     doc.text(`Pause: ${PAUSE_MIN} Min ab ${PAUSE_AB_MIN / 60} Std Anwesenheit  ·  Urlaub/Krank/Feiertag: ${dec2(GUTSCHRIFT)} Std netto`, L + 1.5, yy + 15);
-    // Unterschriften
-    const sy = Math.max(yy + 38, 250);
-    doc.setDrawColor(...mute); doc.setLineWidth(.3);
-    doc.line(L, sy, L + 75, sy); doc.line(L + W - 75, sy, L + W, sy);
-    doc.setFontSize(8.5); doc.text("Datum, Unterschrift Mitarbeiter/in", L, sy + 4.5); doc.text("Datum, Unterschrift Arbeitgeber", L + W - 75, sy + 4.5);
     foot();
     return doc.output("blob");
   }
 
   function buildCsv(y, m){
     const R = monthRows(y, m), q = v => /[;"\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : v;
-    const lines = [["Datum", "Wochentag", "KW", "Beginn", "Ende", "Pause", "Netto (Std:Min)", "Netto (Dezimal)", "Art"].join(";")];
+    const lines = [["Datum", "Wochentag", "KW", "Beginn", "Ende", "Pause (Std)", "Netto (Std)", "Art"].join(";")];
     R.weeks.forEach(w => {
-      w.rows.forEach(r => lines.push([r.date, r.wd, w.kw, r.from, r.to, r.pause, hmm(r.net), dec2(r.net), r.kind].map(q).join(";")));
-      lines.push(["", "", w.kw, "", "", "", hmm(w.sum), dec2(w.sum), `Summe KW ${w.kw}`].join(";"));
+      w.rows.forEach(r => lines.push([r.date, r.wd, w.kw, r.from, r.to, r.pause, dec2(r.net), r.kind].map(q).join(";")));
+      lines.push(["", "", w.kw, "", "", "", dec2(w.sum), `Summe KW ${w.kw}`].join(";"));
     });
-    lines.push(["", "", "", "", "", "", hmm(R.total), dec2(R.total), `Summe ${MONTHS[m]} ${y}`].join(";"));
+    lines.push(["", "", "", "", "", "", dec2(R.total), `Summe ${MONTHS[m]} ${y}`].join(";"));
     return new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
   }
 
@@ -1361,7 +1355,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       $("ex-month").textContent = `${MONTHS[m]} ${y}`;
       const R = monthRows(y, m);
       $("ex-days").textContent = R.n ? `${R.days} ${R.days === 1 ? "Tag" : "Tage"}` : "Keine Einträge";
-      $("ex-total").textContent = R.n ? `${hmm(R.total)} Std netto` : "";
+      $("ex-total").textContent = R.n ? `${dec2(R.total)} Std netto` : "";
       $("ex-prev").disabled = y * 12 + m <= first.getFullYear() * 12 + first.getMonth();
       $("ex-next").disabled = y * 12 + m >= now.getFullYear() * 12 + now.getMonth();
     }
