@@ -23,7 +23,7 @@
   --stage:#121210;
   --body:#D8D5CF; --panel:#ECEAE5; --edge:#B9B5AD; --well:#C9C5BD; --ink:#24231F; --muted:#77736B; --faint:#9E998F;
   --lcd:#140F0B; --led:#FF5B23; --led-half:#8E3416; --led-off:#2B1A12; --ok:#2F7A4B;
-  --lcd-shadow:rgba(0,0,0,.7); --lrow:#C9542A; --glow-txt:rgba(255,91,35,.45); --glow-a:.4;
+  --lcd-shadow:rgba(0,0,0,.7); --lrow:#C9542A; --glow-txt:rgba(255,91,35,.45); --glow-a:.4; --px-square:0;
   --accent:#FF5B23; --accent-fg:#fff; --danger:#FF5B23; --danger-edge:#B53A10;
   --hi:#fff; --hi-strong:#fff; --knob1:#F8F6F2; --knob2:#DCD8D1; --dot:#B7B2A9;
   --main-bg:#24231F; --main-fg:#ECEAE5; --main-label:#A7A298;
@@ -38,8 +38,8 @@
   :root{
     --stage:#0A0A09;
     --body:#1D1E1B; --panel:#2A2B27; --edge:#111210; --well:#151613; --ink:#ECE9E0; --muted:#9A968C; --faint:#6E6B63;
-    --lcd:#9BBC0F; --led:#0F380F; --led-half:#306230; --led-off:#8BAC0F; --ok:#9BBC0F;
-    --lcd-shadow:rgba(0,0,0,.5); --lrow:#306230; --glow-txt:transparent; --glow-a:0;
+    --lcd:#A4C21A; --led:#0B2B0B; --led-half:#3E7A2E; --led-off:#9BB916; --ok:#9BBC0F; --px-square:1;
+    --lcd-shadow:rgba(0,0,0,.45); --lrow:#1F4A1A; --glow-txt:transparent; --glow-a:0;
     --accent:#9BBC0F; --accent-fg:#0F380F; --danger:#E5533D; --danger-edge:#8E2A1B;
     --hi:rgba(255,255,255,.07); --hi-strong:#5A5C54; --knob1:#45473F; --knob2:#33352F; --dot:#4A4C45;
     --main-bg:#0F380F; --main-fg:#9BBC0F; --main-label:#8BAC0F;
@@ -465,7 +465,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const C = {};
   function readColors(){
     const css = getComputedStyle(document.documentElement), v = n => css.getPropertyValue(n).trim();
-    Object.assign(C, { bg: v("--lcd"), off: v("--led-off"), half: v("--led-half"), full: v("--led"), glow: parseFloat(v("--glow-a")) || 0 });
+    Object.assign(C, { bg: v("--lcd"), off: v("--led-off"), half: v("--led-half"), full: v("--led"), glow: parseFloat(v("--glow-a")) || 0, square: v("--px-square") === "1" });
   }
   readColors();
   // Hell/Dunkel folgt dem System; das Display wechselt dann zwischen LED-Orange und Game-Boy-Grün
@@ -491,6 +491,19 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   }
   function present(){
     const p = P, r = p * .36;
+    // Game-Boy-Modus: eckige LCD-Pixel, die fast die ganze Zelle füllen → scharfe, geschlossene Formen
+    if (C.square) {
+      const q = p * .9, h = q / 2;
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = C.off;
+      for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (!buf[y * COLS + x]) ctx.fillRect(OX + (x + .5) * p - h, OY + (y + .5) * p - h, q, q);
+      for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+        const v = buf[y * COLS + x]; if (!v) continue;
+        ctx.fillStyle = v === 2 ? C.full : C.half;
+        ctx.fillRect(OX + (x + .5) * p - h, OY + (y + .5) * p - h, q, q);
+      }
+      return;
+    }
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, cv.width, cv.height);
     octx.clearRect(0, 0, off.width, off.height);
     for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
@@ -558,7 +571,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const BANG = ["#", "#", "#", ".", "#"];
 
   // ---------- Szene ----------
-  let GROUND = 34; const WALK0 = 10, WALK1 = 28, FLAGX = 44;
+  let GROUND = 34; const WALK0 = 10, WALK1 = 22, CUPX = 37, FLAGX = 44;
   let charX = null, jumpT = 0, blinkUntil = 0, confetti = [], tapMsg = null, tapUntil = 0;
 
   function draw(t){
@@ -575,8 +588,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     sprite(CLOUD, ((t / 1400 + 33) % 66) - 9, 4 + Math.round(sky * .75));
     for (let x = 0; x < COLS; x++) put(x, GROUND + 1, x % 2 ? 0 : 1);
     sprite(HOUSE, 0, GROUND - 8);
-    const need = Math.max(1, s.need);
-    const cupX = Math.min(FLAGX - 7, Math.round(WALK0 + Math.min(1, (PAUSE_AB_MIN - PAUSE_MIN) / need) * (WALK1 - WALK0)) + 16);
+    const cupX = CUPX;                              // Tasse steht fest kurz vor der Fahne
     sprite(CUP, cupX, GROUND - 4);
     if (s.mode === "pause" || s.mode === "warn") { const st = Math.floor(t / 300) % 3; put(cupX + 1 + (st === 1 ? 1 : 0), GROUND - 6 - st % 2, 1); put(cupX + 3 - (st === 2 ? 1 : 0), GROUND - 7 + st % 2, 1); }
     sprite(FLAG, FLAGX, GROUND - 10); sprite(MAXF, FLAGX + 5, GROUND - 7);

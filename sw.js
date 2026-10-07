@@ -1,6 +1,6 @@
 // Service Worker: macht die App offline nutzbar.
 // Neue Dateien bei FILES eintragen und die Versionsnummer bei CACHE erhöhen.
-const CACHE = "stempelkarte-v8";
+const CACHE = "stempelkarte-v9";
 const FILES = [
   "./",
   "./index.html",
