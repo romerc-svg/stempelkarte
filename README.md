@@ -26,6 +26,9 @@ Stehen oben im Script in `index.html`:
 | `PAUSE_MIN` | 45 | … werden 45 Min Pause abgezogen |
 | `WOCHE_MIN` | 19 Std | Untere Grenze Wochenziel |
 | `WOCHE_MAX` | 19,5 Std | Obere Grenze Wochenziel |
+| `TAGE_PRO_WOCHE` | 3 | Arbeitstage pro Woche, an beliebigen Wochentagen |
+
+Das **Tagesziel** ist das, was in der Woche noch bis 19 Std fehlt, geteilt durch die verbleibenden Arbeitstage (der heutige mitgezählt). Am ersten Tag sind das 6 Std 20 Min.
 
 ## Aufbau
 

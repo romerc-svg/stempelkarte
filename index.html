@@ -77,7 +77,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   .brand{padding-bottom:7px}
   .read{margin-top:9px}.read > *{padding:7px 9px 6px}.read b{font-size:22px}
   .weekhead{margin:10px 18px 6px}
-  .imp{font-size:11px}.imp small{display:none}
+  .imp{width:min(100%,62px);font-size:15px}.imp small{display:none}
   .track{height:56px}.thumb{height:46px}
   .switchwrap{padding:9px}.switchlbl{padding-bottom:6px}
   .key{height:44px}
@@ -104,9 +104,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 
 /* ---------- Woche als Stempelabdrücke ---------- */
 .weekhead{display:flex;justify-content:space-between;margin:16px 18px 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);flex:none}
-.week{margin:0 14px;display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);flex:none}
-.imp{aspect-ratio:1;border-radius:50%;display:grid;place-content:center;margin-bottom:5px;border:2px dashed var(--edge);font:900 12.5px/1 var(--dots);letter-spacing:0;color:var(--muted)}
-.imp small{display:block;font:600 7px var(--mono);letter-spacing:.1em;margin-top:2px}
+.week{margin:0 14px;display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:8px;text-align:center;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);flex:none}
+.imp{width:min(100%,76px);aspect-ratio:1;margin:0 auto 6px;border-radius:50%;display:grid;place-content:center;border:2px dashed var(--edge);font:900 18px/1 var(--dots);letter-spacing:0;color:var(--muted)}
+.imp small{display:block;font:600 8px var(--mono);letter-spacing:.12em;margin-top:3px}
 .imp.done{border:2.5px solid var(--ink);color:var(--ink);transform:rotate(-8deg);box-shadow:inset 0 0 0 2.5px var(--body),inset 0 0 0 4px var(--ink)}
 .imp.today{border:2.5px solid var(--led);color:var(--led);transform:rotate(6deg);box-shadow:inset 0 0 0 2.5px var(--body),inset 0 0 0 4px var(--led)}
 .day.cur{color:var(--ink);font-weight:600}
@@ -196,7 +196,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     </div>
     <div class="read">
       <div class="main">Netto heute<b id="r-net">0:00</b><small id="r-net-s">&nbsp;</small></div>
-      <div>19 Std um<b id="r-goal">–</b><small id="r-goal-s">&nbsp;</small></div>
+      <div><span id="r-goal-l">Ziel heute</span><b id="r-goal">–</b><small id="r-goal-s">&nbsp;</small></div>
       <button type="button" class="edit" id="r-start-btn" aria-label="Beginn ändern">Beginn<b id="r-start">–</b><small id="r-start-s">&nbsp;</small></button>
     </div>
     <div class="weekhead"><span id="w-kw">KW</span><span id="w-sum">Woche 0:00</span></div>
@@ -268,6 +268,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const PAUSE_MIN = 45;       // ... werden 45 Min abgezogen
   const WOCHE_MIN = 19 * 60;  // 19 Std
   const WOCHE_MAX = 19.5 * 60;// 19,5 Std
+  const TAGE_PRO_WOCHE = 3;   // Arbeitstage pro Woche (welche Tage, ist egal)
 
   const LS_KEY = "stempelkarte:v1";
   const LS_VIEW = "stempelkarte:view";
@@ -335,25 +336,38 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     return state.entries.filter(e => dayStart(e.start) === ds).reduce((s, e) => s + entryNet(e), 0);
   }
 
-  // Alles, was Stempeluhr und Monster brauchen
+  // Alles, was Stempeluhr und Monster brauchen.
+  // Tagesziel = was in der Woche noch fehlt, verteilt auf die verbleibenden Arbeitstage (heute mitgezählt).
   function today(){
     const now = Date.now(), a = state.active;
-    const ws = weekStart(a ? a.start : now);
-    const prior = weekDoneMin(ws);
+    const ref = a ? a.start : now;
+    const ws = weekStart(ref), td = dayStart(ref);
+    const weekEntries = state.entries.filter(e => weekStart(e.start) === ws);
+    const prior = weekEntries.reduce((sum, e) => sum + entryNet(e), 0);
+    const todayDone = weekEntries.filter(e => dayStart(e.start) === td).reduce((sum, e) => sum + entryNet(e), 0);
+    const otherDays = new Set(weekEntries.map(e => dayStart(e.start)).filter(d => d !== td)).size;
+    const daysLeft = Math.max(1, TAGE_PRO_WOCHE - otherDays);
+    const priorOther = prior - todayDone;
+    const dayTarget = Math.max(0, (WOCHE_MIN - priorOther) / daysLeft);
+    const dayMax = Math.max(0, (WOCHE_MAX - priorOther) / daysLeft);
     const pres = a ? Math.max(0, minsBetween(a.start, now)) : 0;
     const net = netOf(pres);
-    const need = WOCHE_MIN - prior;
+    const todayNet = todayDone + net;
+    const need = dayTarget - todayDone;             // in dieser Schicht noch nötig
     const goalAt = a ? a.start + presenceFor(Math.max(0, need)) * 60000 : null;
-    const maxAt = a ? a.start + presenceFor(Math.max(0, WOCHE_MAX - prior)) * 60000 : null;
+    const maxAt = a ? a.start + presenceFor(Math.max(0, dayMax - todayDone)) * 60000 : null;
     const week = prior + (a && weekStart(a.start) === weekStart(now) ? net : 0);
     let mode = "walk";
     if (!a) mode = "sleep";
-    else if (prior + net > WOCHE_MAX) mode = "over";
-    else if (prior + net >= WOCHE_MIN) mode = "goal";
+    else if (todayNet > dayMax || week > WOCHE_MAX) mode = "over";
+    else if (todayNet >= dayTarget) mode = "goal";
     else if (pres > PAUSE_AB_MIN && pres < PAUSE_AB_MIN + PAUSE_MIN) mode = "pause";
     else if (pres >= PAUSE_AB_MIN - 30 && pres <= PAUSE_AB_MIN) mode = "warn";
+    // Für den nächsten Arbeitstag, wenn gerade nicht eingestempelt
+    const daysLeftNext = Math.max(1, TAGE_PRO_WOCHE - otherDays - (todayDone > 0 ? 1 : 0));
+    const nextTarget = Math.max(0, (WOCHE_MIN - prior) / daysLeftNext);
     return { now, a, prior, pres, net, need, goalAt, maxAt, week, mode, k: need > 0 ? net / need : 1,
-             todayNet: dayDoneMin(dayStart(now)) + (a && dayStart(a.start) === dayStart(now) ? net : 0) };
+             todayNet, dayTarget, dayMax, daysLeft, daysLeftNext, nextTarget, lastDay: daysLeft === 1 };
   }
 
   const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} };
@@ -527,12 +541,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     if (tapMsg && Date.now() < tapUntil) return tapMsg;
     const s = today();
     switch (s.mode) {
-      case "sleep": return s.todayNet ? `Feierabend! Heute ${fmt(s.todayNet)}.` : "Bereit, wenn du es bist.";
+      case "sleep": return s.todayNet ? `Feierabend! Heute ${dig(s.todayNet)} Std.` : s.week >= WOCHE_MIN ? "Woche geschafft!" : `Bereit! Pro Tag ${dig(s.nextTarget)} Std.`;
       case "warn":  return `In ${Math.ceil(PAUSE_AB_MIN - s.pres)} Min greift die Pause!`;
       case "pause": return `Kaffeepause! 6 Std netto ab ${clock(s.a.start + (PAUSE_AB_MIN + PAUSE_MIN) * 60000)}`;
-      case "goal":  return s.maxAt > s.now ? `19 Std geschafft! Max. ${clock(s.maxAt)}` : "19 Std geschafft!";
-      case "over":  return "Über 19,5 Std. Ab nach Hause!";
-      default:      return `Noch ${fmt(s.need - s.net)} bis 19 Std.`;
+      case "goal":  return s.lastDay && s.week >= WOCHE_MIN ? "Woche geschafft! 19 Std." : s.maxAt > s.now ? `Tagesziel! Max. bis ${clock(s.maxAt)}` : "Tagesziel geschafft!";
+      case "over":  return s.week > WOCHE_MAX ? "Über 19,5 Std. Ab nach Hause!" : "Genug für heute. Ab nach Hause!";
+      default:      return `Noch ${dig(s.need - s.net)} Std bis Tagesziel.`;
     }
   }
   setInterval(() => {
@@ -548,11 +562,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     $("dev").classList.toggle("on", !!s.a);
     $("r-net").textContent = dig(s.todayNet);
     $("r-net-s").textContent = s.a ? `Anw. ${dig(s.pres)}${pauseOf(s.pres) ? " −45" : ""}` : " ";
-    const goal = $("r-goal");
-    if (!s.a) { goal.textContent = s.week >= WOCHE_MIN ? "erreicht" : "–"; $("r-goal-s").textContent = " "; }
-    else if (s.mode === "goal" || s.mode === "over") { goal.textContent = "erreicht"; $("r-goal-s").textContent = s.maxAt > s.now ? "19,5: " + clock(s.maxAt) : " "; }
-    else { goal.textContent = clock(s.goalAt); $("r-goal-s").textContent = "19,5: " + clock(s.maxAt); }
-    goal.classList.toggle("word", goal.textContent === "erreicht");
+    const goal = $("r-goal"), gl = $("r-goal-l"), gs = $("r-goal-s");
+    if (!s.a && s.week >= WOCHE_MIN) { gl.textContent = "Woche"; goal.textContent = "geschafft"; gs.textContent = "\u00a0"; }
+    else if (!s.a) { gl.textContent = "Pro Tag"; goal.textContent = dig(s.nextTarget); gs.textContent = `noch ${s.daysLeftNext} ${s.daysLeftNext === 1 ? "Tag" : "Tage"}`; }
+    else if (s.mode === "goal" || s.mode === "over") { gl.textContent = "Ziel heute"; goal.textContent = "erreicht"; gs.textContent = s.maxAt > s.now ? "max. " + clock(s.maxAt) : "Feierabend!"; }
+    else { gl.textContent = "Ziel heute"; goal.textContent = clock(s.goalAt); gs.textContent = dig(s.dayTarget) + " netto"; }
+    goal.classList.toggle("word", /[a-z]/.test(goal.textContent));
     $("r-start").textContent = s.a ? clock(s.a.start) : "–";
     $("r-start-s").textContent = s.a ? "Ändern" : " ";
     $("r-start-btn").disabled = !s.a;
@@ -560,15 +575,21 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     const ws = weekStart(s.now);
     $("w-kw").textContent = `Diese Woche · KW ${isoWeek(s.now)}`;
     $("w-sum").textContent = dig(s.week) + (view === "dec" ? " Std" : "");
-    const names = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], td = dayStart(s.now);
+    // Ein Stempelfeld pro Arbeitstag, egal an welchem Wochentag
+    const names = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"], td = dayStart(s.now);
+    const worked = [...new Set(state.entries.filter(e => weekStart(e.start) === ws).map(e => dayStart(e.start)))];
+    if (s.a && weekStart(s.a.start) === ws && !worked.includes(dayStart(s.a.start))) worked.push(dayStart(s.a.start));
+    worked.sort((x, y) => x - y);
+    const slots = Math.max(TAGE_PRO_WOCHE, worked.length);
     let html = "";
-    for (let i = 0; i < 7; i++) {
-      const dd = new Date(ws); dd.setDate(dd.getDate() + i); const ds = dd.getTime();
-      let v = dayDoneMin(ds); const isToday = ds === td;
-      if (isToday && s.a) v += s.net;
-      const cls = isToday && (s.a || v) ? "today" : v ? "done" : "";
-      html += `<div class="day${isToday ? " cur" : ""}"><div class="imp ${cls}">${v || (isToday && s.a) ? `${dig(v)}<small>Std</small>` : ""}</div>${names[i]}</div>`;
+    for (let i = 0; i < slots; i++) {
+      const ds = worked[i];
+      if (ds === undefined) { html += `<div class="day"><div class="imp"></div>Tag ${i + 1}</div>`; continue; }
+      const live = s.a && dayStart(s.a.start) === ds;
+      const v = dayDoneMin(ds) + (live ? s.net : 0);
+      html += `<div class="day${ds === td ? " cur" : ""}"><div class="imp ${ds === td ? "today" : "done"}">${dig(v)}<small>Std</small></div>${names[new Date(ds).getDay()]}</div>`;
     }
+    $("week").style.setProperty("--n", slots);
     $("week").innerHTML = html;
 
     $("thumb").style.transform = s.a ? "translateX(100%)" : "translateX(0)";
@@ -688,7 +709,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     groups.forEach((list, ws) => {
       const sum = list.reduce((a, e) => a + entryNet(e), 0);
       const st = sum > WOCHE_MAX ? ["over", "Über 19,5"] : sum >= WOCHE_MIN ? ["ok", "Im Ziel"] : ["low", "Unter 19"];
-      html += `<section class="wk"><h3><span>KW ${isoWeek(ws)}<span class="badge ${st[0]}">${st[1]}</span></span><b>${dig(sum)}</b></h3>`;
+      const nDays = new Set(list.map(e => dayStart(e.start))).size;
+      html += `<section class="wk"><h3><span>KW ${isoWeek(ws)} · ${nDays} ${nDays === 1 ? "Tag" : "Tage"}<span class="badge ${st[0]}">${st[1]}</span></span><b>${dig(sum)}</b></h3>`;
       list.forEach(e => {
         const pres = minsBetween(e.start, e.end);
         html += `<div class="entry"><div><div class="d">${dayLabel(e.start)}</div><div class="t">${clock(e.start)} – ${clock(e.end)}${pauseOf(pres) ? " · 45 Min Pause" : ""}</div></div>
