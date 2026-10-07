@@ -11,7 +11,7 @@ Gestempelt wird mit einem Schiebeschalter.
 ## Funktionen
 
 - **Stempeluhr**: ein- und ausstempeln per Schiebeschalter, Netto-Zeit live, Uhrzeit, wann das Wochenziel erreicht ist, Woche als Stempelabdrücke
-- **Rechner**: Beginn und Ende eintragen, Netto-Zeit ausrechnen und als Arbeitstag speichern
+- **Rechner**: Beginn und Ende eintragen, Netto-Zeit ausrechnen und als Arbeitstag speichern; Urlaub, Krank und Feiertag eintragen (Gutschrift 6,33 Std)
 - **Verlauf**: alle Tage nach Kalenderwoche, mit Wochensumme
 - Anzeige in Std/Min oder dezimal, Hell- und Dunkelmodus
 - Funktioniert offline und lässt sich wie eine App auf den Home-Bildschirm legen
@@ -27,6 +27,7 @@ Stehen oben im Script in `index.html`:
 | `WOCHE_MIN` | 19 Std | Untere Grenze Wochenziel |
 | `WOCHE_MAX` | 19,5 Std | Obere Grenze Wochenziel |
 | `TAGE_PRO_WOCHE` | 3 | Arbeitstage pro Woche, an beliebigen Wochentagen |
+| `GUTSCHRIFT` | 6:20 Std (6,33) | Netto-Gutschrift für Urlaub, Krank und Feiertag |
 
 Das **Tagesziel** ist das, was in der Woche noch bis 19 Std fehlt, geteilt durch die verbleibenden Arbeitstage (der heutige mitgezählt). Am ersten Tag sind das 6 Std 20 Min.
 

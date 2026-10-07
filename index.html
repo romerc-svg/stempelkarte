@@ -28,6 +28,7 @@
   --spring:cubic-bezier(.3,1.5,.5,1);
 }
 *,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
 html{position:fixed;inset:0;width:100%}
 body{background:var(--body);color:var(--ink);font-family:var(--mono);-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;touch-action:manipulation}
@@ -132,6 +133,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .key[aria-current="page"]{font-weight:600}
 
 /* ---------- Rechner ---------- */
+.kinds{display:grid;grid-template-columns:repeat(4,1fr);background:var(--well);border-radius:13px;padding:3px;box-shadow:inset 0 1px 3px rgba(0,0,0,.18)}
+.kinds button{padding:9px 2px;border-radius:10px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kinds button[aria-pressed="true"]{background:var(--panel);color:var(--ink);font-weight:600;box-shadow:0 1px 0 var(--edge)}
 .fields{margin:12px 14px 0;background:var(--panel);border-radius:24px;padding:14px;display:grid;gap:12px;flex:none;box-shadow:inset 0 1px 0 #fff,inset 0 -2px 0 var(--edge)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .field{display:grid;gap:5px;min-width:0}
@@ -248,8 +252,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       </div>
     </div>
     <div class="fields">
+      <div class="kinds" role="group" aria-label="Art des Tages" id="c-kinds">
+        <button type="button" data-kind="work" aria-pressed="true">Arbeit</button><button type="button" data-kind="urlaub" aria-pressed="false">Urlaub</button><button type="button" data-kind="krank" aria-pressed="false">Krank</button><button type="button" data-kind="feiertag" aria-pressed="false">Feiertag</button>
+      </div>
       <div class="field"><label for="c-date">Datum</label><input type="date" id="c-date"></div>
-      <div class="row2">
+      <div class="row2" id="c-times">
         <div class="field"><label for="c-start">Beginn</label><input type="time" id="c-start"></div>
         <div class="field"><label for="c-end">Ende</label><input type="time" id="c-end"></div>
       </div>
@@ -295,6 +302,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const WOCHE_MIN = 19 * 60;  // 19 Std
   const WOCHE_MAX = 19.5 * 60;// 19,5 Std
   const TAGE_PRO_WOCHE = 3;   // Arbeitstage pro Woche (welche Tage, ist egal)
+  const GUTSCHRIFT = 380;     // Urlaub, Krank, Feiertag: 6,33 Std (= 6 Std 20 Min) netto
+  const KINDS = {
+    urlaub:   { label: "Urlaub",   hello: "Urlaub! Gönn dir was." },
+    krank:    { label: "Krank",    hello: "Gute Besserung!" },
+    feiertag: { label: "Feiertag", hello: "Feiertag! Genieß ihn." }
+  };
 
   const LS_KEY = "stempelkarte:v1";
   const LS_VIEW = "stempelkarte:view";
@@ -317,7 +330,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   function netOf(presenceMin){ return presenceMin > PAUSE_AB_MIN ? presenceMin - PAUSE_MIN : presenceMin; }
   function pauseOf(presenceMin){ return presenceMin > PAUSE_AB_MIN ? PAUSE_MIN : 0; }
   function minsBetween(a, b){ return (b - a) / 60000; }
-  function entryNet(e){ return netOf(minsBetween(e.start, e.end)); }
+  // Abwesenheiten (Urlaub, Krank, Feiertag) haben start = end = Mittag des Tages und eine feste Gutschrift
+  function entryNet(e){ return e.type ? GUTSCHRIFT : netOf(minsBetween(e.start, e.end)); }
+  const absenceOn = ds => state.entries.find(e => e.type && dayStart(e.start) === ds);
   function presenceFor(need){ return need <= PAUSE_AB_MIN ? need : need + PAUSE_MIN; }
 
   // Text, z. B. "4 Std 32 Min" oder "4,53 Std"
@@ -577,7 +592,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     if (tapMsg && Date.now() < tapUntil) return tapMsg;
     const s = today();
     switch (s.mode) {
-      case "sleep": return s.todayNet ? `Feierabend! Heute ${dig(s.todayNet)} Std.` : s.week >= WOCHE_MIN ? "Woche geschafft!" : `Bereit! Pro Tag ${dig(s.nextTarget)} Std.`;
+      case "sleep": { const ab = absenceOn(dayStart(s.now)); if (ab) return KINDS[ab.type].hello; }
+        return s.todayNet ? `Feierabend! Heute ${dig(s.todayNet)} Std.` : s.week >= WOCHE_MIN ? "Woche geschafft!" : `Bereit! Pro Tag ${dig(s.nextTarget)} Std.`;
       case "warn":  return `In ${Math.ceil(PAUSE_AB_MIN - s.pres)} Min greift die Pause!`;
       case "pause": return `Kaffeepause! 6 Std netto ab ${clock(s.a.start + (PAUSE_AB_MIN + PAUSE_MIN) * 60000)}`;
       case "goal":  return s.lastDay && s.week >= WOCHE_MIN ? "Woche geschafft! 19 Std." : s.maxAt > s.now ? `Tagesziel! Max. bis ${clock(s.maxAt)}` : "Tagesziel geschafft!";
@@ -623,7 +639,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       if (ds === undefined) { html += `<div class="day"><div class="imp"></div>Tag ${i + 1}</div>`; continue; }
       const live = s.a && dayStart(s.a.start) === ds;
       const v = dayDoneMin(ds) + (live ? s.net : 0);
-      html += `<div class="day${ds === td ? " cur" : ""}"><div class="imp ${ds === td ? "today" : "done"}">${dig(v)}<small>Std</small></div>${names[new Date(ds).getDay()]}</div>`;
+      const ab = absenceOn(ds);
+      html += `<div class="day${ds === td ? " cur" : ""}"><div class="imp ${ds === td ? "today" : "done"}">${dig(v)}<small>${ab ? KINDS[ab.type].label : "Std"}</small></div>${names[new Date(ds).getDay()]}</div>`;
     }
     $("week").style.setProperty("--n", slots);
     $("week").innerHTML = html;
@@ -828,9 +845,24 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     if (e <= s) e += 864e5; // über Mitternacht
     return { s, e, overnight: new Date(e).getDate() !== new Date(s).getDate() };
   }
+  let calcKind = "work";
+  document.querySelectorAll("[data-kind]").forEach(b => b.onclick = () => {
+    calcKind = b.dataset.kind; buzz(5);
+    document.querySelectorAll("[data-kind]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    $("c-msg").textContent = ""; $("c-msg").className = "msg"; renderCalc();
+  });
+  const noonOf = iso => new Date(iso + "T12:00").getTime();
   function renderCalc(){
+    $("c-day").textContent = $cd.value ? dayLabel(noonOf($cd.value)) : "–";
+    $("c-times").hidden = calcKind !== "work";
+    if (calcKind !== "work") {
+      const k = KINDS[calcKind];
+      $("c-net").textContent = dig(GUTSCHRIFT); $("c-net").classList.remove("dim");
+      $("c-pres").textContent = "Gutschrift netto"; $("c-pause").textContent = k.label;
+      $("c-save").textContent = `${k.label} eintragen`; $("c-save").disabled = !$cd.value; return;
+    }
+    $("c-save").textContent = "Als Arbeitstag speichern";
     const r = calcRange();
-    $("c-day").textContent = $cd.value ? dayLabel(new Date($cd.value + "T12:00").getTime()) : "–";
     if (!r) {
       $("c-net").textContent = view === "dec" ? "-,--" : "--:--"; $("c-net").classList.add("dim");
       $("c-pres").textContent = "Beginn und Ende eingeben"; $("c-pause").textContent = "";
@@ -850,7 +882,23 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     $("c-msg").textContent = `Gespeichert: ${dayLabel(r.s)}, ${fmt(netOf(minsBetween(r.s, r.e)))}`; $("c-msg").className = "msg ok";
     say("Gespeichert", () => { restore(before); $("c-msg").textContent = ""; });
   }
+  function storeAbsence(iso, kind){
+    const before = snapshot(), t = noonOf(iso);
+    state.entries.push({ id: "a" + Date.now().toString(36), type: kind, start: t, end: t });
+    save(); renderAll(); buzz([10, 40, 10]);
+    $("c-msg").textContent = `Eingetragen: ${dayLabel(t)}, ${KINDS[kind].label}, ${fmt(GUTSCHRIFT)}`; $("c-msg").className = "msg ok";
+    say(KINDS[kind].label + " eingetragen", () => { restore(before); $("c-msg").textContent = ""; });
+  }
   $("c-save").onclick = () => {
+    if (calcKind !== "work") {
+      if (!$cd.value) return;
+      const kind = calcKind, iso = $cd.value, ds = dayStart(noonOf(iso));
+      const same = state.entries.filter(e => dayStart(e.start) === ds);
+      if (!same.length) return storeAbsence(iso, kind);
+      return sheet("Tag schon belegt", `<p>Für ${dayLabel(noonOf(iso))} gibt es schon ${same.length === 1 ? "einen Eintrag" : same.length + " Einträge"}. Trotzdem ${KINDS[kind].label} eintragen?</p>`, [
+        { label: "Abbrechen" }, { label: "Eintragen", cls: "primary", run: () => storeAbsence(iso, kind) }
+      ]);
+    }
     const r = calcRange(); if (!r) return;
     const clash = state.entries.some(e => r.s < e.end && r.e > e.start);
     if (!clash) return storeCalc(r);
@@ -880,7 +928,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       html += `<section class="wk"><h3><span>KW ${isoWeek(ws)} · ${nDays} ${nDays === 1 ? "Tag" : "Tage"}<span class="badge ${st[0]}">${st[1]}</span></span><b>${dig(sum)}</b></h3>`;
       list.forEach(e => {
         const pres = minsBetween(e.start, e.end);
-        html += `<div class="entry"><button class="info" type="button" data-edit="${e.id}" aria-label="Eintrag vom ${dayLabel(e.start)} bearbeiten"><div class="d">${dayLabel(e.start)}</div><div class="t">${clock(e.start)} – ${clock(e.end)}${pauseOf(pres) ? " · 45 Min Pause" : ""}</div></button>
+        const desc = e.type ? `${KINDS[e.type].label} · Gutschrift` : `${clock(e.start)} – ${clock(e.end)}${pauseOf(pres) ? " · 45 Min Pause" : ""}`;
+        html += `<div class="entry"><button class="info" type="button" data-edit="${e.id}" aria-label="Eintrag vom ${dayLabel(e.start)} bearbeiten"><div class="d">${dayLabel(e.start)}</div><div class="t">${desc}</div></button>
           <div class="n">${dig(entryNet(e))}</div>
           <button class="del" type="button" data-del="${e.id}" aria-label="Eintrag vom ${dayLabel(e.start)} löschen">×</button></div>`;
       });
@@ -889,7 +938,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     box.innerHTML = html;
     box.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
       const e = state.entries.find(x => x.id === b.dataset.del); if (!e) return;
-      sheet("Eintrag löschen", `<p>${dayLabel(e.start)}, ${clock(e.start)} – ${clock(e.end)} (${fmt(entryNet(e))}) wird gelöscht.</p>`, [
+      sheet("Eintrag löschen", `<p>${dayLabel(e.start)}, ${e.type ? KINDS[e.type].label : clock(e.start) + " – " + clock(e.end)} (${fmt(entryNet(e))}) wird gelöscht.</p>`, [
         { label: "Abbrechen" },
         { label: "Löschen", cls: "danger", run: () => { const before = snapshot(); state.entries = state.entries.filter(x => x.id !== e.id); save(); renderAll(); buzz(18); say("Gelöscht", () => restore(before)); } }
       ]);
@@ -900,6 +949,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const isoDate = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
   function editEntry(id){
     const e = state.entries.find(x => x.id === id); if (!e) return;
+    if (e.type) return editAbsence(e);
     const read = () => {
       const dv = $("ed-date").value, sv = $("ed-start").value, ev = $("ed-end").value;
       if (!dv || !sv || !ev) return null;
@@ -935,6 +985,28 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       if (clash) p.className = "preview err";
     };
     ["ed-date", "ed-start", "ed-end"].forEach(i => $(i).addEventListener("input", upd)); upd();
+  }
+  function editAbsence(e){
+    let kind = e.type;
+    sheet("Eintrag bearbeiten",
+      `<div class="fieldset">
+         <div class="kinds" style="grid-template-columns:repeat(3,1fr)" id="ea-kinds">${Object.keys(KINDS).map(k => `<button type="button" data-k="${k}" aria-pressed="${k === kind}">${KINDS[k].label}</button>`).join("")}</div>
+         <div class="field"><label for="ea-date">Datum</label><input type="date" id="ea-date" value="${isoDate(e.start)}"></div>
+       </div>
+       <p class="preview">Gutschrift ${dig(GUTSCHRIFT)} Std netto</p>`,
+      [
+        { label: "Abbrechen" },
+        { label: "Speichern", cls: "primary", run: () => {
+          const v = $("ea-date").value; if (!v) return false;
+          const before = snapshot(), t = noonOf(v);
+          e.type = kind; e.start = t; e.end = t; save(); renderAll(); buzz(12);
+          say(KINDS[kind].label + " gespeichert", () => restore(before));
+        } }
+      ]);
+    $("ea-kinds").querySelectorAll("button").forEach(b => b.onclick = () => {
+      kind = b.dataset.k; buzz(5);
+      $("ea-kinds").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    });
   }
 
   // ---------- Navigation & Format ----------
