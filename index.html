@@ -306,6 +306,37 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .exsum{display:flex;justify-content:space-between;margin:10px 4px 0;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .exsum b{color:var(--ink)}
 
+/* ---------- Startbildschirm ---------- */
+.splash{position:absolute;inset:0;z-index:60;background:var(--body);display:flex;flex-direction:column;gap:14px;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(env(safe-area-inset-bottom,0px) + 16px);
+  transition:transform .7s cubic-bezier(.7,0,.2,1),opacity .5s .2s}
+@media (min-width:600px){.splash{padding-top:30px;padding-bottom:24px}}
+:root[data-palette="pink"] .splash{background-image:radial-gradient(circle,var(--sp1) 0 .6px,transparent 1.3px),radial-gradient(circle,var(--sp3) 0 .6px,transparent 1.3px);background-size:23px 29px,17px 21px}
+.splash.leave{transform:translateY(-104%);opacity:0}
+.splash .plate{flex:1;min-height:0;margin:0;display:flex;flex-direction:column}
+.splash .lcd{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 12px 18px}
+.sp-scene{flex:1;min-height:120px;position:relative}
+.sp-scene canvas{position:absolute;inset:0;width:100%;height:100%}
+.sp-greet{margin:6px 0 0;text-align:center;font:900 clamp(30px,10.5vw,46px)/1.02 var(--dots);text-transform:uppercase;letter-spacing:.01em;text-shadow:0 0 18px var(--glow-txt);text-wrap:balance}
+.sp-sub{margin:10px 0 0;text-align:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--lrow)}
+.sp-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none}
+.sp-info div{border:1.5px solid var(--edge);border-radius:16px;padding:9px 12px 8px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sp-info b{display:block;font:900 24px/1.1 var(--dots);color:var(--ink);letter-spacing:0;margin-top:2px}
+/* Der große Knopf: Gehäuse-Mulde, darin eine dicke Taste mit LED, Lichtreflex und Pfeil */
+.sp-well{flex:none;background:var(--well);border-radius:28px;padding:8px;box-shadow:inset 0 3px 10px rgba(0,0,0,.25),0 1px 0 var(--hi)}
+.sp-go{position:relative;width:100%;height:76px;border-radius:21px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 82%,#fff),var(--accent) 55%);
+  color:var(--accent-fg);display:flex;align-items:center;justify-content:center;gap:14px;overflow:hidden;
+  font:600 13px var(--mono);letter-spacing:.2em;text-transform:uppercase;
+  box-shadow:0 6px 0 color-mix(in srgb,var(--accent) 55%,#000),0 12px 22px -6px color-mix(in srgb,var(--accent) 60%,transparent),inset 0 1px 0 rgba(255,255,255,.45);
+  transition:transform .12s,box-shadow .12s}
+.sp-go::before{content:"";position:absolute;top:0;bottom:0;width:38%;left:-45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-18deg);animation:sweep 3.2s ease-in-out infinite 1s}
+@keyframes sweep{0%,55%{left:-45%}85%,100%{left:120%}}
+.sp-go .led{width:10px;height:10px;border-radius:50%;background:var(--accent-fg);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-fg) 25%,transparent);animation:ledpulse 1.4s ease-in-out infinite}
+@keyframes ledpulse{50%{box-shadow:0 0 0 7px transparent;opacity:.55}}
+.sp-go .arrow{display:inline-flex;width:34px;height:34px;border-radius:50%;background:color-mix(in srgb,var(--accent-fg) 16%,transparent);align-items:center;justify-content:center;font-size:17px;letter-spacing:0;transition:transform .3s var(--spring)}
+.sp-go:active,.sp-go.pressed{transform:translateY(5px);box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 55%,#000),0 4px 10px -6px color-mix(in srgb,var(--accent) 60%,transparent),inset 0 1px 0 rgba(255,255,255,.3)}
+.sp-go.pressed .arrow{transform:translateX(6px)}
+
 /* ---------- Sheet & Hinweis ---------- */
 .scrim{position:absolute;inset:0;background:rgba(20,18,14,.35);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
 .scrim.show{opacity:1;pointer-events:auto}
@@ -341,6 +372,23 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     <i style="left:4%;top:52%;animation-delay:2.6s;width:8px;height:8px"></i><i style="right:6%;top:62%;animation-delay:.7s;width:9px;height:9px"></i>
     <i style="left:46%;bottom:13%;animation-delay:3.4s;width:8px;height:8px"></i><i style="left:30%;top:2%;animation-delay:2s;width:7px;height:7px"></i>
   </div>
+  <!-- Startbildschirm beim Öffnen der App -->
+  <section class="splash" id="splash" role="dialog" aria-modal="true" aria-labelledby="sp-greet">
+    <div class="plate">
+      <span class="screw l"></span><span class="screw r"></span>
+      <div class="brand"><b>TICKO · TK-1</b><span id="sp-date"></span></div>
+      <div class="lcd">
+        <div class="sp-scene"><canvas id="sp-cv" aria-hidden="true"></canvas></div>
+        <h1 class="sp-greet" id="sp-greet">Hallo</h1>
+        <p class="sp-sub" id="sp-sub"></p>
+      </div>
+    </div>
+    <div class="sp-info">
+      <div id="sp-i1l">Heute<b id="sp-i1">–</b></div>
+      <div id="sp-i2l">Woche<b id="sp-i2">–</b></div>
+    </div>
+    <div class="sp-well"><button type="button" class="sp-go" id="sp-go"><span class="led"></span><span id="sp-go-t">Arbeitstag starten</span><span class="arrow">→</span></button></div>
+  </section>
   <div class="toast" id="toast" role="status"><span id="toast-t"></span><button type="button" id="toast-undo">Rückgängig</button></div>
 
   <!-- ================= Stempeluhr ================= -->
@@ -1578,6 +1626,78 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     contractInfo();
   };
 
+  // ---------- Startbildschirm ----------
+  // Begrüßung nach Tageszeit; das Monster reagiert passend und winkt
+  function greeting(h){
+    if (h >= 4 && h < 11) return { t: "Guten Morgen", sub: "Kaffee schon in Reichweite?", eyes: "wake" };
+    if (h >= 11 && h < 17) return { t: "Mahlzeit", sub: "Gut gestärkt in den Tag?", eyes: "happy" };
+    if (h >= 17 && h < 22) return { t: "Guten Abend", sub: "Noch fleißig unterwegs?", eyes: "open" };
+    return { t: "Guten Abend,<br>Nachteule", sub: "So spät noch wach?", eyes: "wide" };
+  }
+  let splashOn = false;
+  function openSplash(){
+    const g = greeting(new Date().getHours()), s = today();
+    $("sp-greet").innerHTML = g.t; $("sp-sub").textContent = g.sub;
+    $("sp-date").textContent = new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" });
+    if (s.a) { $("sp-i1l").firstChild.textContent = "Eingestempelt seit"; $("sp-i1").textContent = clock(s.a.start); }
+    else if (s.todayNet) { $("sp-i1l").firstChild.textContent = "Heute schon"; $("sp-i1").textContent = dig(s.todayNet); }
+    else { $("sp-i1l").firstChild.textContent = s.week >= WOCHE_MIN ? "Woche" : "Ziel heute"; $("sp-i1").textContent = s.week >= WOCHE_MIN ? "geschafft" : dig(s.nextTarget); }
+    $("sp-i1").style.fontSize = /[a-z]/.test($("sp-i1").textContent) ? "17px" : "";
+    $("sp-i2").textContent = `${dig(s.week)}/${H(WOCHE_MIN)}`;
+    $("sp-go-t").textContent = s.a ? "Weiter zum Arbeitstag" : "Arbeitstag starten";
+    splashOn = true; splashT0 = performance.now(); splashEyes = g.eyes;
+    requestAnimationFrame(splashLoop);
+  }
+  let spLast = 0;
+  function splashLoop(t){ if (!splashOn) return; drawSplash(t); requestAnimationFrame(splashLoop); }
+  // Falls der Browser keine Animationsframes liefert, trotzdem zeichnen
+  setInterval(() => { const t = performance.now(); if (splashOn && t - spLast > 900) drawSplash(t); }, 1000);
+  // Monster groß zeichnen (eigenes kleines Display)
+  const spcv = $("sp-cv"), spx = spcv.getContext("2d");
+  let splashT0 = 0, splashEyes = "open";
+  function drawSplash(t){
+    spLast = t;
+    const w = spcv.clientWidth, h = spcv.clientHeight, dpr = Math.min(3, window.devicePixelRatio || 1);
+    if (w && h) {
+      if (spcv.width !== Math.round(w * dpr)) { spcv.width = Math.round(w * dpr); spcv.height = Math.round(h * dpr); }
+      const cols = 25, cell = Math.min(spcv.width / cols, spcv.height / 20), rows = Math.floor(spcv.height / cell);
+      const ox = (spcv.width - cols * cell) / 2, oy = (spcv.height - rows * cell) / 2;
+      const grid = new Uint8Array(cols * rows);
+      const putS = (x, y, v) => { if (x >= 0 && x < cols && y >= 0 && y < rows && v > grid[y * cols + x]) grid[y * cols + x] = v; };
+      const spr = (rws, x, y) => rws.forEach((r, j) => { for (let i = 0; i < r.length; i++) { if (r[i] === "#") putS(x + i, y + j, 2); else if (r[i] === "+") putS(x + i, y + j, 1); } });
+      const el = t - splashT0;
+      // Augen: morgens erst verschlafen, dann wach; zwischendurch blinzeln
+      let eyes = splashEyes === "wake" ? (el < 1400 ? "shut" : "open") : splashEyes;
+      if (Math.floor(el / 3200) !== Math.floor((el - 140) / 3200) || (el % 3200) < 140) eyes = eyes === "shut" ? eyes : "blink";
+      const mouth = eyes === "happy" || splashEyes === "happy" ? "grin" : eyes === "wide" ? "oh" : eyes === "shut" ? "sleep" : "smile";
+      const waving = el > 600 && el < 3600, armsUp = waving && Math.floor(el / 260) % 2 === 0;
+      const bob = Math.round(Math.sin(el / 420) * .6);
+      const mx = Math.floor((cols - 15) / 2), my = Math.floor((rows - 16) / 2) + 1 + bob;
+      BODY.forEach((r, j) => { if (r) spr([r], mx, my + j); });
+      if (C.bow) spr(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, mx + 5, my - 1);
+      spr(EYES[eyes], mx, my + 5); spr(MOUTH[mouth], mx, my + 9); spr(LEGS[0], mx, my + 14);
+      spr(ARMS, mx, my + (armsUp ? 2 : 10));
+      if (splashEyes === "wake" && el < 1400) { const z = Math.floor(el / 350) % 3; spr(Z, mx + 16, my - 1 + z); }
+      if (splashEyes === "wide") { spr(MOON, cols - 5, 1); }
+      if (splashEyes === "happy" || splashEyes === "wake") spr(SUN, cols - 6, 1);
+      // zeichnen
+      spx.fillStyle = C.bg; spx.fillRect(0, 0, spcv.width, spcv.height);
+      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+        const v = grid[y * cols + x], cx = ox + (x + .5) * cell, cy = oy + (y + .5) * cell;
+        spx.fillStyle = v === 2 ? C.full : v === 1 ? C.half : C.off;
+        if (C.square) { const q = cell * .9; spx.fillRect(cx - q / 2, cy - q / 2, q, q); }
+        else { spx.beginPath(); spx.arc(cx, cy, cell * (v ? .4 : .34), 0, 6.2832); spx.fill(); }
+      }
+      if (C.glow) { spx.save(); spx.globalCompositeOperation = "lighter"; spx.globalAlpha = C.glow * .3; spx.filter = `blur(${cell * .3}px)`; spx.drawImage(spcv, 0, 0); spx.restore(); }
+    }
+  }
+  function closeSplash(){
+    const b = $("sp-go"); b.classList.add("pressed"); buzz([12, 30, 18]);
+    setTimeout(() => $("splash").classList.add("leave"), 140);
+    setTimeout(() => { $("splash").hidden = true; splashOn = false; requestAnimationFrame(fitCanvas); checkForgot(); }, 900);
+  }
+  $("sp-go").onclick = closeSplash;
+
   // ---------- Start ----------
   // Bei offener Tastatur bleibt das Sheet über ihr
   if (window.visualViewport) {
@@ -1588,7 +1708,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   document.addEventListener("focusin", e => { if (e.target.closest && e.target.closest("#sheet-b")) setTimeout(() => e.target.scrollIntoView({ block: "center", behavior: "smooth" }), 300); });
   // Das Gerät darf nie verrutschen (z. B. wenn iOS ein fokussiertes Feld ins Bild schieben will)
   $("dev").addEventListener("scroll", e => { if (e.target.scrollTop) e.target.scrollTop = 0; });
-  applyAppearance(); fitCanvas(); renderAll(); setTimeout(checkForgot, 600);
+  applyAppearance(); fitCanvas(); renderAll(); openSplash();
   addEventListener("resize", fitCanvas);
   if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe(cv);
   // Kein Zoomen per Geste (iOS)
