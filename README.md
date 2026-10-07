@@ -16,21 +16,22 @@ Gestempelt wird mit einem Schiebeschalter.
 - Anzeige in Std/Min oder dezimal, Hell- und Dunkelmodus
 - Funktioniert offline und lässt sich wie eine App auf den Home-Bildschirm legen
 
-## Regeln
+## Regeln (Arbeitsvertrag)
 
-Stehen oben im Script in `index.html`:
+Alles in der App unter **Zahnrad → Arbeitsvertrag** einstellbar. Standardwerte:
 
-| Konstante | Wert | Bedeutung |
+| Einstellung | Standard | Bedeutung |
 |---|---|---|
-| `PAUSE_AB_MIN` | 360 | Ab mehr als 6 Std Anwesenheit am Stück … |
-| `PAUSE_MIN` | 45 | … werden 45 Min Pause abgezogen |
-| `WOCHE_MIN` | 19 Std | Untere Grenze Wochenziel |
-| `WOCHE_MAX` | 19,5 Std | Obere Grenze Wochenziel |
-| `TAGE_PRO_WOCHE` | 3 | Arbeitstage pro Woche, an beliebigen Wochentagen |
-| `GUTSCHRIFT` | 6:20 Std (6,33) | Netto-Gutschrift für Urlaub, Krank und Feiertag |
-| `SOLL_TAG` | 6:20 Std (6,33) | SOLL je Tag mit Eintrag (IST = Netto) |
+| Std pro Woche | 19 | Soll pro Woche |
+| Höchstens | 19,5 | Obergrenze pro Woche |
+| Tage pro Woche | 3 | Arbeitstage, an beliebigen Wochentagen; Soll pro Tag = Std ÷ Tage |
+| Pause ab / Pause | 6 Std / 45 Min | Über 6 Std Anwesenheit am Stück werden 45 Min abgezogen |
+| Gutschrift | auto (= Soll pro Tag) | Netto-Gutschrift für Urlaub, Krank, Feiertag |
+| Urlaubstage / Jahr | – | Optional: Urlaubskonto mit genommenen und übrigen Tagen |
 
-Das **Tagesziel** ist das, was in der Woche noch bis 19 Std fehlt, geteilt durch die verbleibenden Arbeitstage (der heutige mitgezählt). Am ersten Tag sind das 6 Std 20 Min.
+Das **Tagesziel** ist das, was in der Woche noch bis zum Soll fehlt, geteilt durch die verbleibenden Arbeitstage.
+**IST** = Netto, **SOLL** = Soll pro Tag für jeden Tag mit Eintrag.
+Bereits eingetragene Abwesenheiten behalten die Gutschrift, die beim Eintragen galt.
 
 ## Aufbau
 

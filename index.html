@@ -309,10 +309,17 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 /* ---------- Sheet & Hinweis ---------- */
 .scrim{position:absolute;inset:0;background:rgba(20,18,14,.35);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
 .scrim.show{opacity:1;pointer-events:auto}
-.sheet{position:absolute;left:8px;right:8px;bottom:8px;background:var(--panel);border-radius:30px;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 16px);z-index:41;transform:translateY(calc(100% + 20px));transition:transform .5s var(--spring);box-shadow:inset 0 1px 0 var(--hi),0 -10px 40px rgba(0,0,0,.2)}
+.sheet{position:absolute;left:8px;right:8px;bottom:8px;max-height:calc(100% - 16px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;background:var(--panel);border-radius:30px;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 16px);z-index:41;transform:translateY(calc(100% + 20px));transition:transform .5s var(--spring);box-shadow:inset 0 1px 0 var(--hi),0 -10px 40px rgba(0,0,0,.2)}
 .sheet.show{transform:none}
 .sheet .grab{width:38px;height:5px;border-radius:3px;background:var(--edge);margin:0 auto 14px}
-.sheet h2{margin:0 4px 6px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.sheet h2{margin:0 4px 6px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;flex:none}
+#sheet-b{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -4px;padding:0 4px}
+#sheet-b::-webkit-scrollbar{display:none}
+.sheet .grab,.sheet .acts{flex:none}
+.contract{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.contract .field label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contract output{display:flex;align-items:center;min-height:52px;padding:10px 12px;border-radius:14px;border:1.5px dashed var(--edge);font:600 17px var(--mono);color:var(--muted)}
+@media (max-height:720px){.contract output{min-height:46px}}
 .sheet p{margin:0 4px 14px;font-size:12px;line-height:1.55;color:var(--muted)}
 .sheet .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .sheet .acts button{height:54px;border-radius:16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;background:var(--body);box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge)}
@@ -371,7 +378,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   <main class="screen" id="scr-calc" hidden>
     <div class="plate">
       <span class="screw l"></span><span class="screw r"></span>
-      <div class="brand"><b>Rechner</b><span>45 Min Pause ab 6 Std</span></div>
+      <div class="brand"><b>Rechner</b><span id="c-rule"></span></div>
       <div class="lcd">
         <div class="lrow"><span>Netto</span><span id="c-day">–</span></div>
         <div class="ldig dim" id="c-net">--:--</div>
@@ -404,7 +411,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       <div class="lcd">
         <div class="lrow"><span id="h-kw">Diese Woche</span><span id="h-state">–</span></div>
         <div class="ldig" id="h-sum">0:00</div>
-        <div class="lrow"><span>Ziel 19 – 19,5 Std</span><span id="h-rest">–</span></div>
+        <div class="lrow"><span id="h-goal"></span><span id="h-rest">–</span></div>
       </div>
     </div>
     <div class="list"><div id="hist"></div><p class="sync" id="sync"></p></div>
@@ -428,13 +435,33 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 <script>
 (function(){
   // ---------- Regeln ----------
-  const PAUSE_AB_MIN = 360;   // über 6 Std Anwesenheit am Stück ...
-  const PAUSE_MIN = 45;       // ... werden 45 Min abgezogen
-  const WOCHE_MIN = 19 * 60;  // 19 Std
-  const WOCHE_MAX = 19.5 * 60;// 19,5 Std
-  const TAGE_PRO_WOCHE = 3;   // Arbeitstage pro Woche (welche Tage, ist egal)
-  const GUTSCHRIFT = 380;     // Urlaub, Krank, Feiertag: 6,33 Std (= 6 Std 20 Min) netto
-  const SOLL_TAG = 380;       // SOLL je Tag mit Eintrag: 6,33 Std (3 Tage = 19 Std)
+  // Arbeitsvertrag: in den Einstellungen änderbar, hier die Standardwerte
+  const LS_CONTRACT = "stempelkarte:vertrag";
+  const CONTRACT_DEFAULT = {
+    wochenStd: 19,        // Soll pro Woche
+    maxStd: 19.5,         // höchstens pro Woche
+    tage: 3,              // Arbeitstage pro Woche (welche Tage, ist egal)
+    gutschriftStd: null,  // Urlaub, Krank, Feiertag; null = Soll pro Tag
+    pauseAbStd: 6,        // über so viele Std Anwesenheit am Stück ...
+    pauseMin: 45,         // ... werden so viele Min abgezogen
+    urlaubTage: 0         // Urlaubstage pro Jahr; 0 = kein Urlaubskonto
+  };
+  let contract = { ...CONTRACT_DEFAULT };
+  try { const c = JSON.parse(localStorage.getItem(LS_CONTRACT) || "null"); if (c) contract = { ...CONTRACT_DEFAULT, ...c }; } catch(e){}
+  // Abgeleitete Werte, alle in Minuten
+  let PAUSE_AB_MIN, PAUSE_MIN, WOCHE_MIN, WOCHE_MAX, TAGE_PRO_WOCHE, SOLL_TAG, GUTSCHRIFT;
+  function applyContract(){
+    WOCHE_MIN = Math.round(contract.wochenStd * 60);
+    WOCHE_MAX = Math.max(WOCHE_MIN, Math.round(contract.maxStd * 60));
+    TAGE_PRO_WOCHE = Math.min(7, Math.max(1, Math.round(contract.tage)));
+    SOLL_TAG = WOCHE_MIN / TAGE_PRO_WOCHE;
+    GUTSCHRIFT = contract.gutschriftStd == null ? SOLL_TAG : Math.round(contract.gutschriftStd * 60);
+    PAUSE_AB_MIN = Math.round(contract.pauseAbStd * 60);
+    PAUSE_MIN = Math.round(contract.pauseMin);
+  }
+  applyContract();
+  // Stunden als kurzer Text, z. B. 19 oder 19,5
+  const H = min => (min / 60).toLocaleString("de-DE", { maximumFractionDigits: 2 });
   const KINDS = {
     urlaub:   { label: "Urlaub",   hello: "Urlaub! Gönn dir was." },
     krank:    { label: "Krank",    hello: "Gute Besserung!" },
@@ -452,6 +479,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 
   try { const raw = localStorage.getItem(LS_KEY); if (raw) { const s = JSON.parse(raw); if (s && Array.isArray(s.entries)) state = { entries: s.entries, active: s.active || null }; } } catch(e){}
   try { const v = localStorage.getItem(LS_VIEW); if (v === "hm" || v === "dec") view = v; } catch(e){}
+  // Abwesenheiten aus der Zeit vor den Vertrags-Einstellungen hatten immer 6:20 Std Gutschrift
+  state.entries.forEach(e => { if (e.type && e.credit == null) e.credit = 380; });
 
   function save(){
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){}
@@ -463,7 +492,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   function pauseOf(presenceMin){ return presenceMin > PAUSE_AB_MIN ? PAUSE_MIN : 0; }
   function minsBetween(a, b){ return (b - a) / 60000; }
   // Abwesenheiten (Urlaub, Krank, Feiertag) haben start = end = Mittag des Tages und eine feste Gutschrift
-  function entryNet(e){ return e.type ? GUTSCHRIFT : netOf(minsBetween(e.start, e.end)); }
+  // Abwesenheiten behalten die Gutschrift, die beim Eintragen galt (credit); ältere Einträge nutzen die aktuelle
+  function entryNet(e){ return e.type ? (e.credit ?? GUTSCHRIFT) : netOf(minsBetween(e.start, e.end)); }
+  function vacation(year){
+    const taken = state.entries.filter(e => e.type === "urlaub" && new Date(e.start).getFullYear() === year).length;
+    return { total: contract.urlaubTage, taken, left: contract.urlaubTage - taken };
+  }
   const absenceOn = ds => state.entries.find(e => e.type && dayStart(e.start) === ds);
   function presenceFor(need){ return need <= PAUSE_AB_MIN ? need : need + PAUSE_MIN; }
 
@@ -766,9 +800,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       case "sleep": { const ab = absenceOn(dayStart(s.now)); if (ab) return KINDS[ab.type].hello; }
         return s.todayNet ? `Feierabend! Heute ${dig(s.todayNet)} Std.` : s.week >= WOCHE_MIN ? "Woche geschafft!" : `Bereit! Pro Tag ${dig(s.nextTarget)} Std.`;
       case "warn":  return `In ${Math.ceil(PAUSE_AB_MIN - s.pres)} Min greift die Pause!`;
-      case "pause": return `Kaffeepause! 6 Std netto ab ${clock(s.a.start + (PAUSE_AB_MIN + PAUSE_MIN) * 60000)}`;
-      case "goal":  return s.lastDay && s.week >= WOCHE_MIN ? "Woche geschafft! 19 Std." : s.maxAt > s.now ? `Tagesziel! Max. bis ${clock(s.maxAt)}` : "Tagesziel geschafft!";
-      case "over":  return s.week > WOCHE_MAX ? "Über 19,5 Std. Ab nach Hause!" : "Genug für heute. Ab nach Hause!";
+      case "pause": return `Kaffeepause! ${H(PAUSE_AB_MIN)} Std netto ab ${clock(s.a.start + (PAUSE_AB_MIN + PAUSE_MIN) * 60000)}`;
+      case "goal":  return s.lastDay && s.week >= WOCHE_MIN ? `Woche geschafft! ${H(WOCHE_MIN)} Std.` : s.maxAt > s.now ? `Tagesziel! Max. bis ${clock(s.maxAt)}` : "Tagesziel geschafft!";
+      case "over":  return s.week > WOCHE_MAX ? `Über ${H(WOCHE_MAX)} Std. Ab nach Hause!` : "Genug für heute. Ab nach Hause!";
       default:      return `Noch ${dig(s.need - s.net)} Std bis Tagesziel.`;
     }
   }
@@ -784,7 +818,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     const s = today();
     $("dev").classList.toggle("on", !!s.a);
     $("r-net").textContent = dig(s.todayNet);
-    $("r-net-s").textContent = s.a ? `Anw. ${dig(s.pres)}${pauseOf(s.pres) ? " −45" : ""}` : " ";
+    $("r-net-s").textContent = s.a ? `Anw. ${dig(s.pres)}${pauseOf(s.pres) ? " −" + PAUSE_MIN : ""}` : " ";
     const goal = $("r-goal"), gl = $("r-goal-l"), gs = $("r-goal-s");
     if (!s.a && s.week >= WOCHE_MIN) { gl.textContent = "Woche"; goal.textContent = "geschafft"; gs.textContent = "\u00a0"; }
     else if (!s.a) { gl.textContent = "Pro Tag"; goal.textContent = dig(s.nextTarget); gs.textContent = `noch ${s.daysLeftNext} ${s.daysLeftNext === 1 ? "Tag" : "Tage"}`; }
@@ -862,7 +896,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
         } }
       ]);
     const upd = () => { const end = endFrom(a.start, $("fg-end").value); const p = $("fg-prev");
-      p.className = "preview"; p.textContent = end ? `Netto ${dig(netOf(minsBetween(a.start, end)))} Std${pauseOf(minsBetween(a.start, end)) ? " · 45 Min Pause" : ""}` : ""; };
+      p.className = "preview"; p.textContent = end ? `Netto ${dig(netOf(minsBetween(a.start, end)))} Std${pauseOf(minsBetween(a.start, end)) ? ` · ${PAUSE_MIN} Min Pause` : ""}` : ""; };
     $("fg-end").addEventListener("input", upd); upd();
   }
   // Uhrzeit "HH:MM" als Ende nach dem Beginn (bei kleinerer Uhrzeit: Folgetag)
@@ -944,7 +978,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       const st = startOf(), list = [];
       if (target > 0) list.push(["Tagesziel", presenceFor(target)]);
       if (active) list.push(["Jetzt", minsBetween(st, Date.now())]);
-      if (!active || minsBetween(st, Date.now()) < PAUSE_AB_MIN) list.push(["6 Std, keine Pause", PAUSE_AB_MIN]);
+      if (!active || minsBetween(st, Date.now()) < PAUSE_AB_MIN) list.push([`${H(PAUSE_AB_MIN)} Std, keine Pause`, PAUSE_AB_MIN]);
       if (!active || minsBetween(st, Date.now()) < presenceFor(Math.max(0, WOCHE_MAX - baseWeek))) list.push(["Max. Woche", presenceFor(Math.max(0, WOCHE_MAX - baseWeek))]);
       $("pl-chips").innerHTML = list.map(([l, v]) => `<button type="button" data-v="${Math.round(v)}">${l}</button>`).join("");
       $("pl-chips").querySelectorAll("button").forEach(b => b.onclick = () => { setRange(+b.dataset.v); upd(); buzz(8); });
@@ -956,21 +990,21 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       $("pl-time").textContent = clock(end);
       $("pl-pres").textContent = "Anw. " + dig(pres);
       $("pl-net").textContent = "Netto " + dig(net) + " Std";
-      $("pl-pause").textContent = pauseOf(pres) ? "Pause −45" : "Keine Pause";
+      $("pl-pause").textContent = pauseOf(pres) ? "Pause −" + PAUSE_MIN : "Keine Pause";
       const weekAfter = baseWeek + net;
       const daysAfter = Math.max(0, daysAfterBase);
-      $("pl-week").textContent = `${dig(weekAfter)} von 19 Std`;
+      $("pl-week").textContent = `${dig(weekAfter)} von ${H(WOCHE_MIN)} Std`;
       const missing = WOCHE_MIN - weekAfter;
       $("pl-rest").textContent = missing <= 0 ? "Nichts mehr nötig" : daysAfter ? `${dig(missing / daysAfter)} Std × ${daysAfter}` : `Es fehlen ${dig(missing)}`;
       const v = $("pl-verdict");
       if (pres > PAUSE_AB_MIN && pres < PAUSE_AB_MIN + PAUSE_MIN) {
-        v.className = "verdict warn"; v.textContent = `Pausenfalle: Wegen der 45 Min Pause hast du weniger als beim Gehen um ${clock(st + PAUSE_AB_MIN * 60000)}. Gleich viel erst ab ${clock(st + (PAUSE_AB_MIN + PAUSE_MIN) * 60000)}.`;
+        v.className = "verdict warn"; v.textContent = `Pausenfalle: Wegen der ${PAUSE_MIN} Min Pause hast du weniger als beim Gehen um ${clock(st + PAUSE_AB_MIN * 60000)}. Gleich viel erst ab ${clock(st + (PAUSE_AB_MIN + PAUSE_MIN) * 60000)}.`;
       } else if (weekAfter > WOCHE_MAX) {
-        v.className = "verdict warn"; v.textContent = `Zu viel: ${dig(weekAfter - WOCHE_MAX)} Std über 19,5. Spätestens um ${clock(st + presenceFor(Math.max(0, WOCHE_MAX - baseWeek)) * 60000)} gehen.`;
+        v.className = "verdict warn"; v.textContent = `Zu viel: ${dig(weekAfter - WOCHE_MAX)} Std über ${H(WOCHE_MAX)}. Spätestens um ${clock(st + presenceFor(Math.max(0, WOCHE_MAX - baseWeek)) * 60000)} gehen.`;
       } else if (weekAfter >= WOCHE_MIN) {
         v.className = "verdict ok"; v.textContent = daysAfter ? "Woche schon im Ziel. Die restlichen Tage kannst du frei lassen." : "Woche im Ziel. Perfekt!";
       } else if (!daysAfter) {
-        v.className = "verdict warn"; v.textContent = `Letzter Tag: Es fehlen dann noch ${dig(missing)} Std bis 19. Gehe frühestens um ${clock(st + presenceFor(WOCHE_MIN - baseWeek) * 60000)}.`;
+        v.className = "verdict warn"; v.textContent = `Letzter Tag: Es fehlen dann noch ${dig(missing)} Std bis ${H(WOCHE_MIN)}. Gehe frühestens um ${clock(st + presenceFor(WOCHE_MIN - baseWeek) * 60000)}.`;
       } else if (net >= target - .5) {
         v.className = "verdict ok"; v.textContent = `Tagesziel geschafft. Danach noch ${dig(missing / daysAfter)} Std an ${daysAfter === 1 ? "einem Tag" : daysAfter + " Tagen"}.`;
       } else {
@@ -1025,11 +1059,13 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const noonOf = iso => new Date(iso + "T12:00").getTime();
   function renderCalc(){
     $("c-day").textContent = $cd.value ? dayLabel(noonOf($cd.value)) : "–";
+    $("c-rule").textContent = PAUSE_MIN ? `${PAUSE_MIN} Min Pause ab ${H(PAUSE_AB_MIN)} Std` : "Ohne Pausenabzug";
     $("c-times").hidden = calcKind !== "work";
     if (calcKind !== "work") {
       const k = KINDS[calcKind];
       $("c-net").textContent = dig(GUTSCHRIFT); $("c-net").classList.remove("dim");
-      $("c-pres").textContent = "Gutschrift netto"; $("c-pause").textContent = k.label;
+      const vac = $cd.value ? vacation(+$cd.value.slice(0, 4)) : null;
+      $("c-pres").textContent = calcKind === "urlaub" && contract.urlaubTage && vac ? `Gutschrift · noch ${vac.left} Urlaubstage` : "Gutschrift netto"; $("c-pause").textContent = k.label;
       $("c-save").textContent = `${k.label} eintragen`; $("c-save").disabled = !$cd.value; return;
     }
     $("c-save").textContent = "Als Arbeitstag speichern";
@@ -1042,7 +1078,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     const pres = minsBetween(r.s, r.e);
     $("c-net").textContent = dig(netOf(pres)); $("c-net").classList.remove("dim");
     $("c-pres").textContent = "Anw. " + dig(pres) + (r.overnight ? " · bis Folgetag" : "");
-    $("c-pause").textContent = pauseOf(pres) ? "Pause −45" : "Keine Pause";
+    $("c-pause").textContent = pauseOf(pres) ? "Pause −" + PAUSE_MIN : "Keine Pause";
     $("c-save").disabled = false;
   }
   [$cd, $cs, $ce].forEach(el => el.addEventListener("input", () => { $("c-msg").textContent = ""; $("c-msg").className = "msg"; renderCalc(); }));
@@ -1055,7 +1091,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   }
   function storeAbsence(iso, kind){
     const before = snapshot(), t = noonOf(iso);
-    state.entries.push({ id: "a" + Date.now().toString(36), type: kind, start: t, end: t });
+    state.entries.push({ id: "a" + Date.now().toString(36), type: kind, start: t, end: t, credit: GUTSCHRIFT });
     save(); renderAll(); buzz([10, 40, 10]);
     $("c-msg").textContent = `Eingetragen: ${dayLabel(t)}, ${KINDS[kind].label}, ${fmt(GUTSCHRIFT)}`; $("c-msg").className = "msg ok";
     say(KINDS[kind].label + " eingetragen", () => { restore(before); $("c-msg").textContent = ""; });
@@ -1085,7 +1121,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     $("h-sum").textContent = dig(s.week);
     $("h-state").textContent = s.week > WOCHE_MAX ? "Über Maximum" : s.week >= WOCHE_MIN ? "Im Ziel" : "Unter Ziel";
     $("h-rest").textContent = s.week < WOCHE_MIN ? "Noch " + dig(WOCHE_MIN - s.week) : s.week <= WOCHE_MAX ? "Max. noch " + dig(WOCHE_MAX - s.week) : "+" + dig(s.week - WOCHE_MAX);
-    $("h-count").textContent = state.entries.length === 1 ? "1 Tag" : state.entries.length + " Tage";
+    const vac = vacation(new Date().getFullYear());
+    $("h-count").textContent = contract.urlaubTage ? `Urlaub ${vac.left} übrig` : state.entries.length === 1 ? "1 Tag" : state.entries.length + " Tage";
+    $("h-goal").textContent = `Ziel ${H(WOCHE_MIN)}${WOCHE_MAX > WOCHE_MIN ? " – " + H(WOCHE_MAX) : ""} Std`;
     const box = $("hist");
     if (!state.entries.length) { box.innerHTML = `<div class="empty">Noch keine Arbeitstage.<br>Schieb den Schalter auf der Uhr oder trag einen Tag im Rechner nach.</div>`; return; }
     const sorted = [...state.entries].sort((a, b) => b.start - a.start);
@@ -1094,14 +1132,14 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     let html = "";
     groups.forEach((list, ws) => {
       const sum = list.reduce((a, e) => a + entryNet(e), 0);
-      const st = sum > WOCHE_MAX ? ["over", "Über 19,5"] : sum >= WOCHE_MIN ? ["ok", "Im Ziel"] : ["low", "Unter 19"];
+      const st = sum > WOCHE_MAX ? ["over", "Über " + H(WOCHE_MAX)] : sum >= WOCHE_MIN ? ["ok", "Im Ziel"] : ["low", "Unter " + H(WOCHE_MIN)];
       const nDays = new Set(list.map(e => dayStart(e.start))).size, soll = nDays * SOLL_TAG, diff = sum - soll;
       const sign = Math.abs(diff) < .5 ? "" : diff > 0 ? "pos" : "neg";
       html += `<section class="wk"><h3><span>KW ${isoWeek(ws)} · ${nDays} ${nDays === 1 ? "Tag" : "Tage"}<span class="badge ${st[0]}">${st[1]}</span></span></h3>
         <div class="istsoll"><div>Ist<b>${dig(sum)}</b></div><div>Soll<b>${dig(soll)}</b></div><div class="${sign}">Differenz<b>${diff < -.5 ? "−" : "+"}${dig(Math.abs(diff))}</b></div></div>`;
       list.forEach(e => {
         const pres = minsBetween(e.start, e.end);
-        const desc = e.type ? `${KINDS[e.type].label} · Gutschrift` : `${clock(e.start)} – ${clock(e.end)}${pauseOf(pres) ? " · 45 Min Pause" : ""}`;
+        const desc = e.type ? `${KINDS[e.type].label} · Gutschrift` : `${clock(e.start)} – ${clock(e.end)}${pauseOf(pres) ? ` · ${PAUSE_MIN} Min Pause` : ""}`;
         html += `<div class="entry"><button class="info" type="button" data-edit="${e.id}" aria-label="Eintrag vom ${dayLabel(e.start)} bearbeiten"><div class="d">${dayLabel(e.start)}</div><div class="t">${desc}</div></button>
           <div class="n">${dig(entryNet(e))}</div>
           <button class="del" type="button" data-del="${e.id}" aria-label="Eintrag vom ${dayLabel(e.start)} löschen">×</button></div>`;
@@ -1154,7 +1192,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       if (!r) { p.textContent = ""; return; }
       const pres = minsBetween(r.start, r.end);
       const clash = state.entries.some(x => x.id !== e.id && r.start < x.end && r.end > x.start);
-      p.textContent = `Netto ${dig(netOf(pres))} Std${pauseOf(pres) ? " · 45 Min Pause" : ""}${new Date(r.end).getDate() !== new Date(r.start).getDate() ? " · bis Folgetag" : ""}${clash ? " · überschneidet sich" : ""}`;
+      p.textContent = `Netto ${dig(netOf(pres))} Std${pauseOf(pres) ? ` · ${PAUSE_MIN} Min Pause` : ""}${new Date(r.end).getDate() !== new Date(r.start).getDate() ? " · bis Folgetag" : ""}${clash ? " · überschneidet sich" : ""}`;
       if (clash) p.className = "preview err";
     };
     ["ed-date", "ed-start", "ed-end"].forEach(i => $(i).addEventListener("input", upd)); upd();
@@ -1166,7 +1204,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
          <div class="kinds" style="grid-template-columns:repeat(3,1fr)" id="ea-kinds">${Object.keys(KINDS).map(k => `<button type="button" data-k="${k}" aria-pressed="${k === kind}">${KINDS[k].label}</button>`).join("")}</div>
          <div class="field"><label for="ea-date">Datum</label><input type="date" id="ea-date" value="${isoDate(e.start)}"></div>
        </div>
-       <p class="preview">Gutschrift ${dig(GUTSCHRIFT)} Std netto</p>`,
+       <p class="preview">Gutschrift ${dig(entryNet(e))} Std netto</p>`,
       [
         { label: "Abbrechen" },
         { label: "Speichern", cls: "primary", run: () => {
@@ -1315,8 +1353,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...mute);
     const extra = [`${R.days} ${R.days === 1 ? "Tag" : "Tage"}`];
     if (R.urlaub) extra.push(`${R.urlaub} × Urlaub`); if (R.krank) extra.push(`${R.krank} × Krank`); if (R.feiertag) extra.push(`${R.feiertag} × Feiertag`);
+    if (contract.urlaubTage) { const v = vacation(y); extra.push(`Urlaub ${y}: ${v.taken} von ${v.total} genommen, ${v.left} übrig`); }
     doc.text(extra.join("  ·  "), L + 1.5, yy + 10);
-    doc.text(`Soll: ${dec2(SOLL_TAG)} Std je Tag  ·  Pause: ${PAUSE_MIN} Min ab ${PAUSE_AB_MIN / 60} Std Anwesenheit  ·  Urlaub/Krank/Feiertag: ${dec2(GUTSCHRIFT)} Std`, L + 1.5, yy + 15);
+    doc.text(`Soll: ${dec2(SOLL_TAG)} Std je Tag  ·  Pause: ${PAUSE_MIN} Min ab ${H(PAUSE_AB_MIN)} Std Anwesenheit  ·  Urlaub/Krank/Feiertag: ${dec2(GUTSCHRIFT)} Std`, L + 1.5, yy + 15);
     foot();
     return doc.output("blob");
   }
@@ -1401,7 +1440,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     r += 5;
     const extra = [`${R.days} ${R.days === 1 ? "Tag" : "Tage"}`];
     if (R.urlaub) extra.push(`${R.urlaub} × Urlaub`); if (R.krank) extra.push(`${R.krank} × Krank`); if (R.feiertag) extra.push(`${R.feiertag} × Feiertag`);
-    [extra.join("  ·  "), `Soll: ${dec2(SOLL_TAG)} Std je Tag  ·  Pause: ${PAUSE_MIN} Min ab ${PAUSE_AB_MIN / 60} Std Anwesenheit  ·  Urlaub/Krank/Feiertag: ${dec2(GUTSCHRIFT)} Std`,
+    if (contract.urlaubTage) { const v = vacation(y); extra.push(`Urlaub ${y}: ${v.taken} von ${v.total} genommen, ${v.left} übrig`); }
+    [extra.join("  ·  "), `Soll: ${dec2(SOLL_TAG)} Std je Tag  ·  Pause: ${PAUSE_MIN} Min ab ${H(PAUSE_AB_MIN)} Std Anwesenheit  ·  Urlaub/Krank/Feiertag: ${dec2(GUTSCHRIFT)} Std`,
      `Erstellt am ${dmy(Date.now())} mit Stempelkarte SK-1`].forEach((t, i) => {
       ws.mergeCells(`A${r + i}:I${r + i}`); ws.getCell(`A${r + i}`).value = t; ws.getCell(`A${r + i}`).font = font({ size: 9, color: { argb: MUTE } });
     });
@@ -1487,6 +1527,19 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
           <button type="button" class="swatch pink" data-v="pink" aria-pressed="${palette === "pink"}"><span class="chip"><i></i><i></i></span>Pink</button>
         </div>
       </div>
+      <div class="setting"><h3>Arbeitsvertrag</h3>
+        <div class="contract">
+          <div class="field"><label for="ct-wochen">Std pro Woche</label><input type="text" inputmode="decimal" id="ct-wochen" value="${H(WOCHE_MIN)}"></div>
+          <div class="field"><label for="ct-max">Höchstens</label><input type="text" inputmode="decimal" id="ct-max" value="${H(WOCHE_MAX)}"></div>
+          <div class="field"><label for="ct-tage">Tage pro Woche</label><input type="text" inputmode="numeric" id="ct-tage" value="${TAGE_PRO_WOCHE}"></div>
+          <div class="field"><label>Soll pro Tag</label><output id="ct-soll"></output></div>
+          <div class="field"><label for="ct-pab">Pause ab (Std)</label><input type="text" inputmode="decimal" id="ct-pab" value="${H(PAUSE_AB_MIN)}"></div>
+          <div class="field"><label for="ct-pmin">Pause (Min)</label><input type="text" inputmode="numeric" id="ct-pmin" value="${PAUSE_MIN}"></div>
+          <div class="field"><label for="ct-gut">Gutschrift (Std)</label><input type="text" inputmode="decimal" id="ct-gut" value="${contract.gutschriftStd == null ? "" : H(GUTSCHRIFT)}"></div>
+          <div class="field"><label for="ct-urlaub">Urlaubstage / Jahr</label><input type="text" inputmode="numeric" id="ct-urlaub" value="${contract.urlaubTage || ""}" placeholder="–"></div>
+        </div>
+        <p class="preview" id="ct-info"></p>
+      </div>
       <div class="setting"><h3>Zeitformat</h3>${seg("view", [["hm", "Std : Min"], ["dec", "Dezimal"]], view)}</div>`,
       [{ label: "Fertig", cls: "primary" }]);
     $("sheet-a").style.gridTemplateColumns = "1fr";
@@ -1497,9 +1550,42 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       if (what === "palette") { palette = v; applyAppearance(); }
       if (what === "view") setView(v);
     }));
+    // Arbeitsvertrag: jede gültige Eingabe gilt sofort und wird gespeichert
+    const num = id => { const v = $(id).value.trim().replace(",", "."); return v === "" ? null : Number(v); };
+    function contractInfo(){
+      $("ct-soll").textContent = dec2(SOLL_TAG) + " Std";
+      $("ct-gut").placeholder = "auto " + dec2(SOLL_TAG);
+      const v = vacation(new Date().getFullYear());
+      $("ct-info").className = "preview";
+      $("ct-info").textContent = contract.urlaubTage ? `Urlaub ${new Date().getFullYear()}: ${v.taken} genommen, ${v.left} übrig` : "Gutschrift gilt für Urlaub, Krank und Feiertag. Urlaubstage eintragen, um dein Urlaubskonto zu sehen.";
+    }
+    function readContract(){
+      const c = { ...contract }, bad = [];
+      const w = num("ct-wochen"), mx = num("ct-max"), t = num("ct-tage"), pab = num("ct-pab"), pm = num("ct-pmin"), g = num("ct-gut"), u = num("ct-urlaub");
+      if (w > 0 && w <= 80) c.wochenStd = w; else bad.push("Std pro Woche");
+      if (mx === null) c.maxStd = c.wochenStd; else if (mx >= c.wochenStd && mx <= 80) c.maxStd = mx; else bad.push("Höchstens (mind. Std pro Woche)");
+      if (Number.isInteger(t) && t >= 1 && t <= 7) c.tage = t; else bad.push("Tage pro Woche (1–7)");
+      if (pab !== null && pab >= 0 && pab <= 24) c.pauseAbStd = pab; else bad.push("Pause ab");
+      if (pm !== null && pm >= 0 && pm <= 180) c.pauseMin = pm; else bad.push("Pause (Min)");
+      if (g === null) c.gutschriftStd = null; else if (g >= 0 && g <= 24) c.gutschriftStd = g; else bad.push("Gutschrift");
+      if (u === null) c.urlaubTage = 0; else if (Number.isInteger(u) && u >= 0 && u <= 365) c.urlaubTage = u; else bad.push("Urlaubstage");
+      contract = c; applyContract();
+      try { localStorage.setItem(LS_CONTRACT, JSON.stringify(contract)); } catch(e){}
+      shown = ""; renderAll(); contractInfo();
+      if (bad.length) { $("ct-info").textContent = "Bitte prüfen: " + bad.join(", "); $("ct-info").className = "preview err"; }
+    }
+    ["ct-wochen", "ct-max", "ct-tage", "ct-pab", "ct-pmin", "ct-gut", "ct-urlaub"].forEach(id => $(id).addEventListener("input", readContract));
+    contractInfo();
   };
 
   // ---------- Start ----------
+  // Bei offener Tastatur bleibt das Sheet über ihr
+  if (window.visualViewport) {
+    const vv = window.visualViewport;
+    const lift = () => { const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop); $("sheet").style.bottom = (kb > 80 ? kb + 8 : 8) + "px"; };
+    vv.addEventListener("resize", lift); vv.addEventListener("scroll", lift);
+  }
+  document.addEventListener("focusin", e => { if (e.target.closest && e.target.closest("#sheet-b")) setTimeout(() => e.target.scrollIntoView({ block: "center", behavior: "smooth" }), 300); });
   // Das Gerät darf nie verrutschen (z. B. wenn iOS ein fokussiertes Feld ins Bild schieben will)
   $("dev").addEventListener("scroll", e => { if (e.target.scrollTop) e.target.scrollTop = 0; });
   applyAppearance(); fitCanvas(); renderAll(); setTimeout(checkForgot, 600);
