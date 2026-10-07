@@ -152,7 +152,13 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .badge.ok{color:var(--ok)} .badge.low{color:var(--muted)} .badge.over{color:var(--led)}
 .entry{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--edge)}
 .entry:last-child{border-bottom:0}
+.entry .info{text-align:left;min-width:0;padding:2px 0}
+.entry .info:active{opacity:.55}
 .entry .d{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.entry .d::after{content:"";display:inline-block;width:5px;height:5px;margin-left:8px;border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:rotate(-45deg);vertical-align:2px}
+.sheet .fieldset{display:grid;gap:10px}
+.sheet .preview{margin:12px 4px 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);min-height:1.4em}
+.sheet .preview.err{color:var(--led)}
 .entry .t{font-size:10.5px;color:var(--muted);margin-top:2px}
 .entry .n{font:900 20px/1 var(--dots);text-align:right}
 .entry .del{width:36px;height:36px;border-radius:11px;background:var(--body);box-shadow:inset 0 1px 0 #fff,0 2px 0 var(--edge);font-size:16px;color:var(--muted);line-height:1}
@@ -172,7 +178,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .sheet .acts button{height:54px;border-radius:16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;background:var(--body);box-shadow:inset 0 1px 0 #fff,0 3px 0 var(--edge)}
 .sheet .acts button.primary{background:var(--ink);color:var(--panel);box-shadow:0 3px 0 #000}
 .sheet .acts button.danger{background:var(--led);color:#fff;box-shadow:0 3px 0 #B53A10}
-.toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translate(-50%,-180%);background:var(--ink);color:var(--panel);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:10px 16px;border-radius:99px;z-index:50;transition:transform .5s var(--spring);white-space:nowrap}
+.toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translate(-50%,-180%);background:var(--ink);color:var(--panel);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:6px 6px 6px 16px;min-height:40px;border-radius:99px;z-index:50;transition:transform .5s var(--spring);white-space:nowrap;display:flex;align-items:center;gap:12px}
+.toast:not(.undo){padding-right:16px}
+.toast button{display:none;background:var(--led);color:#fff;border-radius:99px;padding:7px 12px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.toast.undo button{display:block}
 .toast.show{transform:translate(-50%,0)}
 @media (min-width:600px){.toast{top:16px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -180,7 +189,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 </head>
 <body>
 <div class="device" id="dev">
-  <div class="toast" id="toast" role="status"></div>
+  <div class="toast" id="toast" role="status"><span id="toast-t"></span><button type="button" id="toast-undo">Rückgängig</button></div>
 
   <!-- ================= Stempeluhr ================= -->
   <main class="screen" id="scr-clock">
@@ -375,14 +384,24 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 
   // ---------- Hinweis & Sheet ----------
   const $toast = $("toast"); let tt;
-  function say(m){ $toast.textContent = m; $toast.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => $toast.classList.remove("show"), 2000); }
+  let undoFn = null;
+  // Hinweis oben; mit undo erscheint 5 Sek. lang ein „Rückgängig“-Knopf
+  function say(m, undo){
+    $("toast-t").textContent = m; undoFn = undo || null;
+    $toast.classList.toggle("undo", !!undo); $toast.classList.add("show");
+    clearTimeout(tt); tt = setTimeout(() => { $toast.classList.remove("show"); undoFn = null; }, undo ? 5000 : 2000);
+  }
+  $("toast-undo").onclick = () => { const f = undoFn; undoFn = null; if (f) { f(); buzz(12); say("Rückgängig gemacht"); } };
+  // Zustand merken und wiederherstellen (für Rückgängig)
+  const snapshot = () => JSON.stringify(state);
+  function restore(j){ state = JSON.parse(j); save(); renderAll(); }
   function sheet(title, html, actions){
     $("sheet-h").textContent = title; $("sheet-b").innerHTML = html;
     const box = $("sheet-a"); box.innerHTML = "";
     actions.forEach(a => { const b = document.createElement("button"); b.type = "button"; b.textContent = a.label; if (a.cls) b.className = a.cls;
       b.onclick = () => { if (a.run && a.run() === false) return; closeSheet(); }; box.appendChild(b); });
     $("scrim").classList.add("show"); $("sheet").classList.add("show");
-    setTimeout(() => { const f = $("sheet").querySelector("input") || box.lastChild; f && f.focus({ preventScroll: true }); }, 350);
+    setTimeout(() => { const f = box.lastChild; f && f.focus({ preventScroll: true }); }, 350); // kein Auto-Fokus auf Eingaben (würde die Tastatur öffnen)
   }
   function closeSheet(){ $("scrim").classList.remove("show"); $("sheet").classList.remove("show"); }
   $("scrim").onclick = closeSheet;
@@ -599,16 +618,55 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 
   function setActive(want){
     if (want === !!state.active) return renderClock();
+    const before = snapshot(), undo = () => restore(before);
     if (want) {
       state.active = { start: Date.now() }; charX = 0;
-      buzz([10, 40, 10]); say("Eingestempelt " + clock(state.active.start));
+      buzz([10, 40, 10]); say("Eingestempelt " + clock(state.active.start), undo);
     } else {
       const start = state.active.start, end = Date.now();
-      if (end - start >= 60000) { state.entries.push({ id: "e" + end.toString(36), start, end }); say("Ausgestempelt · " + fmt(netOf(minsBetween(start, end)))); }
-      else say("Unter 1 Min, nicht gespeichert");
+      if (end - start >= 60000) { state.entries.push({ id: "e" + end.toString(36), start, end }); say("Aus · " + dig(netOf(minsBetween(start, end))) + " Std", undo); }
+      else say("Unter 1 Min, nicht gespeichert", undo);
       state.active = null; buzz(18);
     }
     save(); renderAll();
+  }
+
+  // ---------- Vergessen auszustempeln? ----------
+  // Über 12 Std eingestempelt oder seit gestern (ab 4 Uhr früh) → nachfragen, einmal pro Schicht
+  let askedFor = null;
+  function checkForgot(){
+    const a = state.active; if (!a || askedFor === a.start) return;
+    const now = Date.now(), hrs = (now - a.start) / 36e5;
+    const newDay = dayStart(now) > dayStart(a.start) && new Date(now).getHours() >= 4;
+    if (hrs < 12 && !newDay) return;
+    askedFor = a.start;
+    const s = today();
+    const guess = Math.min(s.goalAt || a.start + 6 * 36e5, a.start + 12 * 36e5);
+    sheet("Vergessen auszustempeln?",
+      `<p>Du bist seit ${dayLabel(a.start)}, ${clock(a.start)} eingestempelt (${Math.floor(hrs)} Std). Wann hast du wirklich aufgehört?</p>
+       <div class="field"><label for="fg-end">Ende am ${dayLabel(a.start)}</label><input type="time" id="fg-end" value="${clock(guess)}"></div>
+       <p class="preview" id="fg-prev"></p>`,
+      [
+        { label: "Läuft noch" },
+        { label: "Ausstempeln", cls: "primary", run: () => {
+          const end = endFrom(a.start, $("fg-end").value);
+          if (!end || end > Date.now()) { $("fg-prev").textContent = "Bitte eine Uhrzeit vor jetzt wählen"; $("fg-prev").className = "preview err"; return false; }
+          const before = snapshot();
+          state.entries.push({ id: "e" + end.toString(36), start: a.start, end }); state.active = null;
+          save(); renderAll(); buzz(18); say("Aus · " + dig(netOf(minsBetween(a.start, end))) + " Std", () => restore(before));
+        } }
+      ]);
+    const upd = () => { const end = endFrom(a.start, $("fg-end").value); const p = $("fg-prev");
+      p.className = "preview"; p.textContent = end ? `Netto ${dig(netOf(minsBetween(a.start, end)))} Std${pauseOf(minsBetween(a.start, end)) ? " · 45 Min Pause" : ""}` : ""; };
+    $("fg-end").addEventListener("input", upd); upd();
+  }
+  // Uhrzeit "HH:MM" als Ende nach dem Beginn (bei kleinerer Uhrzeit: Folgetag)
+  function endFrom(start, hhmm){
+    if (!hhmm) return null;
+    const [h, m] = hhmm.split(":").map(Number);
+    const d = new Date(start); d.setHours(h, m, 0, 0);
+    if (d.getTime() <= start) d.setDate(d.getDate() + 1);
+    return d.getTime();
   }
 
   // Schiebeschalter
@@ -678,10 +736,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   }
   [$cd, $cs, $ce].forEach(el => el.addEventListener("input", () => { $("c-msg").textContent = ""; $("c-msg").className = "msg"; renderCalc(); }));
   function storeCalc(r){
+    const before = snapshot();
     state.entries.push({ id: "m" + Date.now().toString(36), start: r.s, end: r.e });
     save(); renderAll(); buzz([10, 40, 10]);
     $("c-msg").textContent = `Gespeichert: ${dayLabel(r.s)}, ${fmt(netOf(minsBetween(r.s, r.e)))}`; $("c-msg").className = "msg ok";
-    say("Gespeichert");
+    say("Gespeichert", () => { restore(before); $("c-msg").textContent = ""; });
   }
   $("c-save").onclick = () => {
     const r = calcRange(); if (!r) return;
@@ -713,7 +772,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       html += `<section class="wk"><h3><span>KW ${isoWeek(ws)} · ${nDays} ${nDays === 1 ? "Tag" : "Tage"}<span class="badge ${st[0]}">${st[1]}</span></span><b>${dig(sum)}</b></h3>`;
       list.forEach(e => {
         const pres = minsBetween(e.start, e.end);
-        html += `<div class="entry"><div><div class="d">${dayLabel(e.start)}</div><div class="t">${clock(e.start)} – ${clock(e.end)}${pauseOf(pres) ? " · 45 Min Pause" : ""}</div></div>
+        html += `<div class="entry"><button class="info" type="button" data-edit="${e.id}" aria-label="Eintrag vom ${dayLabel(e.start)} bearbeiten"><div class="d">${dayLabel(e.start)}</div><div class="t">${clock(e.start)} – ${clock(e.end)}${pauseOf(pres) ? " · 45 Min Pause" : ""}</div></button>
           <div class="n">${dig(entryNet(e))}</div>
           <button class="del" type="button" data-del="${e.id}" aria-label="Eintrag vom ${dayLabel(e.start)} löschen">×</button></div>`;
       });
@@ -724,9 +783,50 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       const e = state.entries.find(x => x.id === b.dataset.del); if (!e) return;
       sheet("Eintrag löschen", `<p>${dayLabel(e.start)}, ${clock(e.start)} – ${clock(e.end)} (${fmt(entryNet(e))}) wird gelöscht.</p>`, [
         { label: "Abbrechen" },
-        { label: "Löschen", cls: "danger", run: () => { state.entries = state.entries.filter(x => x.id !== e.id); save(); renderAll(); buzz(18); say("Gelöscht"); } }
+        { label: "Löschen", cls: "danger", run: () => { const before = snapshot(); state.entries = state.entries.filter(x => x.id !== e.id); save(); renderAll(); buzz(18); say("Gelöscht", () => restore(before)); } }
       ]);
     });
+    box.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => editEntry(b.dataset.edit));
+  }
+
+  const isoDate = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+  function editEntry(id){
+    const e = state.entries.find(x => x.id === id); if (!e) return;
+    const read = () => {
+      const dv = $("ed-date").value, sv = $("ed-start").value, ev = $("ed-end").value;
+      if (!dv || !sv || !ev) return null;
+      const [y, mo, da] = dv.split("-").map(Number), [sh, sm] = sv.split(":").map(Number);
+      const start = new Date(y, mo - 1, da, sh, sm).getTime();
+      return { start, end: endFrom(start, ev) };
+    };
+    sheet("Eintrag bearbeiten",
+      `<div class="fieldset">
+         <div class="field"><label for="ed-date">Datum</label><input type="date" id="ed-date" value="${isoDate(e.start)}"></div>
+         <div class="row2">
+           <div class="field"><label for="ed-start">Beginn</label><input type="time" id="ed-start" value="${clock(e.start)}"></div>
+           <div class="field"><label for="ed-end">Ende</label><input type="time" id="ed-end" value="${clock(e.end)}"></div>
+         </div>
+       </div>
+       <p class="preview" id="ed-prev"></p>`,
+      [
+        { label: "Abbrechen" },
+        { label: "Speichern", cls: "primary", run: () => {
+          const r = read();
+          if (!r) { $("ed-prev").textContent = "Bitte Datum, Beginn und Ende angeben"; $("ed-prev").className = "preview err"; return false; }
+          const before = snapshot();
+          e.start = r.start; e.end = r.end; save(); renderAll(); buzz(12);
+          say("Gespeichert · " + dig(entryNet(e)) + " Std", () => restore(before));
+        } }
+      ]);
+    const upd = () => {
+      const r = read(), p = $("ed-prev"); p.className = "preview";
+      if (!r) { p.textContent = ""; return; }
+      const pres = minsBetween(r.start, r.end);
+      const clash = state.entries.some(x => x.id !== e.id && r.start < x.end && r.end > x.start);
+      p.textContent = `Netto ${dig(netOf(pres))} Std${pauseOf(pres) ? " · 45 Min Pause" : ""}${new Date(r.end).getDate() !== new Date(r.start).getDate() ? " · bis Folgetag" : ""}${clash ? " · überschneidet sich" : ""}`;
+      if (clash) p.className = "preview err";
+    };
+    ["ed-date", "ed-start", "ed-end"].forEach(i => $(i).addEventListener("input", upd)); upd();
   }
 
   // ---------- Navigation & Format ----------
@@ -751,7 +851,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   function renderAll(){ renderClock(); renderCalc(); renderHist(); }
 
   // ---------- Start ----------
-  fitCanvas(); renderAll();
+  fitCanvas(); renderAll(); setTimeout(checkForgot, 600);
   addEventListener("resize", fitCanvas);
   if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe(cv);
   // Kein Zoomen per Geste (iOS)
@@ -764,7 +864,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   // Falls der Browser keine Animationsframes liefert, trotzdem regelmäßig zeichnen
   setInterval(() => { const t = performance.now(); if (tab === "clock" && t - last > 900) { draw(t); last = t; } }, 1000);
   setInterval(() => { if (!document.hidden) renderClock(); }, 15000);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) renderAll(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { renderAll(); checkForgot(); } });
   document.fonts && document.fonts.ready.then(fitCanvas);
 
   // ---------- Synchronisierung über claude.ai (falls verfügbar) ----------
