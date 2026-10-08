@@ -423,7 +423,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .co-scene canvas{position:absolute;inset:0;width:100%;height:100%}
 @media (max-height:720px){.co-scene{height:118px}}
 .co-open{display:flex;align-items:center;justify-content:center;gap:10px}
-.co-open .ball{flex:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(var(--accent) 50%,var(--panel) 50%);box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+
 .album{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 14px 0}
 .card{position:relative;background:var(--panel);border-radius:16px;padding:7px 7px 9px;box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);text-align:center;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:2px solid transparent;min-width:0}
 .card:active{transform:translateY(1px)}
@@ -476,7 +476,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .xpl{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 2px}
 .co-season{margin:10px 14px 0;height:52px;border-radius:16px;background:var(--c4);color:#fff;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;box-shadow:0 4px 0 color-mix(in srgb,var(--c4) 55%,#000);display:flex;align-items:center;justify-content:center;gap:10px;flex:none;animation:kpop .5s var(--spring)}
 .co-season:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--c4) 55%,#000)}
-.cap-ball.season .top{background:var(--c4)}
+
 .reveal .rar[data-r="4"]{color:var(--c4)}
 .cel{background:rgba(6,8,6,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 /* Abzeichen-Fenster: dunkle Spielkarte mit gestuftem Pixel-Rahmen in der Abzeichenfarbe */
@@ -500,31 +500,73 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .card.worn{border-color:var(--accent)}
 .card.worn::after{content:"trägt";position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--accent-fg);font-size:8px;padding:2px 7px;border-radius:8px;letter-spacing:.12em}
 .card .cnt{position:absolute;top:10px;right:11px;font-size:9px;color:#fff;text-shadow:0 1px 2px #000}
-/* Kapsel-Automat */
-.capsule{position:absolute;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);
-  background:color-mix(in srgb,var(--body) 94%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:fadein .25s}
+/* Pack öffnen (Overlay) */
+.capsule{position:absolute;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);
+  background:color-mix(in srgb,var(--body) 94%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:fadein .25s;overflow:hidden}
 .capsule h2{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .capsule .hint{margin:0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);min-height:1.4em}
-.cap-ball{position:relative;width:170px;height:170px;border:0;padding:0;background:none;cursor:pointer}
-.cap-ball .top,.cap-ball .bot{position:absolute;left:0;right:0;height:50%;border-radius:85px 85px 0 0;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12),inset 0 6px 16px rgba(255,255,255,.35)}
-.cap-ball .top{top:0;background:var(--cap,#8A857C);transition:transform .45s cubic-bezier(.3,1.4,.5,1),opacity .45s}
-.cap-ball .bot{bottom:0;border-radius:0 0 85px 85px;background:var(--panel);box-shadow:inset 0 -6px 14px rgba(0,0,0,.12),inset 0 2px 0 rgba(0,0,0,.18);transition:transform .45s ease-in,opacity .45s}
-.cap-ball .band{position:absolute;left:-4px;right:-4px;top:calc(50% - 5px);height:10px;border-radius:5px;background:var(--ink);opacity:.85;transition:opacity .2s}
-.cap-ball .shine{position:absolute;left:34px;top:22px;width:40px;height:22px;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(2px);transform:rotate(-25deg)}
-.cap-ball.shake{animation:capshake .9s ease-in-out infinite}
-@keyframes capshake{0%,100%{transform:rotate(0)}15%{transform:rotate(-9deg)}30%{transform:rotate(8deg)}45%{transform:rotate(-5deg)}60%{transform:rotate(3deg)}75%{transform:rotate(0)}}
-.cap-ball.legend .top{background:linear-gradient(110deg,#E3A300 30%,#FFE58A 45%,#E3A300 60%) 0 0/250% 100%;animation:goldshine 1.6s linear infinite}
 @keyframes goldshine{to{background-position:-250% 0}}
-.cap-ball.open .top{transform:translateY(-90px) rotate(-28deg);opacity:0}
-.cap-ball.open .bot{transform:translateY(70px);opacity:0}
-.cap-ball.open .band,.cap-ball.open .shine{opacity:0}
-.reveal{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:revealin .55s var(--spring)}
+/* Bühne: Pack, aufsteigendes Item-Display, Lichtstrahlen, Konfetti */
+.pk-stage{position:relative;width:100%;max-width:320px;height:290px;flex:none}
+.pk-item{position:absolute;left:0;right:0;top:40px;opacity:0;transform:translateY(70px) scale(.55);transition:transform .5s cubic-bezier(.2,1.5,.4,1),opacity .3s;z-index:3;pointer-events:none}
+.pk-item canvas{display:block;width:100%;aspect-ratio:13/9}
+.pk-stage.revealed .pk-item{opacity:1;transform:translateY(-10px) scale(1)}
+.pk-rays{position:absolute;left:50%;top:90px;width:520px;height:520px;margin:-260px 0 0 -260px;opacity:0;z-index:1;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,var(--rc,#E3A300) 0deg 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 18%,transparent 62%);mask:radial-gradient(circle,#000 18%,transparent 62%);transition:opacity .4s}
+.pk-stage.rays .pk-rays{opacity:.45;animation:rayspin 9s linear infinite}
+@keyframes rayspin{to{transform:rotate(360deg)}}
+.pk-conf{position:absolute;left:50%;top:110px;width:7px;height:7px;background:var(--cc);z-index:4;pointer-events:none;animation:conf 1.2s cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes conf{0%{transform:translate(0,0) rotate(0);opacity:1}70%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
+.pk-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:6}
+.pk-flash.on{animation:pkflash .45s ease-out}
+@keyframes pkflash{0%{opacity:0}15%{opacity:.85}100%{opacity:0}}
+/* Das Booster-Pack: Folie mit gezackten Schweißnähten, TICKO-Schriftzug, Monster-Logo */
+.bpack{--pf1:#EFE6D2;--pf2:#DCCFB3;--pink:var(--accent);--ptxt:#3A2F22;position:absolute;left:50%;top:22px;width:150px;height:226px;margin-left:-75px;border:0;padding:0;background:none;cursor:grab;z-index:2;touch-action:none;
+  filter:drop-shadow(0 14px 18px rgba(0,0,0,.28))}
+.bpack.in{animation:pkin .7s cubic-bezier(.2,1.6,.4,1) both}
+.bpack.idle{animation:pkfloat 2.6s ease-in-out infinite}
+@keyframes pkin{0%{transform:translateY(340px) rotate(-8deg);opacity:0}60%{opacity:1}100%{transform:none}}
+@keyframes pkfloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-9px) rotate(1deg)}}
+.bp-strip,.bp-body{position:absolute;left:0;right:0;background:linear-gradient(160deg,var(--pf1),var(--pf2));overflow:hidden}
+.bp-strip{top:0;height:26px;clip-path:polygon(0.000% 7px,4.167% 0px,8.333% 7px,12.500% 0px,16.667% 7px,20.833% 0px,25.000% 7px,29.167% 0px,33.333% 7px,37.500% 0px,41.667% 7px,45.833% 0px,50.000% 7px,54.167% 0px,58.333% 7px,62.500% 0px,66.667% 7px,70.833% 0px,75.000% 7px,79.167% 0px,83.333% 7px,87.500% 0px,91.667% 7px,95.833% 0px,100.000% 7px,100% 100%,0 100%);transition:transform .45s cubic-bezier(.3,.6,.4,1),opacity .45s}
+.bp-strip::after{content:"";position:absolute;inset:7px 0 0;background:repeating-linear-gradient(90deg,rgba(0,0,0,.12) 0 2px,transparent 2px 5px)}
+.bp-body{top:26px;bottom:0;clip-path:polygon(0 0,100% 0,100.000% calc(100% - 7px),95.833% 100%,91.667% calc(100% - 7px),87.500% 100%,83.333% calc(100% - 7px),79.167% 100%,75.000% calc(100% - 7px),70.833% 100%,66.667% calc(100% - 7px),62.500% 100%,58.333% calc(100% - 7px),54.167% 100%,50.000% calc(100% - 7px),45.833% 100%,41.667% calc(100% - 7px),37.500% 100%,33.333% calc(100% - 7px),29.167% 100%,25.000% calc(100% - 7px),20.833% 100%,16.667% calc(100% - 7px),12.500% 100%,8.333% calc(100% - 7px),4.167% 100%,0.000% calc(100% - 7px))}
+.bp-body::before,.bp-body::after{content:"";position:absolute;left:0;right:0;height:13px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.12) 0 2px,transparent 2px 5px)}
+.bp-body::before{top:0}.bp-body::after{bottom:0}
+.bp-band{position:absolute;left:0;right:0;top:110px;height:30px;background:var(--pink);box-shadow:inset 0 2px 0 rgba(255,255,255,.3),inset 0 -2px 0 rgba(0,0,0,.2)}
+.bp-logo{position:absolute;left:50%;top:22px;width:60px;height:60px;margin-left:-30px;image-rendering:pixelated}
+.bp-name{position:absolute;left:0;right:0;top:114px;text-align:center;font:900 22px/1 var(--dots);letter-spacing:.08em;color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.25)}
+.bp-sub{position:absolute;left:0;right:0;top:152px;text-align:center;font:600 8.5px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--ptxt);opacity:.75}
+.bp-gloss{position:absolute;top:-20%;bottom:-20%;width:45%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-14deg);animation:pkgloss 4.5s ease-in-out infinite}
+@keyframes pkgloss{0%,55%{transform:translateX(0) skewX(-14deg)}100%{transform:translateX(420%) skewX(-14deg)}}
+.bp-light{position:absolute;left:-30%;right:-30%;top:-40px;height:150px;background:radial-gradient(ellipse at 50% 0,var(--lc,#fff) 0,transparent 65%);opacity:0;transform:scaleY(.4);transform-origin:50% 0;transition:opacity .25s,transform .4s}
+.bpack.glow .bp-light{opacity:.95;transform:scaleY(1)}
+.bpack.pulse .bp-light{animation:lightpulse .35s ease-in-out infinite alternate}
+@keyframes lightpulse{to{opacity:.55;transform:scaleY(1.25)}}
+.bp-glow{position:absolute;left:-45%;right:-45%;top:-100px;height:135px;z-index:-1;background:radial-gradient(ellipse 50% 100% at 50% 100%,var(--lc,#fff) 0,transparent 100%);opacity:0;transform:scaleY(.3);transform-origin:50% 100%;transition:opacity .25s,transform .4s;pointer-events:none}
+.bpack.glow .bp-glow{opacity:.9;transform:none}
+.bpack.pulse .bp-glow{animation:lightpulse .3s ease-in-out infinite alternate}
+.bp-tear{position:absolute;left:0;top:23px;height:3px;width:100%;background:linear-gradient(90deg,#fff,var(--lc,#fff));box-shadow:0 0 8px var(--lc,#fff);transform:scaleX(0);transform-origin:0 50%;z-index:3}
+.bpack.torn .bp-strip{transform:translate(110px,-90px) rotate(28deg);opacity:0}
+.bpack.torn .bp-tear{opacity:0;transition:opacity .2s}
+.bpack.shake{animation:pkshake var(--sd,.12s) linear infinite}
+@keyframes pkshake{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(calc(var(--amp) * -1px),calc(var(--amp) * .5px)) rotate(calc(var(--amp) * -.6deg))}75%{transform:translate(calc(var(--amp) * 1px),calc(var(--amp) * -.5px)) rotate(calc(var(--amp) * .6deg))}}
+.bpack.fall{animation:none;transform:translateY(380px) rotate(10deg);opacity:0;transition:transform .55s cubic-bezier(.5,0,.8,.4),opacity .5s .1s}
+/* Varianten */
+.bpack.gold{--pf1:#F2C14E;--pf2:#C98E12;--pink:#7A4E00;--ptxt:#3E2800}
+.bpack.gold .bp-strip,.bpack.gold .bp-body{background:linear-gradient(110deg,#D9A21B 30%,#FFE58A 45%,#D9A21B 60%) 0 0/250% 100%;animation:goldshine 1.8s linear infinite}
+.bpack.season{--pf1:color-mix(in srgb,var(--c4) 70%,#fff);--pf2:var(--c4);--pink:#3B1670;--ptxt:#fff}
+/* Mini-Pack im Sammlungs-Knopf */
+.mpack{flex:none;width:16px;height:22px;background:linear-gradient(var(--panel) 0 30%,var(--accent) 30% 62%,var(--panel) 62%);clip-path:polygon(0 3px,25% 0,50% 3px,75% 0,100% 3px,100% calc(100% - 3px),75% 100%,50% calc(100% - 3px),25% 100%,0 calc(100% - 3px));box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.pk-test{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
+.pk-test button{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1.5px dashed var(--edge);border-radius:8px;padding:7px 4px}
+.reveal{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:8px;animation:revealin .45s var(--spring)}
 @keyframes revealin{from{transform:scale(.4);opacity:0}}
 .reveal .lcd{width:100%}
 .reveal canvas{display:block;width:100%;aspect-ratio:13/9}
 .reveal .name{font:900 34px/1 var(--dots);text-align:center}
 .reveal .rar{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
-.reveal .rar[data-r="1"]{color:var(--c1)} .reveal .rar[data-r="2"]{color:var(--c2)} .reveal .rar[data-r="3"]{color:var(--c3)}
+.reveal .rar[data-r="1"]{color:var(--c1)} .reveal .rar[data-r="2"]{color:var(--c2)} .reveal .rar[data-r="3"]{color:var(--c3)} .reveal .rar[data-r="4"]{color:var(--c4)}
 .reveal .new{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 .cap-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:320px}
 .cap-acts button{height:54px;border-radius:16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;background:var(--panel);box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge)}
@@ -612,7 +654,8 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .toast.undo button{display:block}
 .toast.show{transform:translate(-50%,0)}
 @media (min-width:600px){.toast{top:16px}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
+  .capsule .pk-item,.capsule .bpack{transition:opacity .35s!important}}
 </style>
 </head>
 <body>
@@ -707,7 +750,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       <div class="brand"><b>Sammlung</b><span class="co-head"><span id="co-lv">Lv 1</span><span class="coinbal" title="Coins"><i class="coin"></i><b id="co-coins">0</b></span></span></div>
       <div class="lcd">
         <div class="co-scene"><canvas id="co-cv" aria-label="Dein Monster mit Zubehör" role="img"></canvas></div>
-        <div class="lrow"><span id="co-worn">Trägt nichts</span><span id="co-caps">0 Kapseln</span></div>
+        <div class="lrow"><span id="co-worn">Trägt nichts</span><span id="co-caps">0 Packs</span></div>
       </div>
       <button type="button" class="lvbox" id="lvbox" aria-label="Woher kommen meine XP?">
         <div class="lvhead"><b id="lv-big">LEVEL 01</b><span id="xp-l">Jungmonster</span></div>
@@ -716,7 +759,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       </button>
     </div>
     <button class="co-season" id="co-season" type="button" hidden></button>
-    <button class="bigkey co-open" id="co-open" type="button"><span class="ball"></span><span id="co-open-t">Kapsel öffnen</span></button>
+    <button class="bigkey co-open" id="co-open" type="button"><span class="mpack" aria-hidden="true"></span><span id="co-open-t">Pack öffnen</span></button>
     <div class="kinds two co-tabs" role="tablist" aria-label="Sammlung">
       <button type="button" role="tab" id="ct-items" data-ctab="items" aria-pressed="true" aria-selected="true">Zubehör <span id="co-count"></span></button>
       <button type="button" role="tab" id="ct-badges" data-ctab="badges" aria-pressed="false" aria-selected="false">Abzeichen <span id="bd-count"></span></button>
@@ -726,21 +769,29 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       <section id="cp-shop" role="tabpanel" aria-labelledby="ct-shop" hidden><div class="shop" id="shop"></div></section>
       <section id="cp-badges" role="tabpanel" aria-labelledby="ct-badges" hidden><div class="badges" id="badges"></div></section>
       <section id="cp-items" role="tabpanel" aria-labelledby="ct-items"><div class="album" id="album"></div></section>
-      <p class="sync">Kapseln: jeder Arbeitstag ab 1 Std netto, jedes Abzeichen, jedes Level. Goldene Kapseln: Serien.</p>
+      <p class="sync">Packs: jeder Arbeitstag ab 1 Std netto, jedes Abzeichen, jedes Level. Goldene Packs: Serien.</p>
     </div>
   </main>
 
-  <!-- Kapsel-Automat -->
+  <!-- Pack öffnen -->
   <div class="capsule" id="cap" hidden role="dialog" aria-modal="true" aria-labelledby="cap-h">
-    <h2 id="cap-h">Kapsel-Automat</h2>
-    <button type="button" class="cap-ball" id="cap-ball" aria-label="Kapsel öffnen"><span class="top"></span><span class="bot"></span><span class="band"></span><span class="shine"></span></button>
+    <div class="pk-flash" id="pk-flash"></div>
+    <h2 id="cap-h">Neues Pack</h2>
+    <div class="pk-stage" id="pk-stage">
+      <div class="pk-rays"></div>
+      <button type="button" class="bpack" id="bpack" aria-label="Pack aufreißen">
+        <span class="bp-strip"></span>
+        <span class="bp-body"><span class="bp-light"></span><canvas class="bp-logo" id="bp-logo"></canvas><span class="bp-band"></span><b class="bp-name">TICKO</b><small class="bp-sub" id="bp-sub">Zubehör-Pack</small><span class="bp-gloss"></span></span>
+        <span class="bp-tear" id="bp-tear"></span><span class="bp-glow"></span>
+      </button>
+      <div class="pk-item"><div class="lcd"><canvas id="cap-cv"></canvas></div></div>
+    </div>
     <div class="reveal" id="cap-rev" hidden>
-      <div class="lcd"><canvas id="cap-cv"></canvas></div>
       <div class="rar" id="cap-rar"></div>
       <div class="name" id="cap-name"></div>
       <div class="new" id="cap-new"></div>
     </div>
-    <p class="hint" id="cap-hint">Tippen zum Öffnen</p>
+    <p class="hint" id="cap-hint">Zum Aufreißen wischen</p>
     <div class="cap-acts" id="cap-acts" hidden></div>
   </div>
 
@@ -753,7 +804,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       <div class="ach-title" id="cel-t"></div>
       <p class="ach-desc" id="cel-s"></p>
       <div class="ach-line"></div>
-      <div class="ach-reward"><span class="chip" id="cel-chip">Kapsel</span><span id="cel-rw">+1</span></div>
+      <div class="ach-reward"><span class="chip" id="cel-chip">Pack</span><span id="cel-rw">+1</span></div>
       <button type="button" class="ach-ok" id="cel-ok">OK</button>
     </div></div>
   </div>
@@ -1361,7 +1412,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
         fill.style.width = (st.xpIn / st.xpNext * 100) + "%";
         $("dc-xpr").textContent = `${st.xpIn.toLocaleString("de-DE")} / ${st.xpNext.toLocaleString("de-DE")} XP`;
         const up = document.createElement("div"); up.className = "dc-up";
-        up.innerHTML = `<b>LEVEL UP!</b><span>LEVEL ${String(st.level).padStart(2, "0")}${levelUp && levelUp.evolved ? " · " + STAGES[stageOf(st.level)].toUpperCase() : ""} · +${st.level - pre.level} KAPSEL${st.level - pre.level > 1 ? "N" : ""}</span>`;
+        up.innerHTML = `<b>LEVEL UP!</b><span>LEVEL ${String(st.level).padStart(2, "0")}${levelUp && levelUp.evolved ? " · " + STAGES[stageOf(st.level)].toUpperCase() : ""} · +${st.level - pre.level} PACK${st.level - pre.level > 1 ? "S" : ""}</span>`;
         $("dc-extra").appendChild(up); buzz([30, 60, 30, 60, 90]);
       }); t += 700;
     }
@@ -1374,7 +1425,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
           row.innerHTML = `<canvas></canvas><div><small>ACHIEVEMENT UNLOCKED</small><strong>${b.name}</strong></div><em>+${XP_BADGE[rk]} XP</em>`;
           $("dc-extra").appendChild(row); drawBadge(row.querySelector("canvas"), { color: col, icon: ICON2[b.icon] });
         } else {
-          row.innerHTML = `<canvas></canvas><div><small>STREAK ${c.n} WOCHEN</small><strong>Goldene Kapsel</strong></div><em>+1</em>`;
+          row.innerHTML = `<canvas></canvas><div><small>STREAK ${c.n} WOCHEN</small><strong>Goldenes Pack</strong></div><em>+1</em>`;
           $("dc-extra").appendChild(row); drawBadge(row.querySelector("canvas"), { color: "#FF6B2C", icon: ICON2.flamme });
         }
         buzz([15, 40, 25]);
@@ -1852,7 +1903,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     const have = new Set(game.claimed), fresh = eligibleDays().filter(d => !have.has(d));
     if (!fresh.length) return;
     game.claimed.push(...fresh); game.capsules += fresh.length; saveGame();
-    tapMsg = fresh.length === 1 ? "Neue Kapsel verdient!" : `${fresh.length} neue Kapseln!`; tapUntil = Date.now() + 4500;
+    tapMsg = fresh.length === 1 ? "Neues Pack verdient!" : `${fresh.length} neue Packs!`; tapUntil = Date.now() + 4500;
   }
   function drawWorn(x, y, flip, set, t){
     if (!game) return;
@@ -1905,7 +1956,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     st = st || stats();
     const owned = ITEMS.filter(i => game.items[i.id]).length, left = capsLeft();
     $("co-count").textContent = `${owned}/${ITEMS.length}`;
-    $("co-caps").textContent = left === 1 ? "1 Kapsel" : `${left} Kapseln`;
+    $("co-caps").textContent = left === 1 ? "1 Pack" : `${left} Packs`;
     $("co-lv").textContent = `Lv ${st.level}` + (st.current ? ` · Serie ${st.current}` : "");
     $("co-coins").textContent = (game.coins || 0).toLocaleString("de-DE");
     renderShop();
@@ -1915,7 +1966,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     $("xp-r").textContent = `${st.xpIn.toLocaleString("de-DE")} / ${st.xpNext.toLocaleString("de-DE")} XP`;
     const ps = pendingSeason();
     $("co-season").hidden = !ps;
-    if (ps) $("co-season").textContent = `Saison-Kapsel öffnen · ${ps.item.label}`;
+    if (ps) $("co-season").textContent = `Saison-Pack öffnen · ${ps.item.label}`;
     $("bd-count").textContent = `${game.badges.length}/${BADGES.length}`;
     $("badges").innerHTML = BADGES.map(b => `<button type="button" class="bdg${game.badges.includes(b.id) ? "" : " locked"}" data-b="${b.id}"><canvas></canvas><b>${b.name}</b></button>`).join("");
     $("badges").querySelectorAll(".bdg").forEach(el => {
@@ -1927,7 +1978,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     $("co-worn").textContent = worn.length ? "Trägt: " + worn.join(", ") : "Trägt nichts";
     const normal = game.packQ.length + game.capsules + (game.gold || 0);
     $("co-open").disabled = !normal;
-    $("co-open-t").textContent = normal ? `Kapsel öffnen (${normal})${game.gold ? ` · ${game.gold} golden` : ""}` : "Nächste Kapsel nach Feierabend";
+    $("co-open-t").textContent = normal ? `Pack öffnen (${normal})${game.gold ? ` · ${game.gold} golden` : ""}` : "Nächstes Pack nach Feierabend";
     $("kb-coll").hidden = !left; $("kb-coll").textContent = left;
     $("album").innerHTML = ITEMS.map(it => {
       const n = game.items[it.id] || 0, worn = game.worn[it.slot] === it.id;
@@ -1959,14 +2010,21 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       PACKS.map(p => { const miss = p.price - game.coins;
         return `<div class="pack"><canvas data-pk="${p.id}"></canvas><div><b>${p.name}</b><small>${p.desc}</small></div>
           <button type="button" data-buy="${p.id}"${miss > 0 ? " disabled" : ""}>${miss > 0 ? `noch ${miss.toLocaleString("de-DE")} Coins` : `<i class="coin"></i>${p.price.toLocaleString("de-DE")}`}</button></div>`; }).join("") +
-      (location.hash === "#test" ? `<button type="button" class="shop-test" id="shop-test">Test: +1.000 Coins</button>` : "");
+      (location.hash === "#test" ? `<button type="button" class="shop-test" id="shop-test">Test: +1.000 Coins</button>
+        <div class="pk-test">${PK_DEMOS.map((d, i) => `<button type="button" data-demo="${i}">${d[0]}</button>`).join("")}</div>` : "");
     $("shop").querySelectorAll("[data-buy]").forEach(b => b.onclick = () => buyPack(b.dataset.buy));
     $("shop").querySelectorAll("[data-pk]").forEach(cv => {
       const r = cv.dataset.pk === "legendaer" ? 3 : cv.dataset.pk === "selten" ? 2 : 1;
       drawBadge(cv, { color: r === 3 ? "#E3A300" : r === 2 ? "#3F7BFF" : "#8A857C", icon: ["....kkk....", "...kAAAk...", "..kAWAAAk..", "..kAAAAAk..", "kkkkkkkkkkk", "kWWWWWWWWWk", "kWwwwwwwwWk", "kkkkkkkkkkk"] });
     });
     const tb = $("shop-test"); if (tb) tb.onclick = () => { game.coins += 1000; saveGame(); renderColl(); say("+1.000 Test-Coins"); };
+    $("shop").querySelectorAll("[data-demo]").forEach(b => b.onclick = () => { const d = PK_DEMOS[b.dataset.demo]; openCapsule({ variant: d[1], item: d[2]() }); });
   }
+  // Testmodus (#test): Pack-Animation ohne Verbrauch und ohne Item-Gutschrift
+  const PK_DEMOS = [
+    ["Normal · Gewöhnl.", "", () => pickOf(1)], ["Normal · Selten", "", () => pickOf(2)], ["Normal · Legendär", "", () => pickOf(3)],
+    ["Golden · Selten", "gold", () => pickOf(2)], ["Golden · Legendär", "gold", () => pickOf(3)], ["Saison", "season", () => SEASON_ITEMS[Math.floor(Math.random() * SEASON_ITEMS.length)]]
+  ];
   function drawCollPreview(){
     const cv = $("co-cv"), cols = cv.clientHeight ? Math.max(31, Math.floor(24 * cv.clientWidth / cv.clientHeight)) : 31;   // so viele Spalten, wie in die Breite passen
     pixelCanvas(cv, cols, 24, (set, add) => paintMonster(set, add, cols, 24, performance.now()));
@@ -2151,7 +2209,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     let n = c.from; $("lv-n").textContent = String(n).padStart(2, "0");
     const count = setInterval(() => { if (n < c.level) { n++; $("lv-n").textContent = String(n).padStart(2, "0"); buzz(8); } else clearInterval(count); }, 260);
     setTimeout(() => $("lv-fill").style.width = "100%", 400);
-    setTimeout(() => { $("lv-msg").textContent = (c.evolved ? `Dein Monster entwickelt sich zum ${STAGES[stageOf(c.level)]}! ` : "") + `+${c.level - c.from} Kapsel${c.level - c.from > 1 ? "n" : ""}`; }, 1500);
+    setTimeout(() => { $("lv-msg").textContent = (c.evolved ? `Dein Monster entwickelt sich zum ${STAGES[stageOf(c.level)]}! ` : "") + `+${c.level - c.from} Pack${c.level - c.from > 1 ? "s" : ""}`; }, 1500);
     const t0 = performance.now();
     (function loop(t){
       if (lv.hidden) return;
@@ -2168,17 +2226,17 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   $("lv-ok").onclick = () => { $("lvl").hidden = true; renderAll(); setTimeout(showCeleb, 250); };
   function showCeleb(){
     if (splashOn || !celebQ.length || !$("cel").hidden || !$("cap").hidden || !$("lvl").hidden || !$("dayc").hidden) return;
-    const c = celebQ.shift(); let spec, rib, head, title, sub, chip = "Kapsel", rw = "+1";
+    const c = celebQ.shift(); let spec, rib, head, title, sub, chip = "Pack", rw = "+1";
     if (c.kind === "level") return showLevelUp(c);
     const monsterRows = () => BODY.map((r, j) => r || (j >= 5 && j <= 7 ? EYES.happy[j - 5] : MOUTH.grin[j - 9])).concat(LEGS[0]);
     if (c.kind === "badge") { const b = BADGES.find(x => x.id === c.id), [col, rk] = BSTYLE[b.id];
-      spec = { color: col, icon: ICON2[b.icon] }; rib = BRANK[rk]; head = "Abzeichen freigeschaltet"; title = b.name; sub = b.desc + ". Dazu +1 Kapsel."; chip = "XP"; rw = `+${XP_BADGE[rk]} XP`; }
+      spec = { color: col, icon: ICON2[b.icon] }; rib = BRANK[rk]; head = "Abzeichen freigeschaltet"; title = b.name; sub = b.desc + ". Dazu +1 Pack."; chip = "XP"; rw = `+${XP_BADGE[rk]} XP`; }
     if (c.kind === "level") { spec = { color: "#FFD24A", sprite: monsterRows() }; rib = "Level " + c.level; head = "Level aufgestiegen";
       title = "Level " + c.level; sub = c.evolved ? `Dein Monster ist jetzt ein ${STAGES[stageOf(c.level)]}!` : "Dein Monster wird immer erfahrener."; }
     if (c.kind === "streak") { spec = { color: "#FF6B2C", icon: ICON2.flamme }; rib = "Serie"; head = "Serie erreicht"; title = `${c.n} Wochen`;
-      sub = `${c.n} Wochen in Folge im Ziel. Garantiert selten oder besser.`; chip = "Gold"; rw = "+1 Kapsel"; }
-    if (c.kind === "season") { const it = ITEM[c.id]; spec = { color: "#9B4DFF", sprite: it.s }; rib = "Saison"; head = "Saison-Kapsel"; title = it.name;
-      sub = `Nur ${it.label} erhältlich. Öffne die Kapsel in der Sammlung.`; rw = "+1 Saison"; }
+      sub = `${c.n} Wochen in Folge im Ziel. Garantiert selten oder besser.`; chip = "Gold"; rw = "+1 Pack"; }
+    if (c.kind === "season") { const it = ITEM[c.id]; spec = { color: "#9B4DFF", sprite: it.s }; rib = "Saison"; head = "Saison-Pack"; title = it.name;
+      sub = `Nur ${it.label} erhältlich. Öffne das Pack in der Sammlung.`; rw = "+1 Saison"; }
     $("ach").style.setProperty("--bc", spec.color);
     $("cel-rib").textContent = rib; $("cel-h").textContent = head; $("cel-t").textContent = title; $("cel-s").textContent = sub;
     $("cel-chip").textContent = chip; $("cel-rw").textContent = rw;
@@ -2215,53 +2273,124 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     game.coins -= pk.price; game.packQ.push(...rollPack(id).map(i => i.id)); saveGame(); buzz([12, 40, 12]);
     openCapsule();
   }
-  let capItem = null, capAnim = 0, capFromPack = false;
+  let capItem = null, capAnim = 0, capFromPack = false, pkTimers = [], pkDemo = null;
   const capsLeft = () => (game.packQ || []).length + game.capsules + (game.gold || 0) + (pendingSeason() ? 1 : 0);
-  function openCapsule(){
+  const pkLater = (fn, ms) => pkTimers.push(setTimeout(fn, ms));
+  const pkClear = () => { pkTimers.forEach(clearTimeout); pkTimers = []; };
+  const lowMotion = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function openCapsule(demo){
     const ps = pendingSeason();
-    capFromPack = false;
-    if (game.packQ && game.packQ.length) { capItem = ITEM[game.packQ.shift()]; capFromPack = true; }
-    else if (ps) { capItem = ps.item; game.season[ps.key] = "done"; }
-    else if (game.gold) { game.gold--; const pool = REGULAR.filter(i => i.r === (Math.random() < .25 ? 3 : 2)); capItem = pool[Math.floor(Math.random() * pool.length)]; }
+    let variant = "";
+    capFromPack = false; pkDemo = demo || null;
+    if (demo) { capItem = demo.item; variant = demo.variant; }
+    else if (game.packQ && game.packQ.length) { capItem = ITEM[game.packQ.shift()]; capFromPack = true; }
+    else if (ps) { capItem = ps.item; game.season[ps.key] = "done"; variant = "season"; }
+    else if (game.gold) { game.gold--; const pool = REGULAR.filter(i => i.r === (Math.random() < .25 ? 3 : 2)); capItem = pool[Math.floor(Math.random() * pool.length)]; variant = "gold"; }
     else if (game.capsules) { capItem = rollItem(); game.capsules--; }
     else return;
     const isNew = !game.items[capItem.id];
-    game.items[capItem.id] = (game.items[capItem.id] || 0) + 1; saveGame();
-    const ball = $("cap-ball");
-    ball.className = "cap-ball shake" + (capItem.r === 3 ? " legend" : capItem.r === 4 ? " season" : "");
-    ball.style.setProperty("--cap", capItem.r === 2 ? "var(--c2)" : capItem.r === 3 ? "var(--c3)" : capItem.r === 4 ? "var(--c4)" : "var(--c1)");
-    ball.hidden = false; $("cap-rev").hidden = true; $("cap-acts").hidden = true;
-    $("cap-hint").textContent = "Tippen zum Öffnen"; $("cap").hidden = false; buzz(10);
-    ball.onclick = () => {
-      if (ball.classList.contains("open")) return;
-      ball.classList.remove("shake"); ball.classList.add("open"); buzz(capItem.r === 3 ? [20, 40, 20, 40, 60] : [15, 30, 25]);
-      setTimeout(() => {
-        ball.hidden = true; $("cap-hint").textContent = "";
-        $("cap-rar").textContent = RARITY[capItem.r]; $("cap-rar").dataset.r = capItem.r;
-        $("cap-name").textContent = capItem.name;
-        $("cap-new").textContent = isNew ? `Neu! · ${SLOTS[capItem.slot]}` : `Doppelt · jetzt ×${game.items[capItem.id]}`;
+    if (!demo) { game.items[capItem.id] = (game.items[capItem.id] || 0) + 1; saveGame(); }
+    showPack(variant, isNew);
+  }
+  // Booster-Pack: Einfliegen → Aufreißen (Wischen oder Tippen) → Spannung je Seltenheit → Reveal
+  function showPack(variant, isNew){
+    const pk = $("bpack"), stage = $("pk-stage"), tear = $("bp-tear"), it = capItem, r = it.r, big = r >= 3;
+    const col = ["", "var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)"][r];
+    pkClear(); cancelAnimationFrame(capAnim);
+    stage.className = "pk-stage"; stage.style.setProperty("--rc", col);
+    stage.querySelectorAll(".pk-conf").forEach(e => e.remove());
+    pk.className = "bpack"; void pk.offsetWidth;
+    pk.className = "bpack in" + (variant ? " " + variant : ""); pk.style.setProperty("--lc", col); pk.style.removeProperty("--amp"); pk.style.removeProperty("--sd");
+    tear.style.transform = "scaleX(0)";
+    const label = variant === "gold" ? "Goldenes Pack" : variant === "season" ? "Saison-Pack" : "Zubehör-Pack";
+    $("bp-sub").textContent = label;
+    $("cap-h").textContent = pkDemo ? "Test-Pack · nichts wird verbraucht" : variant ? label : "Neues Pack";
+    $("cap-rev").hidden = true; $("cap-acts").hidden = true;
+    $("cap-hint").textContent = "Zum Aufreißen wischen"; $("cap").hidden = false; buzz(10);
+    drawPackLogo(pk);
+    pkLater(() => pk.classList.replace("in", "idle"), 700);
+    // Item-Display läuft schon, damit es beim Aufsteigen fertig gezeichnet ist
+    const t0 = performance.now(), sparks = [];
+    (function loop(t){
+      if ($("cap").hidden) return;
+      pixelCanvas($("cap-cv"), 26, 18, (set, add) => {
+        paintItem(it, set, add, 26, 18, false, t);
+        if (r > 1 && stage.classList.contains("revealed") && Math.random() < .5) sparks.push({ x: Math.random() * 26, y: Math.random() * 18, l: 6 });
+        sparks.forEach(sp => { if (sp.l-- > 0) add(sp.x | 0, sp.y | 0, sp.l > 3 ? 2 : 1); });
+      });
+      if (t - t0 < 60000) capAnim = requestAnimationFrame(loop);
+    })(t0);
+
+    let phase = 0, tearAt = 0, sx = null, prog = 0, step = 0;
+    function rip(){
+      if (phase) return;
+      phase = 1; tearAt = performance.now(); $("cap-hint").textContent = "";
+      pk.classList.remove("in", "idle");
+      if (lowMotion()) { reveal(); return; }
+      tear.style.transform = "scaleX(1)"; pk.classList.add("torn"); buzz(big ? [18, 25, 18] : 14);
+      const build = r === 1 ? 400 : r === 2 ? 800 : 1500;
+      pkLater(() => {
+        pk.classList.add("glow", "shake"); pk.style.setProperty("--amp", r === 1 ? 1 : r === 2 ? 1.8 : 2.4);
+        if (big) pk.classList.add("pulse");
+      }, 260);
+      if (r >= 2) pkLater(() => { pk.style.setProperty("--amp", big ? 4.5 : 2.8); pk.style.setProperty("--sd", ".08s"); buzz(10); }, 260 + build * .55);
+      pkLater(reveal, 260 + build);
+    }
+    function reveal(){
+      if (phase === 2) return;
+      phase = 2; pkClear();
+      const calm = lowMotion();
+      pk.classList.remove("shake", "pulse", "in", "idle"); pk.classList.add("torn", "glow", "fall");
+      stage.classList.add("revealed");
+      if (big && !calm) {
+        const fl = $("pk-flash"); fl.classList.remove("on"); void fl.offsetWidth; fl.classList.add("on");
+        stage.classList.add("rays");
+        const cols = [col, "#fff", "var(--accent)", "var(--c3)"];
+        for (let i = 0; i < 28; i++) {
+          const c = document.createElement("i"), a = Math.random() * 6.283, d = 90 + Math.random() * 110;
+          c.className = "pk-conf";
+          c.style.cssText = `--cc:${cols[i % 4]};--dx:${Math.cos(a) * d | 0}px;--dy:${Math.sin(a) * d * .8 + 60 | 0}px;--rot:${Math.random() * 540 - 270 | 0}deg;animation-delay:${Math.random() * 80 | 0}ms`;
+          stage.appendChild(c);
+        }
+        pkLater(() => stage.querySelectorAll(".pk-conf").forEach(e => e.remove()), 1500);
+        buzz([30, 40, 30, 40, 80, 60, 140]);
+      } else buzz(r === 2 ? [15, 30, 25] : [12, 25]);
+      pkLater(() => {
+        $("cap-rar").textContent = RARITY[r]; $("cap-rar").dataset.r = r;
+        $("cap-name").textContent = it.name;
+        $("cap-new").textContent = isNew ? `Neu! · ${SLOTS[it.slot]}` : `Doppelt · jetzt ×${game.items[it.id]}`;
         $("cap-rev").hidden = false;
-        const t0 = performance.now(), sparks = [];
-        cancelAnimationFrame(capAnim);
-        (function loop(t){
-          if ($("cap").hidden) return;
-          pixelCanvas($("cap-cv"), 26, 18, (set, add) => {
-            paintItem(capItem, set, add, 26, 18, false, t);
-            if (capItem.r > 1 && Math.random() < .5) sparks.push({ x: Math.random() * 26, y: Math.random() * 18, l: 6 });
-            sparks.forEach(sp => { if (sp.l-- > 0) add(sp.x | 0, sp.y | 0, sp.l > 3 ? 2 : 1); });
-          });
-          if (t - t0 < 60000) capAnim = requestAnimationFrame(loop);
-        })(t0);
         const acts = $("cap-acts"); acts.innerHTML = "";
         const btn = (label, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = fn; acts.appendChild(b); };
-        if (game.worn[capItem.slot] !== capItem.id) btn("Anziehen", "", () => { game.worn[capItem.slot] = capItem.id; saveGame(); closeCapsule(); });
+        if (pkDemo) { const d = pkDemo; btn("Nochmal", "", () => openCapsule(d)); btn("Fertig", "primary", closeCapsule); acts.hidden = false; return; }
+        if (game.worn[it.slot] !== it.id) btn("Anziehen", "", () => { game.worn[it.slot] = it.id; saveGame(); closeCapsule(); });
         const inPack = game.packQ && game.packQ.length, packDone = capFromPack && !inPack;   // nach dem letzten Pack-Item: Fertig
-        btn(inPack ? `Nächstes (${game.packQ.length})` : !packDone && capsLeft() ? `Nächste (${capsLeft()})` : "Fertig", "primary", () => { if (inPack || (!packDone && capsLeft())) openCapsule(); else closeCapsule(); });
+        btn(inPack ? `Nächstes (${game.packQ.length})` : !packDone && capsLeft() ? `Nächstes (${capsLeft()})` : "Fertig", "primary", () => { if (inPack || (!packDone && capsLeft())) openCapsule(); else closeCapsule(); });
         acts.hidden = false;
-      }, 420);
+      }, calm ? 0 : 420);
+    }
+    // Wischen über die obere Naht: Riss folgt dem Finger; Tippen reißt automatisch auf
+    pk.onpointerdown = e => { if (phase) return; sx = e.clientX; prog = 0; step = 0; try { pk.setPointerCapture(e.pointerId); } catch(err){} };
+    pk.onpointermove = e => {
+      if (sx === null || phase) return;
+      prog = Math.max(prog, Math.min(1, Math.abs(e.clientX - sx) / (pk.offsetWidth * .75)));
+      tear.style.transform = `scaleX(${prog})`;
+      const s2 = Math.floor(prog * 5); if (s2 > step) { step = s2; buzz(5); }
+      if (prog >= .7) { sx = null; rip(); }
     };
+    pk.onpointerup = pk.onpointercancel = () => { if (sx !== null && prog > .05) rip(); sx = null; };
+    pk.onclick = e => { e.stopPropagation(); if (!phase) rip(); else if (phase === 1 && performance.now() - tearAt > 250) reveal(); };
+    $("cap").onclick = () => { if (phase === 1 && performance.now() - tearAt > 250) reveal(); };
   }
-  function closeCapsule(){ $("cap").hidden = true; cancelAnimationFrame(capAnim); renderAll(); setTimeout(showCeleb, 250); }
+  // Monster-Silhouette als Pack-Logo (Augen und Mund als Aussparung)
+  function drawPackLogo(pk){
+    const cv = $("bp-logo"), px = 4, rows = BODY.map((r, j) => r || (j >= 5 && j <= 7 ? EYES.open[j - 5] : MOUTH.smile[j - 9])).concat(LEGS[0]);
+    cv.width = 15 * px; cv.height = rows.length * px;
+    const g = cv.getContext("2d"); g.clearRect(0, 0, cv.width, cv.height);
+    g.fillStyle = getComputedStyle(pk).getPropertyValue("--ptxt").trim() || "#3A2F22"; g.globalAlpha = .82;
+    rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === "#") g.fillRect(i * px, j * px, px, px); });
+  }
+  function closeCapsule(){ $("cap").hidden = true; pkClear(); cancelAnimationFrame(capAnim); renderAll(); setTimeout(showCeleb, 250); }
   $("co-open").onclick = () => { buzz(6); openCapsule(); };
   $("co-season").onclick = () => { buzz(6); openCapsule(); };
   // Reiter in der Sammlung: Zubehör / Abzeichen (Auswahl wird gemerkt)
