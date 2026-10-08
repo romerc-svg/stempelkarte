@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="TICKO">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" id="meta-theme" content="#D8D5CF">
+<!-- Farbschema für die Bereiche, die iOS selbst zeichnet (Statusleiste, Streifen am Home-Balken) -->
+<meta name="color-scheme" id="meta-scheme" content="light dark">
 <style>
   /* Sofort die Gehäusefarbe zeigen, noch bevor irgendetwas anderes geladen ist */
   html,body{background:#D8D5CF}
@@ -43,6 +45,7 @@
     var t = localStorage.getItem("stempelkarte:theme"), p = localStorage.getItem("stempelkarte:palette");
     if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
     if (p === "pink") document.documentElement.dataset.palette = "pink";
+    if (t === "light" || t === "dark") document.getElementById("meta-scheme").setAttribute("content", t);
   } catch (e) {}
 </script>
 <title>TICKO</title>
@@ -968,7 +971,13 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   function readColors(){
     const css = getComputedStyle(document.documentElement), v = n => css.getPropertyValue(n).trim();
     Object.assign(C, { bg: v("--lcd"), off: v("--led-off"), half: v("--led-half"), full: v("--led"), glow: parseFloat(v("--glow-a")) || 0, square: v("--px-square") === "1", bow: v("--bow") === "1" });
-    $("meta-theme").setAttribute("content", v("--body"));
+    // Ränder, die iOS selbst malt, an die aktuelle Gehäusefarbe angleichen:
+    // Theme-Farbe als neues Element einsetzen (eine bloße Änderung übernimmt iOS oft nicht) und Seitenhintergrund setzen
+    const body = v("--body"), old = $("meta-theme"), meta = document.createElement("meta");
+    meta.name = "theme-color"; meta.id = "meta-theme"; meta.content = body;
+    old.replaceWith(meta);
+    const page = matchMedia("(min-width:600px)").matches ? v("--stage") : body;   // am Desktop bleibt der dunkle Hintergrund um das Gerät
+    document.documentElement.style.backgroundColor = page; document.body.style.backgroundColor = page;
   }
   readColors();
   // Hell/Dunkel folgt dem System; das Display wechselt dann zwischen LED-Orange und Game-Boy-Grün
@@ -983,6 +992,9 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     const root = document.documentElement;
     if (theme === "auto") delete root.dataset.theme; else root.dataset.theme = theme;
     if (palette === "pink") root.dataset.palette = "pink"; else delete root.dataset.palette;
+    // Farbschema-Hinweis: bei fester Wahl nur dieses Schema melden, damit iOS Statusleiste und Ränder passend zeichnet
+    const scheme = document.createElement("meta"); scheme.name = "color-scheme"; scheme.id = "meta-scheme";
+    scheme.content = theme === "auto" ? "light dark" : theme; $("meta-scheme").replaceWith(scheme);
     try { localStorage.setItem(LS_THEME, theme); localStorage.setItem(LS_PALETTE, palette); } catch(e){}
     readColors();
   }
