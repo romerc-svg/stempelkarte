@@ -170,7 +170,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 #scr-clock .plate{flex:1 1 auto;min-height:190px;display:flex;flex-direction:column}
 #scr-clock .lcd{flex:1;min-height:0;display:flex;flex-direction:column}
 .scene{flex:1;min-height:0;position:relative}
-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation}
+.scene canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation}
 #scr-clock .switchwrap{margin-top:14px}
 /* Verlauf: nur die Liste scrollt, im eigenen Fenster */
 .list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;padding-bottom:6px;
@@ -259,9 +259,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .on .thumb .led{background:var(--accent);box-shadow:0 0 8px var(--accent)}
 
 /* ---------- Tasten ---------- */
-.keys{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 10px);background:var(--body)}
+.keys{flex:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 10px);background:var(--body)}
 @media (min-width:600px){.keys{padding-bottom:22px}}
-.key{height:50px;border-radius:15px;background:var(--panel);box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .08s,box-shadow .08s}
+.key{position:relative;height:50px;border-radius:15px;background:var(--panel);box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .08s,box-shadow .08s}
 .key:active{transform:translateY(2px);box-shadow:inset 0 1px 0 var(--hi),0 1px 0 var(--edge)}
 .key .dot{width:6px;height:6px;border-radius:50%;background:var(--dot)}
 .key[aria-current="page"] .dot{background:var(--accent);box-shadow:0 0 6px var(--accent)}
@@ -413,6 +413,57 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .sp-go:active,.sp-go.pressed{transform:translateY(5px);box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 55%,#000),0 4px 10px -6px color-mix(in srgb,var(--accent) 60%,transparent),inset 0 1px 0 rgba(255,255,255,.3)}
 .sp-go.pressed .arrow{transform:translateX(6px)}
 
+/* ---------- Sammlung (Kapseln & Album) ---------- */
+:root{--c1:#8A857C;--c2:#3F7BFF;--c3:#E3A300}
+.kbadge{position:absolute;top:-7px;right:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--accent);color:var(--accent-fg);font:600 10px/19px var(--mono);letter-spacing:0;text-align:center;box-shadow:0 2px 0 rgba(0,0,0,.15);animation:kpop .5s var(--spring)}
+@keyframes kpop{from{transform:scale(.3)}}
+.co-scene{height:150px;position:relative}
+.co-scene canvas{position:absolute;inset:0;width:100%;height:100%}
+@media (max-height:720px){.co-scene{height:118px}}
+.co-open{display:flex;align-items:center;justify-content:center;gap:10px}
+.co-open .ball{width:22px;height:22px;border-radius:50%;background:linear-gradient(var(--accent) 50%,var(--panel) 50%);box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.album{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 14px 0}
+.card{position:relative;background:var(--panel);border-radius:16px;padding:7px 7px 9px;box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);text-align:center;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:2px solid transparent;min-width:0}
+.card:active{transform:translateY(1px)}
+.card canvas{display:block;width:100%;aspect-ratio:13/9;border-radius:10px;margin-bottom:6px}
+.card b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .r{display:block;font-size:8px;margin-top:2px;letter-spacing:.12em}
+.card[data-r="1"] .r{color:var(--c1)} .card[data-r="2"] .r{color:var(--c2)} .card[data-r="3"] .r{color:var(--c3)}
+.card.locked b{color:var(--faint)}
+.card.worn{border-color:var(--accent)}
+.card.worn::after{content:"trägt";position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--accent-fg);font-size:8px;padding:2px 7px;border-radius:8px;letter-spacing:.12em}
+.card .cnt{position:absolute;top:10px;right:11px;font-size:9px;color:#fff;text-shadow:0 1px 2px #000}
+/* Kapsel-Automat */
+.capsule{position:absolute;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);
+  background:color-mix(in srgb,var(--body) 94%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:fadein .25s}
+.capsule h2{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.capsule .hint{margin:0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);min-height:1.4em}
+.cap-ball{position:relative;width:170px;height:170px;border:0;padding:0;background:none;cursor:pointer}
+.cap-ball .top,.cap-ball .bot{position:absolute;left:0;right:0;height:50%;border-radius:85px 85px 0 0;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12),inset 0 6px 16px rgba(255,255,255,.35)}
+.cap-ball .top{top:0;background:var(--cap,#8A857C);transition:transform .45s cubic-bezier(.3,1.4,.5,1),opacity .45s}
+.cap-ball .bot{bottom:0;border-radius:0 0 85px 85px;background:var(--panel);box-shadow:inset 0 -6px 14px rgba(0,0,0,.12),inset 0 2px 0 rgba(0,0,0,.18);transition:transform .45s ease-in,opacity .45s}
+.cap-ball .band{position:absolute;left:-4px;right:-4px;top:calc(50% - 5px);height:10px;border-radius:5px;background:var(--ink);opacity:.85;transition:opacity .2s}
+.cap-ball .shine{position:absolute;left:34px;top:22px;width:40px;height:22px;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(2px);transform:rotate(-25deg)}
+.cap-ball.shake{animation:capshake .9s ease-in-out infinite}
+@keyframes capshake{0%,100%{transform:rotate(0)}15%{transform:rotate(-9deg)}30%{transform:rotate(8deg)}45%{transform:rotate(-5deg)}60%{transform:rotate(3deg)}75%{transform:rotate(0)}}
+.cap-ball.legend .top{background:linear-gradient(110deg,#E3A300 30%,#FFE58A 45%,#E3A300 60%) 0 0/250% 100%;animation:goldshine 1.6s linear infinite}
+@keyframes goldshine{to{background-position:-250% 0}}
+.cap-ball.open .top{transform:translateY(-90px) rotate(-28deg);opacity:0}
+.cap-ball.open .bot{transform:translateY(70px);opacity:0}
+.cap-ball.open .band,.cap-ball.open .shine{opacity:0}
+.reveal{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:revealin .55s var(--spring)}
+@keyframes revealin{from{transform:scale(.4);opacity:0}}
+.reveal .lcd{width:100%}
+.reveal canvas{display:block;width:100%;aspect-ratio:13/9}
+.reveal .name{font:900 34px/1 var(--dots);text-align:center}
+.reveal .rar{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+.reveal .rar[data-r="1"]{color:var(--c1)} .reveal .rar[data-r="2"]{color:var(--c2)} .reveal .rar[data-r="3"]{color:var(--c3)}
+.reveal .new{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.cap-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:320px}
+.cap-acts button{height:54px;border-radius:16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;background:var(--panel);box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge)}
+.cap-acts button.primary{background:var(--ink);color:var(--panel);box-shadow:0 3px 0 #000}
+.cap-acts button:only-child{grid-column:1 / -1}
+
 /* ---------- Sheet & Hinweis ---------- */
 .scrim{position:absolute;inset:0;background:rgba(20,18,14,.35);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
 .scrim.show{opacity:1;pointer-events:auto}
@@ -526,6 +577,34 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   </main>
 
   <!-- ================= Verlauf ================= -->
+  <!-- ================= Sammlung ================= -->
+  <main class="screen" id="scr-coll" hidden>
+    <div class="plate">
+      <span class="screw l"></span><span class="screw r"></span>
+      <div class="brand"><b>Sammlung</b><span id="co-count">0 / 14</span></div>
+      <div class="lcd">
+        <div class="co-scene"><canvas id="co-cv" aria-label="Dein Monster mit Zubehör" role="img"></canvas></div>
+        <div class="lrow"><span id="co-worn">Trägt nichts</span><span id="co-caps">0 Kapseln</span></div>
+      </div>
+    </div>
+    <button class="bigkey co-open" id="co-open" type="button"><span class="ball"></span><span id="co-open-t">Kapsel öffnen</span></button>
+    <div class="list"><div class="album" id="album"></div><p class="sync">Jeder Arbeitstag ab 1 Std netto bringt eine Kapsel</p></div>
+  </main>
+
+  <!-- Kapsel-Automat -->
+  <div class="capsule" id="cap" hidden role="dialog" aria-modal="true" aria-labelledby="cap-h">
+    <h2 id="cap-h">Kapsel-Automat</h2>
+    <button type="button" class="cap-ball" id="cap-ball" aria-label="Kapsel öffnen"><span class="top"></span><span class="bot"></span><span class="band"></span><span class="shine"></span></button>
+    <div class="reveal" id="cap-rev" hidden>
+      <div class="lcd"><canvas id="cap-cv"></canvas></div>
+      <div class="rar" id="cap-rar"></div>
+      <div class="name" id="cap-name"></div>
+      <div class="new" id="cap-new"></div>
+    </div>
+    <p class="hint" id="cap-hint">Tippen zum Öffnen</p>
+    <div class="cap-acts" id="cap-acts" hidden></div>
+  </div>
+
   <main class="screen" id="scr-hist" hidden>
     <div class="plate">
       <span class="screw l"></span><span class="screw r"></span>
@@ -547,6 +626,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     <button class="key" type="button" data-tab="clock" aria-current="page"><span class="dot"></span>Uhr</button>
     <button class="key" type="button" data-tab="calc"><span class="dot"></span>Rechner</button>
     <button class="key" type="button" data-tab="hist"><span class="dot"></span>Verlauf</button>
+    <button class="key" type="button" data-tab="coll"><span class="dot"></span>Sammlung<span class="kbadge" id="kb-coll" hidden>0</span></button>
   </nav>
 
   <div class="scrim" id="scrim"></div>
@@ -599,6 +679,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 
   // ---------- Zustand ----------
   let state = { entries: [], active: null };
+  let game = null;            // Spielstand der Sammlung (Kapseln, Items), siehe loadGame()
   let view = "hm";
   let tab = "clock";
   let docRef = null;
@@ -840,13 +921,15 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   const SIT = [".###.......###."];
   const ARMS = ["#.............#", "#.............#"];
   const BOW = ["##.##", "#.#.#", "##.##"];
+  const setPx = (x, y, v) => { x |= 0; y |= 0; if (x >= 0 && x < COLS && y >= 0 && y < ROWS) buf[y * COLS + x] = v; };
   function monster(x, y, eyes, mouth, legs, armsUp, flip){
     BODY.forEach((r, j) => { if (r) sprite([r], x, y + j, flip); });
-    if (C.bow) sprite(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, x + 5, y - 1);   // Pink: Schleife zwischen den Hörnchen
+    if (C.bow && !(game && game.worn.kopf)) sprite(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, x + 5, y - 1);   // Pink: Schleife zwischen den Hörnchen
     sprite(EYES[eyes], x, y + 5, flip);
     sprite(MOUTH[mouth], x, y + 9, flip);
     sprite(legs, x, y + 14, flip);
     sprite(ARMS, x, y + (armsUp ? 2 : 10));
+    drawWorn(x, y, flip, setPx, performance.now());
   }
   const HOUSE = ["....#....", "...###...", "..#####..", ".#######.", "#########", ".#.....#.", ".#.###.#.", ".#.#+#.#.", ".#.#+#.#."];
   const CUP = ["+++++.", "#####.", "######", "#####.", "#####."];
@@ -1357,12 +1440,177 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
     });
   }
 
+  // ---------- Sammlung: Kapseln, Items, Album ----------
+  // Zeichen in Item-Sprites: # voll, + halb, o aus (macht Löcher in den Körper), . nichts
+  // dx/dy relativ zur linken oberen Ecke des Monsters (15 × 16)
+  const RARITY = { 1: "Gewöhnlich", 2: "Selten", 3: "Legendär" };
+  const SLOTS = { kopf: "Kopf", gesicht: "Gesicht", hals: "Hals", ruecken: "Rücken" };
+  const ITEMS = [
+    { id: "muetze",    name: "Mütze",      r: 1, slot: "kopf",    dx: 3, dy: -3, s: ["....#....", "..#####..", ".#######.", "+++++++++"] },
+    { id: "kappe",     name: "Kappe",      r: 1, slot: "kopf",    dx: 3, dy: -2, s: ["..#####..", ".#######.", "###########"] },
+    { id: "stirnband", name: "Stirnband",  r: 1, slot: "kopf",    dx: 2, dy: 3,  s: ["+++++++++++"] },
+    { id: "blume",     name: "Blume",      r: 1, slot: "kopf",    dx: 12, dy: -4, s: [".#.", "#+#", ".#.", ".+."] },
+    { id: "schal",     name: "Schal",      r: 1, slot: "hals",    dx: 1, dy: 11, s: ["+++++++++++++", "..........++.", "..........++."] },
+    { id: "fliege",    name: "Fliege",     r: 1, slot: "hals",    dx: 5, dy: 11, s: ["o...o", "oo#oo", "o...o"] },
+    { id: "krone",     name: "Krone",      r: 2, slot: "kopf",    dx: 4, dy: -3, s: ["#.#.#.#", "#######", "+#+#+#+"] },
+    { id: "partyhut",  name: "Partyhut",   r: 2, slot: "kopf",    dx: 5, dy: -6, s: ["..#..", "..+..", ".###.", ".+#+.", "##+##", "#####"] },
+    { id: "zylinder",  name: "Zylinder",   r: 2, slot: "kopf",    dx: 4, dy: -5, s: [".#####.", ".#####.", ".+++++.", ".#####.", "#######"] },
+    { id: "brille",    name: "Sonnenbrille", r: 2, slot: "gesicht", dx: 2, dy: 5, s: ["#+++###+++#", ".+++...+++.", "..+.....+.."] },
+    { id: "heiligenschein", name: "Heiligenschein", r: 3, slot: "kopf", dx: 3, dy: -5, s: [".#######.", "#.......#", ".#######."] },
+    { id: "zauberhut", name: "Zauberhut",  r: 3, slot: "kopf",    dx: 3, dy: -7, s: [".....#...", "....##...", "...###...", "..##+##..", "..#####..", ".#######.", "#########"] },
+    { id: "umhang",    name: "Umhang",     r: 3, slot: "ruecken", dx: -2, dy: 3, s: ["..#.............#..", ".#+.............+#.", ".#+.............+#.", ".#+.............+#.", "##+.............+##", "##+.............+##", "#++.............++#", "#++.............++#", "#++.............++#", "##+.............+##", "###.............###"] },
+    { id: "rakete",    name: "Raketenrucksack", r: 3, slot: "ruecken", dx: -2, dy: 5,
+      frames: [
+        [".+...............+.", "++...............++", "++...............++", "++...............++", "++...............++", "++...............++", ".#...............#.", "#+#.............#+#", ".#...............#."],
+        [".+...............+.", "++...............++", "++...............++", "++...............++", "++...............++", "++...............++", ".#...............#.", ".#...............#.", "..................."]
+      ] }
+  ];
+  const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+  const LS_GAME = "stempelkarte:spiel";
+  // Arbeitstage mit mindestens 1 Std netto (Abwesenheiten zählen nicht)
+  function eligibleDays(){
+    const m = new Map();
+    state.entries.forEach(e => { if (e.type) return; const d = dayStart(e.start); m.set(d, (m.get(d) || 0) + entryNet(e)); });
+    return [...m].filter(([, v]) => v >= 60).map(([d]) => d);
+  }
+  function saveGame(){ try { localStorage.setItem(LS_GAME, JSON.stringify(game)); } catch(e){} }
+  function loadGame(){
+    try { game = JSON.parse(localStorage.getItem(LS_GAME) || "null"); } catch(e){ game = null; }
+    if (!game || game.v !== 1) { game = { v: 1, claimed: eligibleDays(), capsules: 3, items: {}, worn: {} }; saveGame(); }   // 3 Willkommens-Kapseln, alte Tage zählen nicht
+  }
+  // Neue Arbeitstage in Kapseln umwandeln (einmal je Tag, wird nie zurückgenommen)
+  function syncCapsules(){
+    const have = new Set(game.claimed), fresh = eligibleDays().filter(d => !have.has(d));
+    if (!fresh.length) return;
+    game.claimed.push(...fresh); game.capsules += fresh.length; saveGame();
+    tapMsg = fresh.length === 1 ? "Neue Kapsel verdient!" : `${fresh.length} neue Kapseln!`; tapUntil = Date.now() + 4500;
+  }
+  function drawWorn(x, y, flip, set, t){
+    if (!game) return;
+    ["ruecken", "hals", "gesicht", "kopf"].forEach(slot => {
+      const it = ITEM[game.worn[slot]]; if (!it) return;
+      const rows = it.frames ? it.frames[Math.floor(t / 160) % it.frames.length] : it.s;
+      rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) {
+        const ch = r[i]; if (ch === ".") continue;
+        set(flip ? x + 14 - (it.dx + i) : x + it.dx + i, y + it.dy + j, ch === "#" ? 2 : ch === "+" ? 1 : 0);
+      } });
+    });
+  }
+  // Kleines Pixel-Display auf einen Canvas zeichnen (gleiche Optik wie das große Display)
+  function pixelCanvas(cv, cols, rows, paint){
+    const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    const g = new Uint8Array(cols * rows), x2 = cv.getContext("2d");
+    const set = (x, y, v) => { if (x >= 0 && x < cols && y >= 0 && y < rows) g[y * cols + x] = v; };
+    const add = (x, y, v) => { if (x >= 0 && x < cols && y >= 0 && y < rows && v > g[y * cols + x]) g[y * cols + x] = v; };
+    paint(set, add);
+    const cell = Math.min(cv.width / cols, cv.height / rows), ox = (cv.width - cols * cell) / 2, oy = (cv.height - rows * cell) / 2;
+    x2.fillStyle = C.bg; x2.fillRect(0, 0, cv.width, cv.height);
+    for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++) {
+      const v = g[yy * cols + xx], cx = ox + (xx + .5) * cell, cy = oy + (yy + .5) * cell;
+      x2.fillStyle = v === 2 ? C.full : v === 1 ? C.half : C.off;
+      if (C.square) { const q = cell * .9; x2.fillRect(cx - q / 2, cy - q / 2, q, q); }
+      else { x2.beginPath(); x2.arc(cx, cy, cell * (v ? .42 : .34), 0, 6.2832); x2.fill(); }
+    }
+  }
+  function paintItem(it, set, add, cols, rows, silhouette, t){
+    const r = it.frames ? it.frames[Math.floor((t || 0) / 160) % it.frames.length] : it.s;
+    const w = Math.max(...r.map(x => x.length)), x0 = Math.floor((cols - w) / 2), y0 = Math.floor((rows - r.length) / 2);
+    // Einzeln gezeigt werden "Löcher" (o) als volle Pixel gezeichnet, sonst wäre z. B. die Fliege unsichtbar
+    r.forEach((row, j) => { for (let i = 0; i < row.length; i++) { const ch = row[i]; if (ch === ".") continue; add(x0 + i, y0 + j, silhouette ? 1 : ch === "+" ? 1 : ch === "#" && r.join("").includes("o") ? 1 : 2); } });
+  }
+  function paintMonster(set, add, cols, rows, t){
+    const mx = Math.floor((cols - 15) / 2), my = rows - 17;
+    const spr = (rws, x, y) => rws.forEach((r, j) => { for (let i = 0; i < r.length; i++) { if (r[i] === "#") add(x + i, y + j, 2); else if (r[i] === "+") add(x + i, y + j, 1); } });
+    BODY.forEach((r, j) => { if (r) spr([r], mx, my + j); });
+    if (C.bow && !game.worn.kopf) spr(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, mx + 5, my - 1);
+    const blink = (t % 3400) < 140;
+    spr(EYES[blink ? "blink" : "open"], mx, my + 5); spr(MOUTH.smile, mx, my + 9); spr(LEGS[0], mx, my + 14); spr(ARMS, mx, my + 10);
+    drawWorn(mx, my, false, set, t);
+  }
+
+  function renderColl(){
+    const owned = ITEMS.filter(i => game.items[i.id]).length;
+    $("co-count").textContent = `${owned} / ${ITEMS.length}`;
+    $("co-caps").textContent = game.capsules === 1 ? "1 Kapsel" : `${game.capsules} Kapseln`;
+    const worn = Object.values(game.worn).map(id => ITEM[id] && ITEM[id].name).filter(Boolean);
+    $("co-worn").textContent = worn.length ? "Trägt: " + worn.join(", ") : "Trägt nichts";
+    $("co-open").disabled = !game.capsules;
+    $("co-open-t").textContent = game.capsules ? `Kapsel öffnen (${game.capsules})` : "Nächste Kapsel nach dem nächsten Arbeitstag";
+    $("kb-coll").hidden = !game.capsules; $("kb-coll").textContent = game.capsules;
+    $("album").innerHTML = ITEMS.map(it => {
+      const n = game.items[it.id] || 0, worn = game.worn[it.slot] === it.id;
+      return `<button type="button" class="card${n ? "" : " locked"}${worn ? " worn" : ""}" data-r="${it.r}" data-item="${it.id}" aria-label="${n ? it.name : "Noch nicht gefunden"}">
+        <canvas></canvas><b>${n ? it.name : "???"}</b><span class="r">${RARITY[it.r]} · ${SLOTS[it.slot]}</span>${n > 1 ? `<span class="cnt">×${n}</span>` : ""}</button>`;
+    }).join("");
+    $("album").querySelectorAll(".card").forEach(card => {
+      const it = ITEM[card.dataset.item], n = game.items[it.id];
+      pixelCanvas(card.querySelector("canvas"), 21, 13, (set, add) => paintItem(it, set, add, 21, 13, !n, 0));
+      card.onclick = () => {
+        if (!n) { say(`${RARITY[it.r]}es Item · noch nicht gefunden`); return; }
+        if (game.worn[it.slot] === it.id) delete game.worn[it.slot]; else game.worn[it.slot] = it.id;
+        saveGame(); buzz(8); renderColl();
+      };
+    });
+    drawCollPreview();
+  }
+  function drawCollPreview(){ pixelCanvas($("co-cv"), 31, 24, (set, add) => paintMonster(set, add, 31, 24, performance.now())); }
+  setInterval(() => { if (tab === "coll" && !document.hidden) drawCollPreview(); }, 160);
+
+  // Zufallsitem: 70 % gewöhnlich, 25 % selten, 5 % legendär; Doppelte werden einmal neu gezogen
+  function rollItem(){
+    const pick = () => { const x = Math.random(), r = x < .05 ? 3 : x < .30 ? 2 : 1, pool = ITEMS.filter(i => i.r === r); return pool[Math.floor(Math.random() * pool.length)]; };
+    let it = pick(); if (game.items[it.id]) it = pick();
+    return it;
+  }
+  let capItem = null, capAnim = 0;
+  function openCapsule(){
+    if (!game.capsules) return;
+    capItem = rollItem(); game.capsules--; const isNew = !game.items[capItem.id];
+    game.items[capItem.id] = (game.items[capItem.id] || 0) + 1; saveGame();
+    const ball = $("cap-ball");
+    ball.className = "cap-ball shake" + (capItem.r === 3 ? " legend" : "");
+    ball.style.setProperty("--cap", capItem.r === 2 ? "var(--c2)" : capItem.r === 3 ? "var(--c3)" : "var(--c1)");
+    ball.hidden = false; $("cap-rev").hidden = true; $("cap-acts").hidden = true;
+    $("cap-hint").textContent = "Tippen zum Öffnen"; $("cap").hidden = false; buzz(10);
+    ball.onclick = () => {
+      if (ball.classList.contains("open")) return;
+      ball.classList.remove("shake"); ball.classList.add("open"); buzz(capItem.r === 3 ? [20, 40, 20, 40, 60] : [15, 30, 25]);
+      setTimeout(() => {
+        ball.hidden = true; $("cap-hint").textContent = "";
+        $("cap-rar").textContent = RARITY[capItem.r]; $("cap-rar").dataset.r = capItem.r;
+        $("cap-name").textContent = capItem.name;
+        $("cap-new").textContent = isNew ? `Neu! · ${SLOTS[capItem.slot]}` : `Doppelt · jetzt ×${game.items[capItem.id]}`;
+        $("cap-rev").hidden = false;
+        const t0 = performance.now(), sparks = [];
+        cancelAnimationFrame(capAnim);
+        (function loop(t){
+          if ($("cap").hidden) return;
+          pixelCanvas($("cap-cv"), 26, 18, (set, add) => {
+            paintItem(capItem, set, add, 26, 18, false, t);
+            if (capItem.r > 1 && Math.random() < .5) sparks.push({ x: Math.random() * 26, y: Math.random() * 18, l: 6 });
+            sparks.forEach(sp => { if (sp.l-- > 0) add(sp.x | 0, sp.y | 0, sp.l > 3 ? 2 : 1); });
+          });
+          if (t - t0 < 60000) capAnim = requestAnimationFrame(loop);
+        })(t0);
+        const acts = $("cap-acts"); acts.innerHTML = "";
+        const btn = (label, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = fn; acts.appendChild(b); };
+        if (game.worn[capItem.slot] !== capItem.id) btn("Anziehen", "", () => { game.worn[capItem.slot] = capItem.id; saveGame(); closeCapsule(); });
+        btn(game.capsules ? `Nächste (${game.capsules})` : "Fertig", "primary", () => { if (game.capsules) openCapsule(); else closeCapsule(); });
+        acts.hidden = false;
+      }, 420);
+    };
+  }
+  function closeCapsule(){ $("cap").hidden = true; cancelAnimationFrame(capAnim); renderAll(); }
+  $("co-open").onclick = () => { buzz(6); openCapsule(); };
+
   // ---------- Navigation & Format ----------
   document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => {
     if (tab === b.dataset.tab) return;
     tab = b.dataset.tab; buzz(5);
     document.querySelectorAll("[data-tab]").forEach(x => x === b ? x.setAttribute("aria-current", "page") : x.removeAttribute("aria-current"));
-    ["clock", "calc", "hist"].forEach(t => $("scr-" + t).hidden = t !== tab);
+    ["clock", "calc", "hist", "coll"].forEach(t => $("scr-" + t).hidden = t !== tab);
     const l = $("scr-" + tab).querySelector(".list"); if (l) l.scrollTop = 0;
     if (tab === "clock") requestAnimationFrame(fitCanvas);
     renderAll();
@@ -1376,7 +1624,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { setView(b.dataset.view); buzz(5); });
   setView(view);
 
-  function renderAll(){ renderClock(); renderCalc(); renderHist(); }
+
+  function renderAll(){ if (!game) loadGame(); syncCapsules(); renderClock(); renderCalc(); renderHist(); renderColl(); }
 
   // ---------- Doppelpunkte in Ziffernanzeigen ----------
   // Ersetzt ":" in Doto-Anzeigen durch ein eigenes, mittig sitzendes Element; das ":" bleibt unsichtbar im Text erhalten.
@@ -1783,9 +2032,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       const bob = Math.round(Math.sin(el / 420) * .6);
       const mx = Math.floor((cols - 15) / 2), my = Math.floor((rows - 16) / 2) + 1 + bob;
       BODY.forEach((r, j) => { if (r) spr([r], mx, my + j); });
-      if (C.bow) spr(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, mx + 5, my - 1);
+      if (C.bow && !game.worn.kopf) spr(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, mx + 5, my - 1);
       spr(EYES[eyes], mx, my + 5); spr(MOUTH[mouth], mx, my + 9); spr(LEGS[0], mx, my + 14);
       spr(ARMS, mx, my + (armsUp ? 2 : 10));
+      drawWorn(mx, my, false, (x, y, v) => { if (x >= 0 && x < cols && y >= 0 && y < rows) grid[y * cols + x] = v; }, t);
       if (splashEyes === "wake" && el < 1400) { const z = Math.floor(el / 350) % 3; spr(Z, mx + 16, my - 1 + z); }
       if (splashEyes === "wide") { spr(MOON, cols - 5, 1); }
       if (splashEyes === "happy" || splashEyes === "wake") spr(SUN, cols - 6, 1);
@@ -1817,7 +2067,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   document.addEventListener("focusin", e => { if (e.target.closest && e.target.closest("#sheet-b")) setTimeout(() => e.target.scrollIntoView({ block: "center", behavior: "smooth" }), 300); });
   // Das Gerät darf nie verrutschen (z. B. wenn iOS ein fokussiertes Feld ins Bild schieben will)
   $("dev").addEventListener("scroll", e => { if (e.target.scrollTop) e.target.scrollTop = 0; });
-  applyAppearance(); fitCanvas(); renderAll(); openSplash();
+  loadGame(); applyAppearance(); fitCanvas(); renderAll(); openSplash();
   (function reveal(){
     const t0 = performance.now(), MIN = 350, MAX = 900;
     const fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('900 40px "Doto"'), document.fonts.load('600 12px "Chivo Mono"')]) : Promise.resolve();
