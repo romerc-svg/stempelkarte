@@ -421,7 +421,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .co-scene canvas{position:absolute;inset:0;width:100%;height:100%}
 @media (max-height:720px){.co-scene{height:118px}}
 .co-open{display:flex;align-items:center;justify-content:center;gap:10px}
-.co-open .ball{width:22px;height:22px;border-radius:50%;background:linear-gradient(var(--accent) 50%,var(--panel) 50%);box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.co-open .ball{flex:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(var(--accent) 50%,var(--panel) 50%);box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
 .album{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 14px 0}
 .card{position:relative;background:var(--panel);border-radius:16px;padding:7px 7px 9px;box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);text-align:center;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:2px solid transparent;min-width:0}
 .card:active{transform:translateY(1px)}
@@ -1444,14 +1444,14 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   // Zeichen in Item-Sprites: # voll, + halb, o aus (macht Löcher in den Körper), . nichts
   // dx/dy relativ zur linken oberen Ecke des Monsters (15 × 16)
   const RARITY = { 1: "Gewöhnlich", 2: "Selten", 3: "Legendär" };
-  const SLOTS = { kopf: "Kopf", gesicht: "Gesicht", hals: "Hals", ruecken: "Rücken" };
+  const SLOTS = { kopf: "Kopf", gesicht: "Gesicht", hals: "Hals", ruecken: "Rücken", hand: "Hand" };
   const ITEMS = [
     { id: "muetze",    name: "Mütze",      r: 1, slot: "kopf",    dx: 3, dy: -3, s: ["....#....", "..#####..", ".#######.", "+++++++++"] },
     { id: "kappe",     name: "Kappe",      r: 1, slot: "kopf",    dx: 3, dy: -2, s: ["..#####..", ".#######.", "###########"] },
     { id: "stirnband", name: "Stirnband",  r: 1, slot: "kopf",    dx: 2, dy: 3,  s: ["+++++++++++"] },
     { id: "blume",     name: "Blume",      r: 1, slot: "kopf",    dx: 12, dy: -4, s: [".#.", "#+#", ".#.", ".+."] },
     { id: "schal",     name: "Schal",      r: 1, slot: "hals",    dx: 1, dy: 11, s: ["+++++++++++++", "..........++.", "..........++."] },
-    { id: "fliege",    name: "Fliege",     r: 1, slot: "hals",    dx: 5, dy: 11, s: ["o...o", "oo#oo", "o...o"] },
+    { id: "ballon",    name: "Luftballon", r: 1, slot: "hand",    dx: 14, dy: -7, s: ["..###.", ".#####", ".#+###", ".#####", "..###.", "...#..", "...+..", "...+..", "..+...", "..+...", ".+....", ".+....", ".+....", ".+....", ".+....", ".+....", "+....."] },
     { id: "krone",     name: "Krone",      r: 2, slot: "kopf",    dx: 4, dy: -3, s: ["#.#.#.#", "#######", "+#+#+#+"] },
     { id: "partyhut",  name: "Partyhut",   r: 2, slot: "kopf",    dx: 5, dy: -6, s: ["..#..", "..+..", ".###.", ".+#+.", "##+##", "#####"] },
     { id: "zylinder",  name: "Zylinder",   r: 2, slot: "kopf",    dx: 4, dy: -5, s: [".#####.", ".#####.", ".+++++.", ".#####.", "#######"] },
@@ -1477,6 +1477,8 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   function loadGame(){
     try { game = JSON.parse(localStorage.getItem(LS_GAME) || "null"); } catch(e){ game = null; }
     if (!game || game.v !== 1) { game = { v: 1, claimed: eligibleDays(), capsules: 3, items: {}, worn: {} }; saveGame(); }   // 3 Willkommens-Kapseln, alte Tage zählen nicht
+    // Die Fliege wurde durch den Luftballon ersetzt
+    if (game.items.fliege) { game.items.ballon = (game.items.ballon || 0) + game.items.fliege; delete game.items.fliege; if (game.worn.hals === "fliege") { delete game.worn.hals; game.worn.hand = "ballon"; } saveGame(); }
   }
   // Neue Arbeitstage in Kapseln umwandeln (einmal je Tag, wird nie zurückgenommen)
   function syncCapsules(){
@@ -1487,7 +1489,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   }
   function drawWorn(x, y, flip, set, t){
     if (!game) return;
-    ["ruecken", "hals", "gesicht", "kopf"].forEach(slot => {
+    ["ruecken", "hals", "gesicht", "kopf", "hand"].forEach(slot => {
       const it = ITEM[game.worn[slot]]; if (!it) return;
       const rows = it.frames ? it.frames[Math.floor(t / 160) % it.frames.length] : it.s;
       rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) {
@@ -1537,7 +1539,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     const worn = Object.values(game.worn).map(id => ITEM[id] && ITEM[id].name).filter(Boolean);
     $("co-worn").textContent = worn.length ? "Trägt: " + worn.join(", ") : "Trägt nichts";
     $("co-open").disabled = !game.capsules;
-    $("co-open-t").textContent = game.capsules ? `Kapsel öffnen (${game.capsules})` : "Nächste Kapsel nach dem nächsten Arbeitstag";
+    $("co-open-t").textContent = game.capsules ? `Kapsel öffnen (${game.capsules})` : "Nächste Kapsel nach Feierabend";
     $("kb-coll").hidden = !game.capsules; $("kb-coll").textContent = game.capsules;
     $("album").innerHTML = ITEMS.map(it => {
       const n = game.items[it.id] || 0, worn = game.worn[it.slot] === it.id;
