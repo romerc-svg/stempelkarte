@@ -501,6 +501,42 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .cap-acts button.primary{background:var(--ink);color:var(--panel);box-shadow:0 3px 0 #000}
 .cap-acts button:only-child{grid-column:1 / -1}
 
+/* ---------- Tagesabschluss (Game-Boy-Ergebnisfenster) ---------- */
+.dayc{--g0:#0F380F;--g1:#306230;--g2:#8BAC0F;--g3:#9BBC0F;position:absolute;inset:0;z-index:78;display:grid;place-items:center;padding:20px;background:rgba(6,14,6,.72);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
+.dc-card{position:relative;width:min(100%,330px);padding:22px 20px 20px;background:var(--g0);color:var(--g3);display:flex;flex-direction:column;align-items:stretch;gap:12px;
+  border:3px solid var(--g2);box-shadow:0 0 0 3px var(--g0),0 0 0 6px var(--g1);animation:dcpop .35s steps(4)}
+.dc-card::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px)}
+@keyframes dcpop{0%{transform:scale(.4)}50%{transform:scale(1.06)}100%{transform:none}}
+.dc-h{text-align:center;white-space:nowrap;font:900 clamp(24px,8vw,34px)/1 var(--dots);letter-spacing:.03em;text-shadow:3px 3px 0 var(--g1);animation:lvblink .4s steps(1) 3}
+.dc-time{text-align:center;font:600 13px var(--mono);letter-spacing:.1em;color:var(--g2)}
+.dc-time b{font:900 34px/1 var(--dots);color:var(--g3);letter-spacing:0}
+.dc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:2px solid var(--g1);font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.dc-row b{font:900 24px/1 var(--dots);letter-spacing:0;color:var(--g3)}
+.dc-row.in{animation:dcin .3s steps(3)}
+@keyframes dcin{from{transform:translateX(-24px);opacity:0}}
+.dc-flame{display:inline-block;width:14px;height:16px;margin-right:8px;vertical-align:-2px;background:var(--g3);
+  clip-path:polygon(43% 0,57% 0,57% 13%,71% 13%,71% 31%,86% 31%,86% 44%,100% 44%,100% 88%,86% 88%,86% 100%,14% 100%,14% 88%,0 88%,0 50%,14% 50%,14% 31%,29% 31%,29% 19%,43% 19%)}
+.dc-lv{display:flex;flex-direction:column;gap:6px}
+.dc-lvhead{display:flex;justify-content:space-between;font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--g2)}
+.dc-lvhead b{font:900 20px/1 var(--dots);color:var(--g3);letter-spacing:.02em}
+.dc-bar{position:relative;height:14px;border:3px solid var(--g1);background:var(--g0)}
+.dc-bar i{display:block;height:100%;width:0;background:var(--g3);transition:width .7s steps(10)}
+.dc-bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),var(--g0) calc(10% - 2px) 10%)}
+.dc-bar.flash i{animation:barflash .3s steps(1) 3}
+@keyframes barflash{50%{background:var(--g0)}}
+.dc-extra{display:flex;flex-direction:column;gap:8px}
+.dc-ach{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:10px;padding:8px 10px;border:2px solid var(--g2);animation:dcin .3s steps(3)}
+.dc-ach canvas{width:44px;aspect-ratio:40/42;display:block}
+.dc-ach small{display:block;font:600 9px var(--mono);letter-spacing:.16em;color:var(--g2)}
+.dc-ach strong{display:block;font:900 17px/1.1 var(--dots);color:var(--g3);text-transform:uppercase}
+.dc-ach em{font:900 18px/1 var(--dots);font-style:normal;color:var(--g3)}
+.dc-up{text-align:center;padding:8px;border:2px solid var(--g3);animation:dcin .3s steps(3)}
+.dc-up b{display:block;font:900 26px/1 var(--dots);animation:lvblink .4s steps(1) 4}
+.dc-up span{font:600 11px var(--mono);letter-spacing:.2em;color:var(--g2)}
+.dc-ok{align-self:center;margin-top:4px;width:62%;height:44px;background:transparent;border:3px solid var(--g3);color:var(--g3);font:600 12px var(--mono);letter-spacing:.24em;text-transform:uppercase;opacity:0;transition:opacity .2s}
+.dc-ok.show{opacity:1}
+.dc-ok:active{background:var(--g1)}
+
 /* ---------- Level-up (immer Game-Boy-Palette) ---------- */
 .lvlup{--g0:#0F380F;--g1:#306230;--g2:#8BAC0F;--g3:#9BBC0F;position:absolute;inset:0;z-index:80;background:var(--g0);color:var(--g3);display:grid;place-items:center;padding:24px 20px;
   animation:lvflash .6s steps(1)}
@@ -540,7 +576,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .sheet .acts button{height:54px;border-radius:16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;background:var(--body);box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge)}
 .sheet .acts button.primary{background:var(--ink);color:var(--panel);box-shadow:0 3px 0 #000}
 .sheet .acts button.danger{background:var(--danger);color:#fff;box-shadow:0 3px 0 var(--danger-edge)}
-.toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translate(-50%,-180%);background:var(--ink);color:var(--panel);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:6px 6px 6px 16px;min-height:40px;border-radius:99px;z-index:50;transition:transform .5s var(--spring);white-space:nowrap;display:flex;align-items:center;gap:12px}
+.toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translate(-50%,-180%);background:var(--ink);color:var(--panel);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:6px 6px 6px 16px;min-height:40px;border-radius:99px;z-index:95;transition:transform .5s var(--spring);white-space:nowrap;display:flex;align-items:center;gap:12px}
 .toast:not(.undo){padding-right:16px}
 .toast button{display:none;background:var(--accent);color:var(--accent-fg);border-radius:99px;padding:7px 12px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
 .toast.undo button{display:block}
@@ -686,6 +722,22 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       <div class="ach-reward"><span class="chip" id="cel-chip">Kapsel</span><span id="cel-rw">+1</span></div>
       <button type="button" class="ach-ok" id="cel-ok">OK</button>
     </div></div>
+  </div>
+
+  <!-- Tagesabschluss nach dem Ausstempeln -->
+  <div class="dayc" id="dayc" hidden role="dialog" aria-modal="true" aria-labelledby="dc-h">
+    <div class="dc-card">
+      <div class="dc-h" id="dc-h">DAY COMPLETE</div>
+      <div class="dc-time"><b id="dc-t">0:00</b> / <span id="dc-s">0:00</span> h</div>
+      <div class="dc-row" id="dc-xprow"><span>XP</span><b>+<span id="dc-xp">0</span></b></div>
+      <div class="dc-row" id="dc-streak" hidden><span><i class="dc-flame"></i>Streak</span><b id="dc-sn">0</b></div>
+      <div class="dc-lv">
+        <div class="dc-lvhead"><b id="dc-lvl">LEVEL 01</b><span id="dc-xpr">0 / 250 XP</span></div>
+        <div class="dc-bar" id="dc-bar"><i id="dc-fill"></i></div>
+      </div>
+      <div class="dc-extra" id="dc-extra"></div>
+      <button type="button" class="dc-ok" id="dc-ok">Weiter</button>
+    </div>
   </div>
 
   <!-- Level-up im Game-Boy-Stil -->
@@ -1179,13 +1231,79 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       state.active = { start: Date.now() }; charX = 0;
       buzz([10, 40, 10]); say("Eingestempelt " + clock(state.active.start), undo);
     } else {
-      const start = state.active.start, end = Date.now();
-      if (end - start >= 60000) { state.entries.push({ id: "e" + end.toString(36), start, end }); say("Aus · " + dig(netOf(minsBetween(start, end))) + " Std", undo); }
+      const start = state.active.start, end = Date.now(), s0 = today(), st0 = lastStats || stats();
+      const pre = { target: s0.dayTarget, xp: st0.xp, level: st0.level, xpIn: st0.xpIn, xpNext: st0.xpNext };
+      let saved = false;
+      if (end - start >= 60000) { state.entries.push({ id: "e" + end.toString(36), start, end }); saved = true; say("Aus · " + dig(netOf(minsBetween(start, end))) + " Std", () => { closeDayComplete(); undo(); }); }
       else say("Unter 1 Min, nicht gespeichert", undo);
       state.active = null; buzz(18);
+      save(); renderAll();
+      if (saved) showDayComplete(pre);
+      return;
     }
     save(); renderAll();
   }
+
+  // ---------- Tagesabschluss ----------
+  // Zeigt nach dem Ausstempeln Netto/Ziel, gewonnene XP, Serie und Level; Abzeichen und Level-up aus derselben Aktion erscheinen hier mit
+  let dcTimers = [];
+  function closeDayComplete(){ dcTimers.forEach(clearTimeout); dcTimers = []; $("dayc").hidden = true; }
+  function showDayComplete(pre){
+    const st = lastStats || stats(), s = today(), at = (ms, fn) => dcTimers.push(setTimeout(fn, ms));
+    // Abzeichen, Level und Serie dieser Aktion hier zeigen statt in eigenen Fenstern
+    const mine = [], keep = [];
+    celebQ.splice(0).forEach(c => (c.kind === "season" ? keep : mine).push(c)); celebQ.push(...keep);
+    const met = s.todayNet >= pre.target - .5;
+    $("dc-h").textContent = met ? "DAY COMPLETE" : "FEIERABEND";
+    $("dc-t").textContent = dig(s.todayNet); $("dc-s").textContent = dig(pre.target);
+    $("dc-xp").textContent = "0";
+    $("dc-streak").hidden = true; $("dc-extra").innerHTML = ""; $("dc-ok").classList.remove("show");
+    $("dc-lvl").textContent = "LEVEL " + String(pre.level).padStart(2, "0");
+    $("dc-xpr").textContent = `${pre.xpIn.toLocaleString("de-DE")} / ${pre.xpNext.toLocaleString("de-DE")} XP`;
+    const fill = $("dc-fill"); fill.style.transition = "none"; fill.style.width = (pre.xpIn / pre.xpNext * 100) + "%"; void fill.offsetWidth; fill.style.transition = "";
+    closeDayComplete(); $("dayc").hidden = false; buzz(met ? [20, 50, 20, 50, 60] : 20);
+    // XP hochzählen
+    const gain = Math.max(0, st.xp - pre.xp);
+    at(450, () => { const t0 = performance.now(), tick = () => { const k = Math.min(1, (performance.now() - t0) / 650); $("dc-xp").textContent = Math.round(gain * k); if (k < 1) dcTimers.push(setTimeout(tick, 40)); else buzz(10); }; tick(); });
+    let t = 1150;
+    if (st.current > 0) at(t, () => { $("dc-sn").textContent = st.current; $("dc-streak").hidden = false; $("dc-streak").classList.add("in"); buzz(8); }), t += 350;
+    // Level-Balken: ggf. erst voll, Blitz, dann neues Level
+    const levelUp = mine.find(c => c.kind === "level");
+    at(t, () => {
+      if (st.level > pre.level) { fill.style.width = "100%"; }
+      else { fill.style.width = (st.xpIn / st.xpNext * 100) + "%"; $("dc-xpr").textContent = `${st.xpIn.toLocaleString("de-DE")} / ${st.xpNext.toLocaleString("de-DE")} XP`; }
+    }); t += 800;
+    if (st.level > pre.level) {
+      at(t, () => { $("dc-bar").classList.add("flash"); buzz([20, 30, 20]); }); t += 450;
+      at(t, () => {
+        $("dc-bar").classList.remove("flash");
+        $("dc-lvl").textContent = "LEVEL " + String(st.level).padStart(2, "0");
+        fill.style.transition = "none"; fill.style.width = "0"; void fill.offsetWidth; fill.style.transition = "";
+        fill.style.width = (st.xpIn / st.xpNext * 100) + "%";
+        $("dc-xpr").textContent = `${st.xpIn.toLocaleString("de-DE")} / ${st.xpNext.toLocaleString("de-DE")} XP`;
+        const up = document.createElement("div"); up.className = "dc-up";
+        up.innerHTML = `<b>LEVEL UP!</b><span>LEVEL ${String(st.level).padStart(2, "0")}${levelUp && levelUp.evolved ? " · " + STAGES[stageOf(st.level)].toUpperCase() : ""} · +${st.level - pre.level} KAPSEL${st.level - pre.level > 1 ? "N" : ""}</span>`;
+        $("dc-extra").appendChild(up); buzz([30, 60, 30, 60, 90]);
+      }); t += 700;
+    }
+    // Abzeichen und Serien-Belohnung
+    mine.filter(c => c.kind === "badge" || c.kind === "streak").forEach(c => {
+      at(t, () => {
+        const row = document.createElement("div"); row.className = "dc-ach";
+        if (c.kind === "badge") {
+          const b = BADGES.find(x => x.id === c.id), [col, rk] = BSTYLE[b.id];
+          row.innerHTML = `<canvas></canvas><div><small>ACHIEVEMENT UNLOCKED</small><strong>${b.name}</strong></div><em>+${XP_BADGE[rk]} XP</em>`;
+          $("dc-extra").appendChild(row); drawBadge(row.querySelector("canvas"), { color: col, icon: ICON2[b.icon] });
+        } else {
+          row.innerHTML = `<canvas></canvas><div><small>STREAK ${c.n} WOCHEN</small><strong>Goldene Kapsel</strong></div><em>+1</em>`;
+          $("dc-extra").appendChild(row); drawBadge(row.querySelector("canvas"), { color: "#FF6B2C", icon: ICON2.flamme });
+        }
+        buzz([15, 40, 25]);
+      }); t += 550;
+    });
+    at(t + 100, () => $("dc-ok").classList.add("show"));
+  }
+  $("dc-ok").onclick = () => { closeDayComplete(); renderAll(); setTimeout(showCeleb, 250); };
 
   // ---------- Vergessen auszustempeln? ----------
   // Über 12 Std eingestempelt oder seit gestern (ab 4 Uhr früh) → nachfragen, einmal pro Schicht
@@ -1887,7 +2005,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   }
   $("lv-ok").onclick = () => { $("lvl").hidden = true; renderAll(); setTimeout(showCeleb, 250); };
   function showCeleb(){
-    if (splashOn || !celebQ.length || !$("cel").hidden || !$("cap").hidden || !$("lvl").hidden) return;
+    if (splashOn || !celebQ.length || !$("cel").hidden || !$("cap").hidden || !$("lvl").hidden || !$("dayc").hidden) return;
     const c = celebQ.shift(); let spec, rib, head, title, sub, chip = "Kapsel", rw = "+1";
     if (c.kind === "level") return showLevelUp(c);
     const monsterRows = () => BODY.map((r, j) => r || (j >= 5 && j <= 7 ? EYES.happy[j - 5] : MOUTH.grin[j - 9])).concat(LEGS[0]);
@@ -1999,7 +2117,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 
   // ---------- Doppelpunkte in Ziffernanzeigen ----------
   // Ersetzt ":" in Doto-Anzeigen durch ein eigenes, mittig sitzendes Element; das ":" bleibt unsichtbar im Text erhalten.
-  const DOTO_SEL = ".read b, .imp, .istsoll b, .entry .n, .wk h3 b, .ldig, .live b, .sp-info b";
+  const DOTO_SEL = ".read b, .imp, .istsoll b, .entry .n, .wk h3 b, .ldig, .live b, .sp-info b, .dc-time b";
   function colonize(){
     document.querySelectorAll(DOTO_SEL).forEach(el => {
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), nodes = [];
