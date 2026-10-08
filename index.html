@@ -8,6 +8,35 @@
 <meta name="apple-mobile-web-app-title" content="TICKO">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" id="meta-theme" content="#D8D5CF">
+<style>
+  /* Sofort die Gehäusefarbe zeigen, noch bevor irgendetwas anderes geladen ist */
+  html,body{background:#D8D5CF}
+  @media (prefers-color-scheme:dark){html:not([data-theme="light"]),html:not([data-theme="light"]) body{background:#1D1E1B}}
+  html[data-theme="dark"],html[data-theme="dark"] body{background:#1D1E1B}
+</style>
+<!-- iOS-Startbilder: Gehäusefarbe mit Monster statt weißem Bildschirm -->
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1290x2796-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1290x2796-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1179x2556-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1179x2556-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1206x2622-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1206x2622-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1320x2868-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1320x2868-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1284x2778-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1284x2778-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1170x2532-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1170x2532-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1125x2436-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1125x2436-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1242x2688-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1242x2688-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-828x1792-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-828x1792-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-750x1334-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-750x1334-dark.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch/launch-1242x2208-light.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch/launch-1242x2208-dark.png">
 <script>
   // Gespeichertes Erscheinungsbild sofort setzen, damit nichts aufblitzt
   try {
@@ -22,7 +51,9 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Chivo+Mono:wght@400;600&display=swap" rel="stylesheet">
+<!-- Schriften laden, ohne das erste Bild zu blockieren -->
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Chivo+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Chivo+Mono:wght@400;600&display=swap" rel="stylesheet"></noscript>
 <style>
 /* TICKO – ein Gerät ("TK-1"): oben die Platte mit LED-Matrix, darunter der Bildschirm-Inhalt, unten drei Tasten.
    Auf dem Handy randlos, am Desktop als Gerät im Rahmen. */
@@ -328,13 +359,27 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .exsum{display:flex;justify-content:space-between;margin:10px 4px 0;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .exsum b{color:var(--ink)}
 
+/* ---------- Ladescreen (sieht aus wie das iOS-Startbild) ---------- */
+.boot{position:fixed;inset:0;z-index:100;background:var(--body);color:var(--accent);transition:opacity .5s ease;
+  animation:bootfail 0s 6s forwards}         /* falls das Skript hängt: nach 6 s weg */
+.boot svg{position:absolute;left:50%;top:45%;width:96px;height:102.4px;transform:translate(-50%,-50%);shape-rendering:crispEdges}
+.boot .dots{position:absolute;left:50%;top:calc(45% + 76px);transform:translateX(-50%);display:flex;gap:7px;opacity:0;animation:fadein .4s .25s forwards}
+.boot .dots i{width:7px;height:7px;background:currentColor;animation:bootdot 1s steps(1) infinite}
+.boot .dots i:nth-child(2){animation-delay:.33s}.boot .dots i:nth-child(3){animation-delay:.66s}
+@keyframes bootdot{0%,100%{opacity:.25}33%{opacity:1}}
+@keyframes fadein{to{opacity:1}}
+@keyframes bootfail{to{opacity:0;visibility:hidden}}
+.boot.out{opacity:0;pointer-events:none}
+
 /* ---------- Startbildschirm ---------- */
 .splash{position:absolute;inset:0;z-index:60;background:var(--body);display:flex;flex-direction:column;gap:14px;
   padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(env(safe-area-inset-bottom,0px) + 16px);
   transition:transform .7s cubic-bezier(.7,0,.2,1),opacity .5s .2s}
 @media (min-width:600px){.splash{padding-top:30px;padding-bottom:24px}}
 :root[data-palette="pink"] .splash{background-image:radial-gradient(circle,var(--sp1) 0 .6px,transparent 1.3px),radial-gradient(circle,var(--sp3) 0 .6px,transparent 1.3px);background-size:23px 29px,17px 21px}
-.splash.leave{transform:translateY(-104%);opacity:0}
+.splash{opacity:0;transform:scale(.97)}
+.splash.ready{opacity:1;transform:none;transition:opacity .6s ease,transform .8s var(--spring)}
+.splash.leave{transform:translateY(-104%);opacity:0;transition:transform .7s cubic-bezier(.7,0,.2,1),opacity .5s .2s}
 .splash .plate{flex:1;min-height:0;margin:0;display:flex;flex-direction:column}
 .splash .lcd{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 12px 18px}
 .sp-scene{flex:1;min-height:120px;position:relative}
@@ -388,6 +433,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 </style>
 </head>
 <body>
+<div class="boot" id="boot" aria-hidden="true"><svg viewBox="0 0 15 16" fill="currentColor" aria-hidden="true"><rect x="2.05" y="0.05" width=".9" height=".9"/><rect x="12.05" y="0.05" width=".9" height=".9"/><rect x="2.05" y="1.05" width=".9" height=".9"/><rect x="3.05" y="1.05" width=".9" height=".9"/><rect x="11.05" y="1.05" width=".9" height=".9"/><rect x="12.05" y="1.05" width=".9" height=".9"/><rect x="3.05" y="2.05" width=".9" height=".9"/><rect x="4.05" y="2.05" width=".9" height=".9"/><rect x="5.05" y="2.05" width=".9" height=".9"/><rect x="6.05" y="2.05" width=".9" height=".9"/><rect x="7.05" y="2.05" width=".9" height=".9"/><rect x="8.05" y="2.05" width=".9" height=".9"/><rect x="9.05" y="2.05" width=".9" height=".9"/><rect x="10.05" y="2.05" width=".9" height=".9"/><rect x="11.05" y="2.05" width=".9" height=".9"/><rect x="2.05" y="3.05" width=".9" height=".9"/><rect x="3.05" y="3.05" width=".9" height=".9"/><rect x="4.05" y="3.05" width=".9" height=".9"/><rect x="5.05" y="3.05" width=".9" height=".9"/><rect x="6.05" y="3.05" width=".9" height=".9"/><rect x="7.05" y="3.05" width=".9" height=".9"/><rect x="8.05" y="3.05" width=".9" height=".9"/><rect x="9.05" y="3.05" width=".9" height=".9"/><rect x="10.05" y="3.05" width=".9" height=".9"/><rect x="11.05" y="3.05" width=".9" height=".9"/><rect x="12.05" y="3.05" width=".9" height=".9"/><rect x="1.05" y="4.05" width=".9" height=".9"/><rect x="2.05" y="4.05" width=".9" height=".9"/><rect x="3.05" y="4.05" width=".9" height=".9"/><rect x="4.05" y="4.05" width=".9" height=".9"/><rect x="5.05" y="4.05" width=".9" height=".9"/><rect x="6.05" y="4.05" width=".9" height=".9"/><rect x="7.05" y="4.05" width=".9" height=".9"/><rect x="8.05" y="4.05" width=".9" height=".9"/><rect x="9.05" y="4.05" width=".9" height=".9"/><rect x="10.05" y="4.05" width=".9" height=".9"/><rect x="11.05" y="4.05" width=".9" height=".9"/><rect x="12.05" y="4.05" width=".9" height=".9"/><rect x="13.05" y="4.05" width=".9" height=".9"/><rect x="1.05" y="5.05" width=".9" height=".9"/><rect x="2.05" y="5.05" width=".9" height=".9"/><rect x="6.05" y="5.05" width=".9" height=".9"/><rect x="7.05" y="5.05" width=".9" height=".9"/><rect x="8.05" y="5.05" width=".9" height=".9"/><rect x="12.05" y="5.05" width=".9" height=".9"/><rect x="13.05" y="5.05" width=".9" height=".9"/><rect x="1.05" y="6.05" width=".9" height=".9"/><rect x="2.05" y="6.05" width=".9" height=".9"/><rect x="6.05" y="6.05" width=".9" height=".9"/><rect x="7.05" y="6.05" width=".9" height=".9"/><rect x="8.05" y="6.05" width=".9" height=".9"/><rect x="12.05" y="6.05" width=".9" height=".9"/><rect x="13.05" y="6.05" width=".9" height=".9"/><rect x="1.05" y="7.05" width=".9" height=".9"/><rect x="2.05" y="7.05" width=".9" height=".9"/><rect x="3.05" y="7.05" width=".9" height=".9"/><rect x="5.05" y="7.05" width=".9" height=".9"/><rect x="6.05" y="7.05" width=".9" height=".9"/><rect x="7.05" y="7.05" width=".9" height=".9"/><rect x="8.05" y="7.05" width=".9" height=".9"/><rect x="9.05" y="7.05" width=".9" height=".9"/><rect x="11.05" y="7.05" width=".9" height=".9"/><rect x="12.05" y="7.05" width=".9" height=".9"/><rect x="13.05" y="7.05" width=".9" height=".9"/><rect x="1.05" y="8.05" width=".9" height=".9"/><rect x="2.05" y="8.05" width=".9" height=".9"/><rect x="3.05" y="8.05" width=".9" height=".9"/><rect x="4.05" y="8.05" width=".9" height=".9"/><rect x="5.05" y="8.05" width=".9" height=".9"/><rect x="6.05" y="8.05" width=".9" height=".9"/><rect x="7.05" y="8.05" width=".9" height=".9"/><rect x="8.05" y="8.05" width=".9" height=".9"/><rect x="9.05" y="8.05" width=".9" height=".9"/><rect x="10.05" y="8.05" width=".9" height=".9"/><rect x="11.05" y="8.05" width=".9" height=".9"/><rect x="12.05" y="8.05" width=".9" height=".9"/><rect x="13.05" y="8.05" width=".9" height=".9"/><rect x="1.05" y="9.05" width=".9" height=".9"/><rect x="2.05" y="9.05" width=".9" height=".9"/><rect x="3.05" y="9.05" width=".9" height=".9"/><rect x="4.05" y="9.05" width=".9" height=".9"/><rect x="6.05" y="9.05" width=".9" height=".9"/><rect x="10.05" y="9.05" width=".9" height=".9"/><rect x="11.05" y="9.05" width=".9" height=".9"/><rect x="12.05" y="9.05" width=".9" height=".9"/><rect x="13.05" y="9.05" width=".9" height=".9"/><rect x="1.05" y="10.05" width=".9" height=".9"/><rect x="2.05" y="10.05" width=".9" height=".9"/><rect x="3.05" y="10.05" width=".9" height=".9"/><rect x="4.05" y="10.05" width=".9" height=".9"/><rect x="5.05" y="10.05" width=".9" height=".9"/><rect x="9.05" y="10.05" width=".9" height=".9"/><rect x="10.05" y="10.05" width=".9" height=".9"/><rect x="11.05" y="10.05" width=".9" height=".9"/><rect x="12.05" y="10.05" width=".9" height=".9"/><rect x="13.05" y="10.05" width=".9" height=".9"/><rect x="1.05" y="11.05" width=".9" height=".9"/><rect x="2.05" y="11.05" width=".9" height=".9"/><rect x="3.05" y="11.05" width=".9" height=".9"/><rect x="4.05" y="11.05" width=".9" height=".9"/><rect x="5.05" y="11.05" width=".9" height=".9"/><rect x="6.05" y="11.05" width=".9" height=".9"/><rect x="7.05" y="11.05" width=".9" height=".9"/><rect x="8.05" y="11.05" width=".9" height=".9"/><rect x="9.05" y="11.05" width=".9" height=".9"/><rect x="10.05" y="11.05" width=".9" height=".9"/><rect x="11.05" y="11.05" width=".9" height=".9"/><rect x="12.05" y="11.05" width=".9" height=".9"/><rect x="13.05" y="11.05" width=".9" height=".9"/><rect x="1.05" y="12.05" width=".9" height=".9"/><rect x="2.05" y="12.05" width=".9" height=".9"/><rect x="3.05" y="12.05" width=".9" height=".9"/><rect x="4.05" y="12.05" width=".9" height=".9"/><rect x="5.05" y="12.05" width=".9" height=".9"/><rect x="6.05" y="12.05" width=".9" height=".9"/><rect x="7.05" y="12.05" width=".9" height=".9"/><rect x="8.05" y="12.05" width=".9" height=".9"/><rect x="9.05" y="12.05" width=".9" height=".9"/><rect x="10.05" y="12.05" width=".9" height=".9"/><rect x="11.05" y="12.05" width=".9" height=".9"/><rect x="12.05" y="12.05" width=".9" height=".9"/><rect x="13.05" y="12.05" width=".9" height=".9"/><rect x="2.05" y="13.05" width=".9" height=".9"/><rect x="3.05" y="13.05" width=".9" height=".9"/><rect x="4.05" y="13.05" width=".9" height=".9"/><rect x="5.05" y="13.05" width=".9" height=".9"/><rect x="6.05" y="13.05" width=".9" height=".9"/><rect x="7.05" y="13.05" width=".9" height=".9"/><rect x="8.05" y="13.05" width=".9" height=".9"/><rect x="9.05" y="13.05" width=".9" height=".9"/><rect x="10.05" y="13.05" width=".9" height=".9"/><rect x="11.05" y="13.05" width=".9" height=".9"/><rect x="12.05" y="13.05" width=".9" height=".9"/><rect x="3.05" y="14.05" width=".9" height=".9"/><rect x="4.05" y="14.05" width=".9" height=".9"/><rect x="10.05" y="14.05" width=".9" height=".9"/><rect x="11.05" y="14.05" width=".9" height=".9"/><rect x="2.05" y="15.05" width=".9" height=".9"/><rect x="3.05" y="15.05" width=".9" height=".9"/><rect x="4.05" y="15.05" width=".9" height=".9"/><rect x="10.05" y="15.05" width=".9" height=".9"/><rect x="11.05" y="15.05" width=".9" height=".9"/><rect x="12.05" y="15.05" width=".9" height=".9"/></svg><div class="dots"><i></i><i></i><i></i></div></div>
 <div class="device" id="dev">
   <div class="twinkles" aria-hidden="true">
     <i style="left:7%;top:5%;animation-delay:0s"></i><i style="right:9%;top:31%;animation-delay:1.3s"></i>
@@ -1743,6 +1789,18 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   // Das Gerät darf nie verrutschen (z. B. wenn iOS ein fokussiertes Feld ins Bild schieben will)
   $("dev").addEventListener("scroll", e => { if (e.target.scrollTop) e.target.scrollTop = 0; });
   applyAppearance(); fitCanvas(); renderAll(); openSplash();
+  (function reveal(){
+    const t0 = performance.now(), MIN = 350, MAX = 900;
+    const fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('900 40px "Doto"'), document.fonts.load('600 12px "Chivo Mono"')]) : Promise.resolve();
+    Promise.race([fonts.catch(() => {}), new Promise(r => setTimeout(r, MAX))]).then(() => {
+      setTimeout(() => {
+        $("splash").classList.add("ready");
+        $("boot").classList.add("out");
+        setTimeout(() => $("boot").remove(), 600);
+        requestAnimationFrame(fitCanvas);
+      }, Math.max(0, MIN - (performance.now() - t0)));
+    });
+  })();
   addEventListener("resize", fitCanvas);
   if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe(cv);
   // Kein Zoomen per Geste (iOS)
