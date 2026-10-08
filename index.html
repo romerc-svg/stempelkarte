@@ -414,7 +414,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .sp-go.pressed .arrow{transform:translateX(6px)}
 
 /* ---------- Sammlung (Kapseln & Album) ---------- */
-:root{--c1:#8A857C;--c2:#3F7BFF;--c3:#E3A300}
+:root{--c1:#8A857C;--c2:#3F7BFF;--c3:#E3A300;--c4:#9B4DFF}
 .kbadge{position:absolute;top:-7px;right:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--accent);color:var(--accent-fg);font:600 10px/19px var(--mono);letter-spacing:0;text-align:center;box-shadow:0 2px 0 rgba(0,0,0,.15);animation:kpop .5s var(--spring)}
 @keyframes kpop{from{transform:scale(.3)}}
 .co-scene{height:150px;position:relative}
@@ -428,7 +428,22 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .card canvas{display:block;width:100%;aspect-ratio:13/9;border-radius:10px;margin-bottom:6px}
 .card b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .r{display:block;font-size:8px;margin-top:2px;letter-spacing:.12em}
-.card[data-r="1"] .r{color:var(--c1)} .card[data-r="2"] .r{color:var(--c2)} .card[data-r="3"] .r{color:var(--c3)}
+.card[data-r="1"] .r{color:var(--c1)} .card[data-r="2"] .r{color:var(--c2)} .card[data-r="3"] .r{color:var(--c3)} .card[data-r="4"] .r{color:var(--c4)}
+.sec{display:flex;justify-content:space-between;margin:18px 18px 0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 14px 0}
+.bdg{background:var(--panel);border-radius:14px;padding:6px 5px 7px;box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);text-align:center;font-size:8px;letter-spacing:.06em;text-transform:uppercase;min-width:0}
+.bdg canvas{display:block;width:100%;aspect-ratio:1;border-radius:50%;margin-bottom:5px}
+.bdg b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdg.locked{opacity:.55}
+.bdg:active{transform:translateY(1px)}
+.xp{height:9px;border-radius:5px;background:color-mix(in srgb,var(--lcd) 70%,var(--well));margin:10px 2px 5px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.3)}
+.xp i{display:block;height:100%;width:0;background:var(--accent);border-radius:5px;transition:width .8s var(--spring)}
+.xpl{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 2px}
+.co-season{margin:10px 14px 0;height:52px;border-radius:16px;background:var(--c4);color:#fff;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;box-shadow:0 4px 0 color-mix(in srgb,var(--c4) 55%,#000);display:flex;align-items:center;justify-content:center;gap:10px;flex:none;animation:kpop .5s var(--spring)}
+.co-season:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--c4) 55%,#000)}
+.cap-ball.season .top{background:var(--c4)}
+.reveal .rar[data-r="4"]{color:var(--c4)}
+.cel .name{font-size:clamp(24px,8vw,34px);text-align:center;text-wrap:balance}
 .card.locked b{color:var(--faint)}
 .card.worn{border-color:var(--accent)}
 .card.worn::after{content:"trägt";position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--accent-fg);font-size:8px;padding:2px 7px;border-radius:8px;letter-spacing:.12em}
@@ -581,14 +596,23 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   <main class="screen" id="scr-coll" hidden>
     <div class="plate">
       <span class="screw l"></span><span class="screw r"></span>
-      <div class="brand"><b>Sammlung</b><span id="co-count">0 / 14</span></div>
+      <div class="brand"><b>Sammlung</b><span id="co-lv">Lv 1</span></div>
       <div class="lcd">
         <div class="co-scene"><canvas id="co-cv" aria-label="Dein Monster mit Zubehör" role="img"></canvas></div>
         <div class="lrow"><span id="co-worn">Trägt nichts</span><span id="co-caps">0 Kapseln</span></div>
       </div>
+      <div class="xp" aria-hidden="true"><i id="xp-fill"></i></div>
+      <div class="xpl"><span id="xp-l">Jungmonster</span><span id="xp-r">0 / 10 Std</span></div>
     </div>
+    <button class="co-season" id="co-season" type="button" hidden></button>
     <button class="bigkey co-open" id="co-open" type="button"><span class="ball"></span><span id="co-open-t">Kapsel öffnen</span></button>
-    <div class="list"><div class="album" id="album"></div><p class="sync">Jeder Arbeitstag ab 1 Std netto bringt eine Kapsel</p></div>
+    <div class="list">
+      <h3 class="sec"><span>Abzeichen</span><span id="bd-count"></span></h3>
+      <div class="badges" id="badges"></div>
+      <h3 class="sec"><span>Zubehör</span><span id="co-count"></span></h3>
+      <div class="album" id="album"></div>
+      <p class="sync">Kapseln: jeder Arbeitstag ab 1 Std netto, jedes Abzeichen, jedes Level. Goldene Kapseln: Serien.</p>
+    </div>
   </main>
 
   <!-- Kapsel-Automat -->
@@ -603,6 +627,13 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     </div>
     <p class="hint" id="cap-hint">Tippen zum Öffnen</p>
     <div class="cap-acts" id="cap-acts" hidden></div>
+  </div>
+
+  <!-- Feier bei Abzeichen, Level, Serie, Saison -->
+  <div class="capsule cel" id="cel" hidden role="dialog" aria-modal="true" aria-labelledby="cel-t">
+    <h2 id="cel-h"></h2>
+    <div class="reveal"><div class="lcd"><canvas id="cel-cv"></canvas></div><div class="name" id="cel-t"></div><div class="new" id="cel-s"></div></div>
+    <div class="cap-acts"><button type="button" class="primary" id="cel-ok">Super!</button></div>
   </div>
 
   <main class="screen" id="scr-hist" hidden>
@@ -680,6 +711,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   // ---------- Zustand ----------
   let state = { entries: [], active: null };
   let game = null;            // Spielstand der Sammlung (Kapseln, Items), siehe loadGame()
+  let lastStats = null;       // zuletzt berechneter Fortschritt (Level, Serie)
   let view = "hm";
   let tab = "clock";
   let docRef = null;
@@ -929,6 +961,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     sprite(MOUTH[mouth], x, y + 9, flip);
     sprite(legs, x, y + 14, flip);
     sprite(ARMS, x, y + (armsUp ? 2 : 10));
+    drawStage(x, y, flip, (a, b, v) => put(a, b, v), performance.now());
     drawWorn(x, y, flip, setPx, performance.now());
   }
   const HOUSE = ["....#....", "...###...", "..#####..", ".#######.", "#########", ".#.....#.", ".#.###.#.", ".#.#+#.#.", ".#.#+#.#."];
@@ -1050,7 +1083,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     $("r-start-btn").disabled = !s.a;
 
     const ws = weekStart(s.now);
-    $("w-kw").textContent = `Diese Woche · KW ${isoWeek(s.now)}`;
+    $("w-kw").textContent = `Diese Woche · KW ${isoWeek(s.now)}` + (lastStats && lastStats.current ? ` · Serie ${lastStats.current}` : "");
     $("w-sum").textContent = dig(s.week) + (view === "dec" ? " Std" : "");
     // Ein Stempelfeld pro Arbeitstag, egal an welchem Wochentag
     const names = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"], td = dayStart(s.now);
@@ -1465,7 +1498,24 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
         [".+...............+.", "++...............++", "++...............++", "++...............++", "++...............++", "++...............++", ".#...............#.", ".#...............#.", "..................."]
       ] }
   ];
+  // Saison-Items (r: 4): nur im Zeitraum, je Saison eine Saison-Kapsel gratis
+  function easter(y){ const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451), mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1; return new Date(y, mo - 1, da); }
+  const SEASON_ITEMS = [
+    { id: "kuerbis", name: "Kürbiskopf", r: 4, slot: "kopf", dx: 3, dy: -5, label: "Oktober", s: ["....##...", "..#####..", ".##+#+##.", "##+###+##", "#########", ".#######."],
+      active: d => d.getMonth() === 9 || (d.getMonth() === 10 && d.getDate() <= 2) },
+    { id: "weihnachtsmuetze", name: "Weihnachtsmütze", r: 4, slot: "kopf", dx: 3, dy: -5, label: "1.–26. Dez.", s: ["........+", "......###", "....####.", "..######.", ".#######.", "+++++++++"],
+      active: d => d.getMonth() === 11 && d.getDate() <= 26 },
+    { id: "silvesterbrille", name: "Silvesterbrille", r: 4, slot: "gesicht", dx: 2, dy: 4, label: "27.12.–6.1.", s: ["#.........#", "#+++###+++#", ".+++...+++.", "..+.....+.."],
+      active: d => (d.getMonth() === 11 && d.getDate() >= 27) || (d.getMonth() === 0 && d.getDate() <= 6) },
+    { id: "hasenohren", name: "Hasenohren", r: 4, slot: "kopf", dx: 3, dy: -7, label: "Ostern", s: [".#.....#.", "#+#...#+#", "#+#...#+#", "#+#...#+#", "#+#...#+#", ".##...##.", "..#...#.."],
+      active: d => Math.abs(new Date(d.getFullYear(), d.getMonth(), d.getDate()) - easter(d.getFullYear())) <= 7 * 864e5 },
+    { id: "sonnenhut", name: "Sonnenhut", r: 4, slot: "kopf", dx: 1, dy: -3, label: "Juli/Aug.", s: ["...#######...", "..#+++++++#..", "#############"],
+      active: d => d.getMonth() === 6 || d.getMonth() === 7 }
+  ];
+  ITEMS.push(...SEASON_ITEMS);
+  const REGULAR = ITEMS.filter(i => i.r < 4);
   const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+  RARITY[4] = "Saison";
   const LS_GAME = "stempelkarte:spiel";
   // Arbeitstage mit mindestens 1 Std netto (Abwesenheiten zählen nicht)
   function eligibleDays(){
@@ -1529,28 +1579,46 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     if (C.bow && !game.worn.kopf) spr(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, mx + 5, my - 1);
     const blink = (t % 3400) < 140;
     spr(EYES[blink ? "blink" : "open"], mx, my + 5); spr(MOUTH.smile, mx, my + 9); spr(LEGS[0], mx, my + 14); spr(ARMS, mx, my + 10);
+    drawStage(mx, my, false, add, t);
     drawWorn(mx, my, false, set, t);
   }
 
-  function renderColl(){
-    const owned = ITEMS.filter(i => game.items[i.id]).length;
+  function renderColl(st){
+    st = st || stats();
+    const owned = ITEMS.filter(i => game.items[i.id]).length, left = capsLeft();
     $("co-count").textContent = `${owned} / ${ITEMS.length}`;
-    $("co-caps").textContent = game.capsules === 1 ? "1 Kapsel" : `${game.capsules} Kapseln`;
+    $("co-caps").textContent = left === 1 ? "1 Kapsel" : `${left} Kapseln`;
+    $("co-lv").textContent = `Lv ${st.level}` + (st.current ? ` · Serie ${st.current}` : "");
+    const lo = needFor(st.level), hi = needFor(st.level + 1);
+    $("xp-fill").style.width = Math.min(100, (st.hours - lo) / (hi - lo) * 100) + "%";
+    $("xp-l").textContent = STAGES[st.stage];
+    $("xp-r").textContent = `${Math.floor(st.hours)} / ${hi} Std → Lv ${st.level + 1}`;
+    const ps = pendingSeason();
+    $("co-season").hidden = !ps;
+    if (ps) $("co-season").textContent = `Saison-Kapsel öffnen · ${ps.item.label}`;
+    $("bd-count").textContent = `${game.badges.length} / ${BADGES.length}`;
+    $("badges").innerHTML = BADGES.map(b => `<button type="button" class="bdg${game.badges.includes(b.id) ? "" : " locked"}" data-b="${b.id}"><canvas></canvas><b>${b.name}</b></button>`).join("");
+    $("badges").querySelectorAll(".bdg").forEach(el => {
+      const b = BADGES.find(x => x.id === el.dataset.b), has = game.badges.includes(b.id);
+      pixelCanvas(el.querySelector("canvas"), 13, 13, (set, add) => paintItem({ s: ICON[b.icon] }, set, add, 13, 13, !has, 0));
+      el.onclick = () => say(`${b.name}: ${b.desc}${has ? " ✓" : ""}`);
+    });
     const worn = Object.values(game.worn).map(id => ITEM[id] && ITEM[id].name).filter(Boolean);
     $("co-worn").textContent = worn.length ? "Trägt: " + worn.join(", ") : "Trägt nichts";
-    $("co-open").disabled = !game.capsules;
-    $("co-open-t").textContent = game.capsules ? `Kapsel öffnen (${game.capsules})` : "Nächste Kapsel nach Feierabend";
-    $("kb-coll").hidden = !game.capsules; $("kb-coll").textContent = game.capsules;
+    const normal = game.capsules + (game.gold || 0);
+    $("co-open").disabled = !normal;
+    $("co-open-t").textContent = normal ? `Kapsel öffnen (${normal})${game.gold ? ` · ${game.gold} golden` : ""}` : "Nächste Kapsel nach Feierabend";
+    $("kb-coll").hidden = !left; $("kb-coll").textContent = left;
     $("album").innerHTML = ITEMS.map(it => {
       const n = game.items[it.id] || 0, worn = game.worn[it.slot] === it.id;
       return `<button type="button" class="card${n ? "" : " locked"}${worn ? " worn" : ""}" data-r="${it.r}" data-item="${it.id}" aria-label="${n ? it.name : "Noch nicht gefunden"}">
-        <canvas></canvas><b>${n ? it.name : "???"}</b><span class="r">${RARITY[it.r]} · ${SLOTS[it.slot]}</span>${n > 1 ? `<span class="cnt">×${n}</span>` : ""}</button>`;
+        <canvas></canvas><b>${n ? it.name : "???"}</b><span class="r">${it.r === 4 ? "Saison · " + it.label : RARITY[it.r] + " · " + SLOTS[it.slot]}</span>${n > 1 ? `<span class="cnt">×${n}</span>` : ""}</button>`;
     }).join("");
     $("album").querySelectorAll(".card").forEach(card => {
       const it = ITEM[card.dataset.item], n = game.items[it.id];
       pixelCanvas(card.querySelector("canvas"), 21, 13, (set, add) => paintItem(it, set, add, 21, 13, !n, 0));
       card.onclick = () => {
-        if (!n) { say(`${RARITY[it.r]}es Item · noch nicht gefunden`); return; }
+        if (!n) { say(it.r === 4 ? `Nur ${it.label} erhältlich` : `${RARITY[it.r]}es Item · noch nicht gefunden`); return; }
         if (game.worn[it.slot] === it.id) delete game.worn[it.slot]; else game.worn[it.slot] = it.id;
         saveGame(); buzz(8); renderColl();
       };
@@ -1560,20 +1628,118 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   function drawCollPreview(){ pixelCanvas($("co-cv"), 31, 24, (set, add) => paintMonster(set, add, 31, 24, performance.now())); }
   setInterval(() => { if (tab === "coll" && !document.hidden) drawCollPreview(); }, 160);
 
+
+  // ---------- Fortschritt: Abzeichen, Level, Serien, Saison ----------
+  const DIG3 = { 0: ["###", "#.#", "#.#", "#.#", "###"], 1: [".#.", "##.", ".#.", ".#.", "###"], 5: ["###", "#..", "###", "..#", "###"] };
+  const num3 = str => [0, 1, 2, 3, 4].map(r => str.split("").map(ch => DIG3[ch][r]).join("."));
+  const ICON = {
+    stempel: ["..###..", "..###..", "...#...", "...#...", ".#####.", "#######", "#######"],
+    sonne:   ["....#....", ".#.....#.", "...###...", "..#####..", "#.#####.#", "..#####..", "...###...", ".#.....#.", "....#...."],
+    mond:    ["...###...", "..##.....", ".##......", ".##......", ".##......", ".##......", "..##.....", "...###..."],
+    ziel:    ["..#####..", ".#.....#.", "#..###..#", "#.#...#.#", "#.#.#.#.#", "#.#...#.#", "#..###..#", ".#.....#.", "..#####.."],
+    fahne:   ["#........", "#######..", "#######..", "#######..", "#........", "#........", "#........", "#........"],
+    tasse:   ["#######..", "#######.#", "#######.#", "#######..", ".#####...", "..###....", "#######.."],
+    blitz:   ["....###..", "...###...", "..###....", ".#######.", "....###..", "...###...", "..###....", ".##......", "#........"],
+    koffer:  ["...###...", "...#.#...", "#########", "#.......#", "#########", "#.......#", "#.......#", "#########"],
+    flamme:  ["....#....", "...##....", "...###...", "..####.#.", "..######.", ".#######.", ".###+###.", ".##+++##.", "..#####.."],
+    stern:   ["....#....", "....#....", "...###...", "#########", ".#######.", "..#####..", "..##.##..", ".##...##.", "#.......#"],
+    krone:   ["#...#...#", "##.###.##", "#########", "#########", "#+#+#+#+#", "#########"],
+    h100: num3("100"), h500: num3("500")
+  };
+  const BADGES = [
+    { id: "erste",     name: "Erster Stempel", icon: "stempel", desc: "Den ersten Arbeitstag gestempelt",        test: s => s.work.length > 0 },
+    { id: "frueh",     name: "Frühaufsteher",  icon: "sonne",   desc: "Vor 7 Uhr eingestempelt",                 test: s => s.work.some(e => new Date(e.start).getHours() < 7) },
+    { id: "eule",      name: "Nachteule",      icon: "mond",    desc: "Nach 22 Uhr noch gearbeitet",             test: s => s.work.some(e => new Date(e.start).getHours() >= 22 || new Date(e.end).getHours() >= 22 || dayStart(e.end) > dayStart(e.start)) },
+    { id: "punkt",     name: "Punktlandung",   icon: "ziel",    desc: "Eine Woche höchstens 5 Min über dem Soll", test: s => s.weekSums.some(v => v >= WOCHE_MIN && v <= WOCHE_MIN + 5) },
+    { id: "ziel",      name: "Wochenziel",     icon: "fahne",   desc: "Eine Woche das Soll erreicht",            test: s => s.weekSums.some(v => v >= WOCHE_MIN) },
+    { id: "pause",     name: "Pausenprofi",    icon: "tasse",   desc: "3× in der letzten Viertelstunde vor dem Pausenabzug gegangen", test: s => PAUSE_MIN > 0 && s.work.filter(e => { const p = minsBetween(e.start, e.end); return p > PAUSE_AB_MIN - 15 && p <= PAUSE_AB_MIN; }).length >= 3 },
+    { id: "marathon",  name: "Marathon",       icon: "blitz",   desc: "8 Std netto an einem Tag",                test: s => s.daySums.some(v => v >= 480) },
+    { id: "h100",      name: "100 Stunden",    icon: "h100",    desc: "Insgesamt 100 Std gearbeitet",            test: s => s.total >= 6000 },
+    { id: "h500",      name: "500 Stunden",    icon: "h500",    desc: "Insgesamt 500 Std gearbeitet",            test: s => s.total >= 30000 },
+    { id: "urlaub",    name: "Urlaubsreif",    icon: "koffer",  desc: "Den ersten Urlaubstag eingetragen",       test: s => state.entries.some(e => e.type === "urlaub") },
+    { id: "serie3",    name: "Dranbleiber",    icon: "flamme",  desc: "3 Wochen in Folge im Ziel",               test: s => s.best >= 3 },
+    { id: "serie10",   name: "Unaufhaltsam",   icon: "flamme",  desc: "10 Wochen in Folge im Ziel",              test: s => s.best >= 10 },
+    { id: "sammler",   name: "Sammler",        icon: "stern",   desc: "7 verschiedene Zubehörteile",             test: s => REGULAR.filter(i => game.items[i.id]).length >= 7 },
+    { id: "komplett",  name: "Komplett",       icon: "krone",   desc: "Alle regulären Zubehörteile gefunden",    test: s => REGULAR.every(i => game.items[i.id]) }
+  ];
+  const STAGES = ["Jungmonster", "Monster", "Großmonster", "Boss-Monster"];
+  const needFor = L => 5 * (L - 1) * L;                // Std bis Level L: 0, 10, 30, 60, 100, 150 …
+  let stage = 0;
+  function stats(){
+    const work = state.entries.filter(e => !e.type), days = new Map(), weeks = new Map();
+    let total = 0;
+    work.forEach(e => { const n = entryNet(e); total += n; const d = dayStart(e.start); days.set(d, (days.get(d) || 0) + n); });
+    state.entries.forEach(e => { const w = weekStart(e.start); weeks.set(w, (weeks.get(w) || 0) + entryNet(e)); });
+    // Serie: Wochen im Ziel in Folge; Wochen ohne Einträge zählen nicht und unterbrechen nicht; die laufende Woche zählt erst, wenn sie im Ziel ist
+    const cw = weekStart(Date.now()); let run = 0, best = 0;
+    [...weeks.keys()].sort((a, b) => a - b).forEach(w => { const ok = weeks.get(w) >= WOCHE_MIN; if (w === cw && !ok) return; run = ok ? run + 1 : 0; best = Math.max(best, run); });
+    const hours = total / 60; let level = 1; while (needFor(level + 1) <= hours) level++;
+    return { work, total, daySums: [...days.values()], weekSums: [...weeks.values()], current: run, best, hours, level,
+             stage: level >= 10 ? 3 : level >= 6 ? 2 : level >= 3 ? 1 : 0 };
+  }
+  const milestones = n => [3, 5, 10].filter(m => n >= m).length + (n >= 15 ? Math.floor((n - 10) / 5) : 0);   // 3, 5, 10, 15, 20 …
+  const celebQ = [];
+  function syncProgress(){
+    const st = stats(); stage = st.stage;
+    const earned = BADGES.filter(b => b.test(st)).map(b => b.id);
+    if (!game.badges) {                                  // erster Start dieser Funktion: bisherige Erfolge ohne Belohnung übernehmen
+      game.badges = earned; game.level = st.level; game.streakAward = milestones(st.best); game.gold = 0; game.season = {}; saveGame();
+    }
+    let changed = false;
+    earned.filter(id => !game.badges.includes(id)).forEach(id => { game.badges.push(id); game.capsules++; celebQ.push({ kind: "badge", id }); changed = true; });
+    if (st.level > game.level) { game.capsules += st.level - game.level; const oldStage = stageOf(game.level); game.level = st.level; celebQ.push({ kind: "level", level: st.level, evolved: st.stage > oldStage }); changed = true; }
+    const m = milestones(st.best);
+    if (m > game.streakAward) { game.gold += m - game.streakAward; game.streakAward = m; celebQ.push({ kind: "streak", n: st.best }); changed = true; }
+    const now = new Date();
+    SEASON_ITEMS.forEach(it => { const key = it.id + "-" + (it.id === "silvesterbrille" && now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()); /* Silvester zählt zum alten Jahr */ if (it.active(now) && !game.season[key]) { game.season[key] = "pending"; celebQ.push({ kind: "season", id: it.id }); changed = true; } });
+    if (changed) saveGame();
+    return st;
+  }
+  const stageOf = L => L >= 10 ? 3 : L >= 6 ? 2 : L >= 3 ? 1 : 0;
+  const pendingSeason = () => { const k = Object.keys(game.season || {}).find(k => game.season[k] === "pending"); return k ? { key: k, item: ITEM[k.split("-")[0]] } : null; };
+  // Entwicklung: Schwanz (Monster), längere Hörner (Großmonster), Aura (Boss)
+  function drawStage(x, y, flip, add, t){
+    if (stage >= 1) [["..#", 11], [".##", 12], ["##.", 13]].forEach(([r, j]) => { for (let i = 0; i < 3; i++) if (r[i] === "#") add(flip ? x + 14 - (14 + i) : x + 14 + i, y + j, 2); });
+    if (stage >= 2) [[2, -1], [12, -1], [1, -2], [13, -2]].forEach(([i, j]) => add(x + i, y + j, 2));
+    if (stage >= 3) for (let k = 0; k < 6; k++) { const a = t / 700 + k * Math.PI / 3; add(x + 7 + Math.round(Math.cos(a) * 10), y + 8 + Math.round(Math.sin(a) * 9), (Math.floor(t / 200) + k) % 3 ? 1 : 2); }
+  }
+  function showCeleb(){
+    if (splashOn || !celebQ.length || !$("cel").hidden || !$("cap").hidden) return;
+    const c = celebQ.shift(); let icon, title, sub, head;
+    if (c.kind === "badge") { const b = BADGES.find(x => x.id === c.id); head = "Abzeichen freigeschaltet"; title = b.name; sub = b.desc + " · +1 Kapsel"; icon = (set, add) => paintItem({ s: ICON[b.icon] }, set, add, 26, 18, false, 0); }
+    if (c.kind === "level") { head = "Level aufgestiegen"; title = "Level " + c.level; sub = (c.evolved ? `Dein Monster ist jetzt ein ${STAGES[stageOf(c.level)]}! ` : "") + "+1 Kapsel"; icon = (set, add) => paintMonster(set, add, 26, 18, performance.now()); }
+    if (c.kind === "streak") { head = "Serie"; title = `${c.n} Wochen im Ziel`; sub = "Goldene Kapsel erhalten · garantiert selten oder besser"; icon = (set, add) => paintItem({ s: ICON.flamme }, set, add, 26, 18, false, 0); }
+    if (c.kind === "season") { const it = ITEM[c.id]; head = "Saison-Kapsel"; title = it.name; sub = `Nur ${it.label}: eine Saison-Kapsel gratis. Öffne sie in der Sammlung.`; icon = (set, add) => paintItem(it, set, add, 26, 18, true, 0); }
+    $("cel-h").textContent = head; $("cel-t").textContent = title; $("cel-s").textContent = sub;
+    $("cel").hidden = false; buzz([15, 40, 15, 40, 30]);
+    const t0 = performance.now(), sparks = [];
+    (function loop(t){
+      if ($("cel").hidden) return;
+      pixelCanvas($("cel-cv"), 26, 18, (set, add) => { icon(set, add); if (Math.random() < .6) sparks.push({ x: Math.random() * 26, y: Math.random() * 18, l: 6 }); sparks.forEach(sp => { if (sp.l-- > 0) add(sp.x | 0, sp.y | 0, sp.l > 3 ? 2 : 1); }); });
+      if (t - t0 < 60000) requestAnimationFrame(loop);
+    })(t0);
+  }
+  $("cel-ok").onclick = () => { $("cel").hidden = true; renderAll(); setTimeout(showCeleb, 250); };
+
   // Zufallsitem: 70 % gewöhnlich, 25 % selten, 5 % legendär; Doppelte werden einmal neu gezogen
   function rollItem(){
-    const pick = () => { const x = Math.random(), r = x < .05 ? 3 : x < .30 ? 2 : 1, pool = ITEMS.filter(i => i.r === r); return pool[Math.floor(Math.random() * pool.length)]; };
+    const pick = () => { const x = Math.random(), r = x < .05 ? 3 : x < .30 ? 2 : 1, pool = REGULAR.filter(i => i.r === r); return pool[Math.floor(Math.random() * pool.length)]; };
     let it = pick(); if (game.items[it.id]) it = pick();
     return it;
   }
   let capItem = null, capAnim = 0;
+  const capsLeft = () => game.capsules + (game.gold || 0) + (pendingSeason() ? 1 : 0);
   function openCapsule(){
-    if (!game.capsules) return;
-    capItem = rollItem(); game.capsules--; const isNew = !game.items[capItem.id];
+    const ps = pendingSeason();
+    if (ps) { capItem = ps.item; game.season[ps.key] = "done"; }
+    else if (game.gold) { game.gold--; const pool = REGULAR.filter(i => i.r === (Math.random() < .25 ? 3 : 2)); capItem = pool[Math.floor(Math.random() * pool.length)]; }
+    else if (game.capsules) { capItem = rollItem(); game.capsules--; }
+    else return;
+    const isNew = !game.items[capItem.id];
     game.items[capItem.id] = (game.items[capItem.id] || 0) + 1; saveGame();
     const ball = $("cap-ball");
-    ball.className = "cap-ball shake" + (capItem.r === 3 ? " legend" : "");
-    ball.style.setProperty("--cap", capItem.r === 2 ? "var(--c2)" : capItem.r === 3 ? "var(--c3)" : "var(--c1)");
+    ball.className = "cap-ball shake" + (capItem.r === 3 ? " legend" : capItem.r === 4 ? " season" : "");
+    ball.style.setProperty("--cap", capItem.r === 2 ? "var(--c2)" : capItem.r === 3 ? "var(--c3)" : capItem.r === 4 ? "var(--c4)" : "var(--c1)");
     ball.hidden = false; $("cap-rev").hidden = true; $("cap-acts").hidden = true;
     $("cap-hint").textContent = "Tippen zum Öffnen"; $("cap").hidden = false; buzz(10);
     ball.onclick = () => {
@@ -1599,13 +1765,14 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
         const acts = $("cap-acts"); acts.innerHTML = "";
         const btn = (label, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = fn; acts.appendChild(b); };
         if (game.worn[capItem.slot] !== capItem.id) btn("Anziehen", "", () => { game.worn[capItem.slot] = capItem.id; saveGame(); closeCapsule(); });
-        btn(game.capsules ? `Nächste (${game.capsules})` : "Fertig", "primary", () => { if (game.capsules) openCapsule(); else closeCapsule(); });
+        btn(capsLeft() ? `Nächste (${capsLeft()})` : "Fertig", "primary", () => { if (capsLeft()) openCapsule(); else closeCapsule(); });
         acts.hidden = false;
       }, 420);
     };
   }
-  function closeCapsule(){ $("cap").hidden = true; cancelAnimationFrame(capAnim); renderAll(); }
+  function closeCapsule(){ $("cap").hidden = true; cancelAnimationFrame(capAnim); renderAll(); setTimeout(showCeleb, 250); }
   $("co-open").onclick = () => { buzz(6); openCapsule(); };
+  $("co-season").onclick = () => { buzz(6); openCapsule(); };
 
   // ---------- Navigation & Format ----------
   document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => {
@@ -1627,7 +1794,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   setView(view);
 
 
-  function renderAll(){ if (!game) loadGame(); syncCapsules(); renderClock(); renderCalc(); renderHist(); renderColl(); }
+  function renderAll(){ if (!game) loadGame(); syncCapsules(); lastStats = syncProgress(); renderClock(); renderCalc(); renderHist(); renderColl(lastStats); setTimeout(showCeleb, 400); }
 
   // ---------- Doppelpunkte in Ziffernanzeigen ----------
   // Ersetzt ":" in Doto-Anzeigen durch ein eigenes, mittig sitzendes Element; das ":" bleibt unsichtbar im Text erhalten.
@@ -2037,6 +2204,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       if (C.bow && !game.worn.kopf) spr(C.square ? BOW.map(r => r.replace(/#/g, "+")) : BOW, mx + 5, my - 1);
       spr(EYES[eyes], mx, my + 5); spr(MOUTH[mouth], mx, my + 9); spr(LEGS[0], mx, my + 14);
       spr(ARMS, mx, my + (armsUp ? 2 : 10));
+      drawStage(mx, my, false, putS, t);
       drawWorn(mx, my, false, (x, y, v) => { if (x >= 0 && x < cols && y >= 0 && y < rows) grid[y * cols + x] = v; }, t);
       if (splashEyes === "wake" && el < 1400) { const z = Math.floor(el / 350) % 3; spr(Z, mx + 16, my - 1 + z); }
       if (splashEyes === "wide") { spr(MOON, cols - 5, 1); }
@@ -2055,7 +2223,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   function closeSplash(){
     const b = $("sp-go"); b.classList.add("pressed"); buzz([12, 30, 18]);
     setTimeout(() => $("splash").classList.add("leave"), 140);
-    setTimeout(() => { $("splash").hidden = true; splashOn = false; requestAnimationFrame(fitCanvas); checkForgot(); }, 900);
+    setTimeout(() => { $("splash").hidden = true; splashOn = false; requestAnimationFrame(fitCanvas); checkForgot(); setTimeout(showCeleb, 500); }, 900);
   }
   $("sp-go").onclick = closeSplash;
 

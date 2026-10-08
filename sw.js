@@ -1,6 +1,6 @@
 // Service Worker: macht die App offline nutzbar.
 // Neue Dateien bei FILES eintragen und die Versionsnummer bei CACHE erhöhen.
-const CACHE = "ticko-v23";
+const CACHE = "ticko-v24";
 const FILES = [
   "./",
   "./index.html",
