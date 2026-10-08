@@ -982,7 +982,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
       const live = s.a && dayStart(s.a.start) === ds;
       const v = dayDoneMin(ds) + (live ? s.net : 0);
       const ab = absenceOn(ds);
-      html += `<div class="day${ds === td ? " cur" : ""}"><div class="imp ${ds === td ? "today" : "done"}">${dig(v)}<small>${ab ? KINDS[ab.type].label : "Std"}</small></div>${names[new Date(ds).getDay()]}</div>`;
+      html += `<div class="day${ds === td ? " cur" : ""}"><div class="imp ${ds === td ? "today" : "done"}"><span>${dig(v)}</span><small>${ab ? KINDS[ab.type].label : "Std"}</small></div>${names[new Date(ds).getDay()]}</div>`;
     }
     $("week").style.setProperty("--n", slots);
     $("week").innerHTML = html;
