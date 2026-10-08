@@ -249,8 +249,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 
 /* ---------- Schiebeschalter ---------- */
 .switchwrap{margin:0 14px;background:var(--panel);border-radius:28px;padding:12px;flex:none;box-shadow:inset 0 1px 0 var(--hi),inset 0 -2px 0 var(--edge)}
-.switchlbl{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:0 6px 8px;color:var(--muted)}
-.switchlbl .act{color:var(--ink);font-weight:600}
+.switchlbl{display:flex;justify-content:center;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:0 6px 8px;color:var(--muted)}
 .track{position:relative;height:66px;border-radius:19px;background:var(--well);box-shadow:inset 0 3px 8px rgba(0,0,0,.22);touch-action:none;cursor:grab}
 .track .lane{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:10px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase}
 .thumb{position:absolute;top:5px;left:5px;width:calc(50% - 5px);height:56px;border-radius:15px;background:linear-gradient(var(--knob1),var(--knob2));box-shadow:0 2px 0 var(--edge),0 7px 14px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;gap:5px;transition:transform .5s var(--spring)}
@@ -433,7 +432,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 14px 0}
 .bdg{background:var(--panel);border-radius:14px;padding:6px 5px 7px;box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);text-align:center;font-size:8px;letter-spacing:.06em;text-transform:uppercase;min-width:0}
 .bdg canvas{display:block;width:84%;margin:2px auto 5px;aspect-ratio:40/42}
-.bdg b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdg b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;height:2.5em;line-height:1.25;font-weight:600;letter-spacing:.03em;overflow-wrap:anywhere;hyphens:auto}
 .bdg.locked{opacity:.55}
 .bdg:active{transform:translateY(1px)}
 .lvbox{display:block;width:100%;text-align:left;margin-top:10px;padding:0 2px}
@@ -608,7 +607,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       <div id="sp-i1l">Heute<b id="sp-i1">–</b></div>
       <div id="sp-i2l">Woche<b id="sp-i2">–</b></div>
     </div>
-    <div class="sp-well"><button type="button" class="sp-go" id="sp-go"><span class="led"></span><span id="sp-go-t">Arbeitstag starten</span><span class="arrow">→</span></button></div>
+    <div class="sp-well"><button type="button" class="sp-go" id="sp-go"><span class="led"></span><span id="sp-go-t">Zur Stempeluhr</span><span class="arrow">→</span></button></div>
   </section>
   <div class="toast" id="toast" role="status"><span id="toast-t"></span><button type="button" id="toast-undo">Rückgängig</button></div>
 
@@ -636,7 +635,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     <div class="weekhead"><span id="w-kw">KW</span><span id="w-sum">Woche 0:00</span></div>
     <div class="week" id="week"></div>
     <div class="switchwrap">
-      <div class="switchlbl"><span id="l-off" class="act">Aus</span><span>Zum Stempeln schieben</span><span id="l-on">Ein</span></div>
+      <div class="switchlbl"><span>Zum Stempeln schieben</span></div>
       <div class="track" id="track" role="switch" aria-checked="false" aria-label="Eingestempelt" tabindex="0">
         <div class="lane"><span>Feierabend</span><span>Dienst</span></div>
         <div class="thumb" id="thumb"><i></i><i></i><i></i><span class="led"></span></div>
@@ -1221,7 +1220,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     let html = "";
     for (let i = 0; i < slots; i++) {
       const ds = worked[i];
-      if (ds === undefined) { html += `<div class="day"><div class="imp"></div>Tag ${i + 1}</div>`; continue; }
+      if (ds === undefined) { html += `<div class="day"><div class="imp"></div>offen</div>`; continue; }
       const live = s.a && dayStart(s.a.start) === ds;
       const v = dayDoneMin(ds) + (live ? s.net : 0);
       const ab = absenceOn(ds);
@@ -1232,7 +1231,6 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 
     $("thumb").style.transform = s.a ? "translateX(100%)" : "translateX(0)";
     $("track").setAttribute("aria-checked", String(!!s.a));
-    $("l-on").classList.toggle("act", !!s.a); $("l-off").classList.toggle("act", !s.a);
   }
 
   function setActive(want){
@@ -1819,7 +1817,10 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     });
     drawCollPreview();
   }
-  function drawCollPreview(){ pixelCanvas($("co-cv"), 31, 24, (set, add) => paintMonster(set, add, 31, 24, performance.now())); }
+  function drawCollPreview(){
+    const cv = $("co-cv"), cols = cv.clientHeight ? Math.max(31, Math.floor(24 * cv.clientWidth / cv.clientHeight)) : 31;   // so viele Spalten, wie in die Breite passen
+    pixelCanvas(cv, cols, 24, (set, add) => paintMonster(set, add, cols, 24, performance.now()));
+  }
   setInterval(() => { if (tab === "coll" && !document.hidden) drawCollPreview(); }, 160);
 
 
@@ -2501,7 +2502,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     else { $("sp-i1l").firstChild.textContent = s.week >= WOCHE_MIN ? "Woche" : "Ziel heute"; $("sp-i1").textContent = s.week >= WOCHE_MIN ? "geschafft" : dig(s.nextTarget); }
     $("sp-i1").style.fontSize = /[a-z]/.test($("sp-i1").textContent) ? "17px" : "";
     $("sp-i2").textContent = `${dig(s.week)}/${H(WOCHE_MIN)}`;
-    $("sp-go-t").textContent = s.a ? "Weiter zum Arbeitstag" : "Arbeitstag starten";
+    $("sp-go-t").textContent = s.a ? "Weiter zum Arbeitstag" : "Zur Stempeluhr";
     splashOn = true; splashT0 = performance.now(); splashEyes = g.eyes;
     requestAnimationFrame(splashLoop);
   }
