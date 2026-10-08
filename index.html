@@ -431,6 +431,9 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .card b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .r{display:block;font-size:8px;margin-top:2px;letter-spacing:.12em}
 .card[data-r="1"] .r{color:var(--c1)} .card[data-r="2"] .r{color:var(--c2)} .card[data-r="3"] .r{color:var(--c3)} .card[data-r="4"] .r{color:var(--c4)}
+.co-tabs{margin:12px 14px 0;flex:none;grid-template-columns:1fr 1fr}
+.co-tabs button{padding:10px 4px;font-size:10px}
+.co-tabs button span{opacity:.7;margin-left:4px}
 .sec{display:flex;justify-content:space-between;margin:18px 18px 0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 14px 0}
 .bdg{background:var(--panel);border-radius:14px;padding:6px 5px 7px;box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);text-align:center;font-size:8px;letter-spacing:.06em;text-transform:uppercase;min-width:0}
@@ -689,11 +692,13 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     </div>
     <button class="co-season" id="co-season" type="button" hidden></button>
     <button class="bigkey co-open" id="co-open" type="button"><span class="ball"></span><span id="co-open-t">Kapsel öffnen</span></button>
+    <div class="kinds two co-tabs" role="tablist" aria-label="Sammlung">
+      <button type="button" role="tab" id="ct-items" data-ctab="items" aria-pressed="true" aria-selected="true">Zubehör <span id="co-count"></span></button>
+      <button type="button" role="tab" id="ct-badges" data-ctab="badges" aria-pressed="false" aria-selected="false">Abzeichen <span id="bd-count"></span></button>
+    </div>
     <div class="list">
-      <h3 class="sec"><span>Abzeichen</span><span id="bd-count"></span></h3>
-      <div class="badges" id="badges"></div>
-      <h3 class="sec"><span>Zubehör</span><span id="co-count"></span></h3>
-      <div class="album" id="album"></div>
+      <section id="cp-badges" role="tabpanel" aria-labelledby="ct-badges" hidden><div class="badges" id="badges"></div></section>
+      <section id="cp-items" role="tabpanel" aria-labelledby="ct-items"><div class="album" id="album"></div></section>
       <p class="sync">Kapseln: jeder Arbeitstag ab 1 Std netto, jedes Abzeichen, jedes Level. Goldene Kapseln: Serien.</p>
     </div>
   </main>
@@ -1790,7 +1795,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   function renderColl(st){
     st = st || stats();
     const owned = ITEMS.filter(i => game.items[i.id]).length, left = capsLeft();
-    $("co-count").textContent = `${owned} / ${ITEMS.length}`;
+    $("co-count").textContent = `${owned}/${ITEMS.length}`;
     $("co-caps").textContent = left === 1 ? "1 Kapsel" : `${left} Kapseln`;
     $("co-lv").textContent = `Lv ${st.level}` + (st.current ? ` · Serie ${st.current}` : "");
     $("lv-big").textContent = "LEVEL " + String(st.level).padStart(2, "0");
@@ -1800,7 +1805,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     const ps = pendingSeason();
     $("co-season").hidden = !ps;
     if (ps) $("co-season").textContent = `Saison-Kapsel öffnen · ${ps.item.label}`;
-    $("bd-count").textContent = `${game.badges.length} / ${BADGES.length}`;
+    $("bd-count").textContent = `${game.badges.length}/${BADGES.length}`;
     $("badges").innerHTML = BADGES.map(b => `<button type="button" class="bdg${game.badges.includes(b.id) ? "" : " locked"}" data-b="${b.id}"><canvas></canvas><b>${b.name}</b></button>`).join("");
     $("badges").querySelectorAll(".bdg").forEach(el => {
       const b = BADGES.find(x => x.id === el.dataset.b), has = game.badges.includes(b.id);
@@ -2106,6 +2111,16 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   function closeCapsule(){ $("cap").hidden = true; cancelAnimationFrame(capAnim); renderAll(); setTimeout(showCeleb, 250); }
   $("co-open").onclick = () => { buzz(6); openCapsule(); };
   $("co-season").onclick = () => { buzz(6); openCapsule(); };
+  // Reiter in der Sammlung: Zubehör / Abzeichen (Auswahl wird gemerkt)
+  function setCollTab(t){
+    document.querySelectorAll("[data-ctab]").forEach(b => { const on = b.dataset.ctab === t; b.setAttribute("aria-pressed", String(on)); b.setAttribute("aria-selected", String(on)); });
+    $("cp-items").hidden = t !== "items"; $("cp-badges").hidden = t !== "badges";
+    try { localStorage.setItem("stempelkarte:sammlung-tab", t); } catch(e){}
+    const l = $("scr-coll").querySelector(".list"); if (l) l.scrollTop = 0;
+    if (game) renderColl(lastStats);                  // Bilder brauchen sichtbare Zeichenflächen, daher neu zeichnen
+  }
+  document.querySelectorAll("[data-ctab]").forEach(b => b.onclick = () => { buzz(5); setCollTab(b.dataset.ctab); });
+  try { const t = localStorage.getItem("stempelkarte:sammlung-tab"); if (t === "badges" || t === "items") setTimeout(() => setCollTab(t), 0); } catch(e){}
   $("lvbox").onclick = () => {
     const st = lastStats || stats(), p = st.parts, c = st.counts;
     const row = (l, n, v) => `<div style="display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px dashed var(--edge);font-size:12px"><span>${l}${n !== null ? ` <span style="color:var(--muted)">× ${n}</span>` : ""}</span><b>${v.toLocaleString("de-DE")} XP</b></div>`;
