@@ -189,8 +189,8 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   .ldig{font-size:60px}
   .fields{gap:9px;padding:12px}.field input{min-height:46px}
 }
-/* Die Laufschrift wird als Punktschrift ins Display gezeichnet; der Text bleibt für Screenreader erhalten */
-.ticker{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ticker{height:18px;margin-top:6px;overflow:hidden;font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;text-overflow:ellipsis;text-shadow:0 0 8px var(--glow-txt)}
+.ticker .car{display:inline-block;width:7px;height:11px;background:var(--led);vertical-align:-1px;margin-left:2px;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 .lrow{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--lrow)}
 .ldig{font:900 76px/1 var(--dots);text-align:center;margin:8px 0 4px;text-shadow:0 0 18px var(--glow-txt);font-variant-numeric:tabular-nums;position:relative}
@@ -625,7 +625,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       <div class="lcd">
         <div class="scene"><canvas id="cv" role="img" aria-label="Monster zeigt deinen Fortschritt"></canvas>
           <div class="live" role="timer" aria-live="off"><b id="live-t">0:00:00</b><small id="live-s"></small></div></div>
-        <div class="ticker" aria-live="polite"><span id="tick-t"></span></div>
+        <div class="ticker"><span id="tick-t"></span><span class="car"></span></div>
       </div>
     </div>
     <div class="read">
@@ -996,9 +996,9 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     off.width = cv.width; off.height = cv.height;
     P = cv.width / COLS;
     ROWS = Math.floor(cv.height / P);
-    if (ROWS < 34) { ROWS = 34; P = cv.height / ROWS; }
+    if (ROWS < 28) { ROWS = 28; P = cv.height / ROWS; }
     OX = (cv.width - COLS * P) / 2; OY = cv.height - ROWS * P;
-    GROUND = ROWS - 11;                              // darunter: 2 Zeilen Abstand, Umlautzeile, 5 Zeilen Schrift
+    GROUND = ROWS - 4;
     buf = new Uint8Array(COLS * ROWS);
   }
   const put = (x, y, v) => { x |= 0; y |= 0; if (x >= 0 && x < COLS && y >= 0 && y < ROWS && v > buf[y * COLS + x]) buf[y * COLS + x] = v; };
@@ -1089,37 +1089,6 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   const MOON = ["..###.", ".##...", "##....", "##....", ".##...", "..###."];
   // Feste, unregelmäßig verteilte Sterne: [x, y, Helligkeit 1/2]; y wird auf die Himmelshöhe begrenzt
   const STARS = [[3, 2, 2], [9, 7, 1], [16, 3, 1], [22, 10, 1], [27, 1, 2], [33, 6, 1], [39, 12, 1], [12, 13, 1], [30, 15, 2], [6, 17, 1]];
-  // Punktschrift 3×5 (schmale Zeichen 1 breit) für die Laufschrift; Umlaute bekommen zwei Punkte darüber
-  const FONT = {
-    A: ["###", "#.#", "###", "#.#", "#.#"], B: ["##.", "#.#", "##.", "#.#", "##."], C: ["###", "#..", "#..", "#..", "###"], D: ["##.", "#.#", "#.#", "#.#", "##."],
-    E: ["###", "#..", "##.", "#..", "###"], F: ["###", "#..", "##.", "#..", "#.."], G: ["###", "#..", "#.#", "#.#", "###"], H: ["#.#", "#.#", "###", "#.#", "#.#"],
-    I: ["###", ".#.", ".#.", ".#.", "###"], J: ["..#", "..#", "..#", "#.#", "###"], K: ["#.#", "#.#", "##.", "#.#", "#.#"], L: ["#..", "#..", "#..", "#..", "###"],
-    M: ["#.#", "###", "###", "#.#", "#.#"], N: ["##.", "#.#", "#.#", "#.#", "#.#"], O: ["###", "#.#", "#.#", "#.#", "###"], P: ["###", "#.#", "###", "#..", "#.."],
-    Q: ["###", "#.#", "#.#", "###", "..#"], R: ["##.", "#.#", "##.", "#.#", "#.#"], S: ["###", "#..", "###", "..#", "###"], T: ["###", ".#.", ".#.", ".#.", ".#."],
-    U: ["#.#", "#.#", "#.#", "#.#", "###"], V: ["#.#", "#.#", "#.#", "#.#", ".#."], W: ["#.#", "#.#", "###", "###", "#.#"], X: ["#.#", "#.#", ".#.", "#.#", "#.#"],
-    Y: ["#.#", "#.#", ".#.", ".#.", ".#."], Z: ["###", "..#", ".#.", "#..", "###"],
-    0: ["###", "#.#", "#.#", "#.#", "###"], 1: [".#.", "##.", ".#.", ".#.", "###"], 2: ["###", "..#", "###", "#..", "###"], 3: ["###", "..#", ".##", "..#", "###"],
-    4: ["#.#", "#.#", "###", "..#", "..#"], 5: ["###", "#..", "###", "..#", "###"], 6: ["###", "#..", "###", "#.#", "###"], 7: ["###", "..#", ".#.", ".#.", ".#."],
-    8: ["###", "#.#", "###", "#.#", "###"], 9: ["###", "#.#", "###", "..#", "###"],
-    " ": ["..", "..", "..", "..", ".."], ".": [".", ".", ".", ".", "#"], ",": [".", ".", ".", "#", "#"], ":": [".", "#", ".", "#", "."], "!": ["#", "#", "#", ".", "#"],
-    "?": ["###", "..#", ".##", "...", ".#."], "-": ["...", "...", "###", "...", "..."], "+": ["...", ".#.", "###", ".#.", "..."], "/": ["..#", "..#", ".#.", "#..", "#.."],
-    "%": ["#.#", "..#", ".#.", "#..", "#.#"], "(": [".#", "#.", "#.", "#.", ".#"], ")": ["#.", ".#", ".#", ".#", "#."], "'": ["#", "#", ".", ".", "."], "·": [".", ".", "#", ".", "."]
-  };
-  const UMLAUT = { "Ä": "A", "Ö": "O", "Ü": "U" };
-  const glyphOf = ch => FONT[UMLAUT[ch] || ch] || FONT["?"];
-  const textWidth = str => [...str].reduce((w, ch) => w + glyphOf(ch)[0].length + 1, 0) - 1;
-  function drawText(str, x, y, maxX){
-    for (const ch of str) {
-      const g = glyphOf(ch), w = g[0].length;
-      if (x > maxX) break;
-      if (x + w >= 0) {
-        g.forEach((r, j) => { for (let i = 0; i < w; i++) if (r[i] === "#") put(x + i, y + j, 2); });
-        if (UMLAUT[ch]) { put(x, y - 1, 2); put(x + 2, y - 1, 2); }
-      }
-      x += w + 1;
-    }
-    return x;
-  }
   const CLOUD = ["..++++..", ".++++++.", "++++++++"];
   const Z = ["###", "..#", ".#.", "#..", "###"];
   const DROP = ["#", "#", "+"];
@@ -1141,7 +1110,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       put(gx, gy, 2); if (k === 0) { put(gx - 1, gy, 1); put(gx + 1, gy, 1); put(gx, gy - 1, 1); put(gx, gy + 1, 1); }
     }
     else {
-      sprite(MOON, COLS - 9, 2);
+      if (hour < 6 || hour > 20) sprite(MOON, COLS - 9, 2);   // Mond nur, wenn keine Sonne zu sehen ist
       // nachts: feste Sterne in zwei Helligkeiten; die hellen funkeln langsam
       if (hour < 6 || hour > 20) STARS.forEach(([sx, sy, lv], i) => {
         if (sy > sky + 2) return;
@@ -1187,25 +1156,9 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     if (s.mode !== "goal") confetti = [];
     confetti = confetti.filter(c => (c.y += c.v) < GROUND);
     confetti.forEach(c => put(c.x, c.y, Math.random() < .5 ? 2 : 1));
-    drawTicker(t);
     present();
   }
 
-  // Laufschrift als Punktschrift: kurze Texte werden eingetippt, lange laufen von rechts nach links durch
-  let tickMsg = "", tickT0 = 0;
-  function drawTicker(t){
-    const msg = message().toUpperCase().replace(/ß/g, "SS");
-    if (msg !== tickMsg) { tickMsg = msg; tickT0 = t; }
-    const y = ROWS - 6, w = textWidth(msg);
-    if (w <= COLS - 4) {
-      const n = Math.min(msg.length, Math.floor((t - tickT0) / 45));
-      const end = drawText(msg.slice(0, n), 1, y, COLS);
-      if (Math.floor(t / 500) % 2) for (let j = 0; j < 5; j++) put(end, y + j, 2);   // blinkender Cursor
-    } else {
-      const loop = w + COLS, off = ((t - tickT0) / 70) % loop;
-      drawText(msg, Math.round(COLS - off), y, COLS);
-    }
-  }
 
   // ---------- Laufschrift ----------
   let shown = "";
