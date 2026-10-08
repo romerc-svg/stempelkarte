@@ -431,7 +431,32 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .card b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .r{display:block;font-size:8px;margin-top:2px;letter-spacing:.12em}
 .card[data-r="1"] .r{color:var(--c1)} .card[data-r="2"] .r{color:var(--c2)} .card[data-r="3"] .r{color:var(--c3)} .card[data-r="4"] .r{color:var(--c4)}
-.co-tabs{margin:12px 14px 0;flex:none;grid-template-columns:1fr 1fr}
+.co-tabs{margin:12px 14px 0;flex:none;grid-template-columns:1fr 1fr 1fr}
+/* Pixel-Münze (Akzentfarbe) */
+.coin{display:inline-block;width:12px;height:12px;vertical-align:-1px;background:var(--accent);
+  clip-path:polygon(25% 0,75% 0,75% 12.5%,87.5% 12.5%,87.5% 25%,100% 25%,100% 75%,87.5% 75%,87.5% 87.5%,75% 87.5%,75% 100%,25% 100%,25% 87.5%,12.5% 87.5%,12.5% 75%,0 75%,0 25%,12.5% 25%,12.5% 12.5%,25% 12.5%);
+  box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 55%,#000)}
+.co-head{display:flex;align-items:center;gap:10px}
+.coinbal{display:inline-flex;align-items:center;gap:5px;color:var(--ink);font-weight:600}
+.shop{margin:12px 14px 0;display:flex;flex-direction:column;gap:10px}
+.shop-top{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px}
+.shop-top b{font:900 26px/1 var(--dots);display:inline-flex;align-items:center;gap:8px}
+.shop-top b .coin{width:18px;height:18px}
+.shop-top span{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:right}
+.pack{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:12px;background:var(--panel);border-radius:18px;padding:12px;box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge)}
+.pack canvas{width:58px;aspect-ratio:1;display:block;border-radius:12px}
+.pack b{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.pack small{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:var(--muted)}
+.pack button{min-width:86px;height:42px;padding:0 10px;border-radius:12px;background:var(--ink);color:var(--panel);font:600 12px var(--mono);display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 0 #000}
+.pack button:active{transform:translateY(2px);box-shadow:0 1px 0 #000}
+.pack button:disabled{background:var(--well);color:var(--faint);box-shadow:0 3px 0 var(--edge);font-size:9.5px;line-height:1.2;white-space:normal}
+.pack button:disabled .coin{display:none}
+.shop-test{align-self:center;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border:1.5px dashed var(--edge);border-radius:10px;padding:8px 12px}
+.card .salv{position:absolute;left:8px;bottom:-9px;right:8px;margin:auto;width:max-content;padding:3px 8px;border-radius:8px;background:var(--ink);color:var(--panel);font:600 8.5px var(--mono);letter-spacing:.08em;display:inline-flex;align-items:center;gap:4px;box-shadow:0 2px 0 #000}
+.card .salv .coin{width:8px;height:8px}
+.card{margin-bottom:6px}
+.dc-coinsub{margin-top:-6px;font:600 9.5px var(--mono);letter-spacing:.08em;color:var(--g2);text-align:right;text-transform:uppercase;min-height:1.3em}
+.dayc .coin{background:var(--g3);box-shadow:inset 0 0 0 2px var(--g1);margin-right:8px}
 .co-tabs button{padding:10px 4px;font-size:10px}
 .co-tabs button span{opacity:.7;margin-left:4px}
 .sec{display:flex;justify-content:space-between;margin:18px 18px 0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -679,7 +704,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   <main class="screen" id="scr-coll" hidden>
     <div class="plate">
       <span class="screw l"></span><span class="screw r"></span>
-      <div class="brand"><b>Sammlung</b><span id="co-lv">Lv 1</span></div>
+      <div class="brand"><b>Sammlung</b><span class="co-head"><span id="co-lv">Lv 1</span><span class="coinbal" title="Coins"><i class="coin"></i><b id="co-coins">0</b></span></span></div>
       <div class="lcd">
         <div class="co-scene"><canvas id="co-cv" aria-label="Dein Monster mit Zubehör" role="img"></canvas></div>
         <div class="lrow"><span id="co-worn">Trägt nichts</span><span id="co-caps">0 Kapseln</span></div>
@@ -695,8 +720,10 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     <div class="kinds two co-tabs" role="tablist" aria-label="Sammlung">
       <button type="button" role="tab" id="ct-items" data-ctab="items" aria-pressed="true" aria-selected="true">Zubehör <span id="co-count"></span></button>
       <button type="button" role="tab" id="ct-badges" data-ctab="badges" aria-pressed="false" aria-selected="false">Abzeichen <span id="bd-count"></span></button>
+      <button type="button" role="tab" id="ct-shop" data-ctab="shop" aria-pressed="false" aria-selected="false">Shop</button>
     </div>
     <div class="list">
+      <section id="cp-shop" role="tabpanel" aria-labelledby="ct-shop" hidden><div class="shop" id="shop"></div></section>
       <section id="cp-badges" role="tabpanel" aria-labelledby="ct-badges" hidden><div class="badges" id="badges"></div></section>
       <section id="cp-items" role="tabpanel" aria-labelledby="ct-items"><div class="album" id="album"></div></section>
       <p class="sync">Kapseln: jeder Arbeitstag ab 1 Std netto, jedes Abzeichen, jedes Level. Goldene Kapseln: Serien.</p>
@@ -737,6 +764,8 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       <div class="dc-h" id="dc-h">DAY COMPLETE</div>
       <div class="dc-time"><b id="dc-t">0:00</b> / <span id="dc-s">0:00</span> h</div>
       <div class="dc-row" id="dc-xprow"><span>XP</span><b>+<span id="dc-xp">0</span></b></div>
+      <div class="dc-row" id="dc-coinrow"><span><i class="coin"></i>Coins</span><b>+<span id="dc-coins">0</span></b></div>
+      <div class="dc-coinsub" id="dc-coinsub"></div>
       <div class="dc-row" id="dc-streak" hidden><span><i class="dc-flame"></i>Streak</span><b id="dc-sn">0</b></div>
       <div class="dc-lv">
         <div class="dc-lvhead"><b id="dc-lvl">LEVEL 01</b><span id="dc-xpr">0 / 250 XP</span></div>
@@ -1107,12 +1136,15 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   const STARS = [[3, 2, 2], [9, 7, 1], [16, 3, 1], [22, 10, 1], [27, 1, 2], [33, 6, 1], [39, 12, 1], [12, 13, 1], [30, 15, 2], [6, 17, 1]];
   const CLOUD = ["..++++..", ".++++++.", "++++++++"];
   const Z = ["###", "..#", ".#.", "#..", "###"];
+  // Münze mit "+1" für die Live-Anzeige
+  const COINPOP = [".###.......#.", "#+++#..#..##.", "#+#+#.###..#.", "#+++#..#...#.", ".###......###"];
   const DROP = ["#", "#", "+"];
   const BANG = ["#", "#", "#", ".", "#"];
 
   // ---------- Szene ----------
   let GROUND = 34; const WALK0 = 10, WALK1 = 22, CUPX = 37, FLAGX = 44;
   let charX = null, jumpT = 0, blinkUntil = 0, confetti = [], tapMsg = null, tapUntil = 0;
+  let coinPops = [], lastNetMin = null;
 
   function draw(t){
     buf.fill(0);
@@ -1169,6 +1201,18 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     monster(x, y, eyes, mouth, seated ? SIT : legs, armsUp, s.mode !== "sleep" && tx < charX - .4);
     if (s.mode === "over") { sprite(BANG, x + 17, y - 1); if (Math.floor(t / 300) % 2) sprite(DROP, x - 2, y + 4); }
     if (s.mode === "warn" && Math.floor(t / 500) % 2) sprite(DROP, x + 16, y + 3);
+    // Jede volle Netto-Minute ein dezentes "+1" mit Münze (nicht in der Pause, nicht über dem Wochenmax)
+    if (s.a && game) {
+      const nm = Math.floor(s.net);
+      if (lastNetMin !== null && nm > lastNetMin && s.mode !== "pause") {
+        const ws = weekStart(Date.now());
+        if (weekPaidMinutes() + s.net <= WOCHE_MAX) coinPops.push({ t0: t, x: x + 1, y: y - 3 });
+        else if (game.capMsgWeek !== ws) { game.capMsgWeek = ws; saveGame(); tapMsg = "Wochenmax erreicht – keine Coins mehr"; tapUntil = Date.now() + 7000; }
+      }
+      lastNetMin = nm;
+    } else lastNetMin = null;
+    coinPops = coinPops.filter(p => t - p.t0 < 1500);
+    coinPops.forEach(p => { const age = t - p.t0, rows = age > 950 ? COINPOP.map(r => r.replace(/#/g, "+")) : COINPOP; sprite(rows, p.x, p.y - Math.floor(age / 220)); });
     if (s.mode !== "goal") confetti = [];
     confetti = confetti.filter(c => (c.y += c.v) < GROUND);
     confetti.forEach(c => put(c.x, c.y, Math.random() < .5 ? 2 : 1));
@@ -1258,7 +1302,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       buzz([10, 40, 10]); say("Eingestempelt " + clock(state.active.start), undo);
     } else {
       const start = state.active.start, end = Date.now(), s0 = today(), st0 = lastStats || stats();
-      const pre = { target: s0.dayTarget, xp: st0.xp, level: st0.level, xpIn: st0.xpIn, xpNext: st0.xpNext };
+      const pre = { target: s0.dayTarget, xp: st0.xp, level: st0.level, xpIn: st0.xpIn, xpNext: st0.xpNext, coinDay: coinCalc()[dayStart(start)] || null, coinKey: dayStart(start) };
       let saved = false;
       if (end - start >= 60000) { state.entries.push({ id: "e" + end.toString(36), start, end }); saved = true; say("Aus · " + dig(netOf(minsBetween(start, end))) + " Std", () => { closeDayComplete(); undo(); }); }
       else say("Unter 1 Min, nicht gespeichert", undo);
@@ -1288,10 +1332,19 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     $("dc-xpr").textContent = `${pre.xpIn.toLocaleString("de-DE")} / ${pre.xpNext.toLocaleString("de-DE")} XP`;
     const fill = $("dc-fill"); fill.style.transition = "none"; fill.style.width = (pre.xpIn / pre.xpNext * 100) + "%"; void fill.offsetWidth; fill.style.transition = "";
     closeDayComplete(); $("dayc").hidden = false; buzz(met ? [20, 50, 20, 50, 60] : 20);
+    // Coins: Zuwachs dieses Tages mit Aufschlüsselung
+    const cd = coinCalc()[pre.coinKey] || { min: 0, streak: 0, soll: 0, week: 0, total: 0 }, cb = pre.coinDay || { min: 0, streak: 0, soll: 0, week: 0, total: 0 };
+    const dc = k => Math.max(0, cd[k] - cb[k]), coinGain = pre.coinKey >= game.coinStart ? Math.max(0, cd.total - cb.total) : 0;
+    $("dc-coins").textContent = "0";
+    const sub = [];
+    if (coinGain) { if (dc("min")) sub.push(`${dc("min")} Min`); if (dc("streak")) sub.push(`+${dc("streak")} Serie`); if (dc("soll")) sub.push(`+${dc("soll")} Tages-Soll`); if (dc("week")) sub.push(`+${dc("week")} Woche`); }
+    if (weekPaidMinutes() >= WOCHE_MAX) sub.push("Wochenmax erreicht");
+    $("dc-coinsub").textContent = sub.join(" · ");
     // XP hochzählen
     const gain = Math.max(0, st.xp - pre.xp);
     at(450, () => { const t0 = performance.now(), tick = () => { const k = Math.min(1, (performance.now() - t0) / 650); $("dc-xp").textContent = Math.round(gain * k); if (k < 1) dcTimers.push(setTimeout(tick, 40)); else buzz(10); }; tick(); });
-    let t = 1150;
+    at(800, () => { const t0 = performance.now(), tick = () => { const k = Math.min(1, (performance.now() - t0) / 800); $("dc-coins").textContent = Math.round(coinGain * k).toLocaleString("de-DE"); if (k < 1) dcTimers.push(setTimeout(tick, 40)); else buzz(10); }; tick(); });
+    let t = 1500;
     if (st.current > 0) at(t, () => { $("dc-sn").textContent = st.current; $("dc-streak").hidden = false; $("dc-streak").classList.add("in"); buzz(8); }), t += 350;
     // Level-Balken: ggf. erst voll, Blitz, dann neues Level
     const levelUp = mine.find(c => c.kind === "level");
@@ -1725,6 +1778,24 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
   RARITY[4] = "Saison";
   const LS_GAME = "stempelkarte:spiel";
+
+  // ---------- Coins & Shop: alle Werte hier anpassen ----------
+  const COIN = {
+    proMin: 1,            // Coins je vergütete Netto-Arbeitsminute
+    sollBonus: 50,        // Tages-Soll erreicht
+    wocheBonus: 200,      // Wochenziel erreicht
+    serieProWoche: 0.10,  // +10 % auf Minuten-Coins je Woche in Serie …
+    serieMax: 0.50,       // … höchstens +50 %
+    willkommen: 500       // einmalig für bestehende und neue Spielstände
+  };
+  // Packs mit je 3 regulären Items (keine Saison-Items)
+  const PACKS = [
+    { id: "standard",  name: "Standard-Pack", price: 500,  desc: "3 Items, normale Chancen" },
+    { id: "selten",    name: "Selten-Pack",   price: 1200, desc: "3 Items, mind. 1 seltenes, Legendär-Chance 15 %" },
+    { id: "legendaer", name: "Legendär-Pack", price: 3000, desc: "3 Items, 1 Legendär garantiert" }
+  ];
+  const PITY = 10;                                  // nach so vielen Packs ohne Legendär ist im nächsten eins garantiert
+  const SALVAGE = { 1: 25, 2: 75, 3: 250, 4: 100 }; // Coins fürs Verwerten eines Doppelten (gewöhnlich, selten, legendär, Saison)
   // Arbeitstage mit mindestens 1 Std netto (Abwesenheiten zählen nicht)
   function eligibleDays(){
     const m = new Map();
@@ -1735,9 +1806,47 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   function loadGame(){
     try { game = JSON.parse(localStorage.getItem(LS_GAME) || "null"); } catch(e){ game = null; }
     if (!game || game.v !== 1) { game = { v: 1, claimed: eligibleDays(), capsules: 3, items: {}, worn: {} }; saveGame(); }   // 3 Willkommens-Kapseln, alte Tage zählen nicht
+    // Coins & Shop: neue Felder; bisherige Tage zählen nicht rückwirkend
+    if (game.coinv !== 1) { game.coins = (game.coins || 0) + COIN.willkommen; game.coinDays = {}; game.coinStart = dayStart(Date.now()); game.pity = 0; game.packQ = []; game.coinv = 1; saveGame(); }
     // Die Fliege wurde durch den Luftballon ersetzt
     if (game.items.fliege) { game.items.ballon = (game.items.ballon || 0) + game.items.fliege; delete game.items.fliege; if (game.worn.hals === "fliege") { delete game.worn.hals; game.worn.hand = "ballon"; } saveGame(); }
   }
+  // Coins je Tag aus den Einträgen: Netto-Arbeitsminuten (gedeckelt auf WOCHE_MAX je Woche) × Serien-Multiplikator,
+  // dazu Tages-Soll-Bonus (nur solange der Tag unter dem Deckel lag) und Wochenbonus (am Tag, an dem das Ziel erreicht wird)
+  function coinCalc(){
+    const weeks = new Map(), days = {};
+    state.entries.forEach(e => { const w = weekStart(e.start); if (!weeks.has(w)) weeks.set(w, []); weeks.get(w).push(e); });
+    const cw = weekStart(Date.now()); let run = 0;
+    [...weeks.keys()].sort((a, b) => a - b).forEach(w => {
+      const mult = Math.min(COIN.serieMax, COIN.serieProWoche * run), byDay = new Map();
+      weeks.get(w).forEach(e => { const d = dayStart(e.start); if (!byDay.has(d)) byDay.set(d, { work: 0, all: 0 }); const o = byDay.get(d), n = entryNet(e); o.all += n; if (!e.type) o.work += n; });
+      let remaining = WOCHE_MAX, cum = 0, weekGiven = false;
+      [...byDay.keys()].sort((a, b) => a - b).forEach(d => {
+        const o = byDay.get(d), paid = Math.max(0, Math.min(o.work, remaining)); remaining -= paid;
+        const min = Math.floor(paid * COIN.proMin), streak = Math.floor(min * mult);
+        const soll = o.work >= SOLL_TAG - .5 && paid > 0 ? COIN.sollBonus : 0;
+        cum += o.all; const week = !weekGiven && cum >= WOCHE_MIN ? (weekGiven = true, COIN.wocheBonus) : 0;
+        days[d] = { min, streak, soll, week, paidMin: paid, total: min + streak + soll + week };
+      });
+      const ok = [...byDay.values()].reduce((a, o) => a + o.all, 0) >= WOCHE_MIN;
+      if (!(w === cw && !ok)) run = ok ? run + 1 : 0;
+    });
+    return days;
+  }
+  // Gutschrift idempotent je Tag: nur positive Differenzen werden nachgezahlt, nie etwas abgezogen
+  function syncCoins(){
+    const days = coinCalc(); let gain = 0;
+    Object.keys(days).forEach(k => { const d = +k; if (d < game.coinStart) return; const diff = days[k].total - (game.coinDays[k] || 0); if (diff > 0) { gain += diff; game.coinDays[k] = days[k].total; } });
+    if (gain) { game.coins += gain; saveGame(); }
+    return gain;
+  }
+  // Bereits vergütete Arbeitsminuten der laufenden Woche (für Live-Anzeige und Deckel)
+  function weekPaidMinutes(){
+    const ws = weekStart(Date.now()); let m = 0;
+    state.entries.forEach(e => { if (!e.type && weekStart(e.start) === ws) m += entryNet(e); });
+    return Math.min(WOCHE_MAX, m);
+  }
+
   // Neue Arbeitstage in Kapseln umwandeln (einmal je Tag, wird nie zurückgenommen)
   function syncCapsules(){
     const have = new Set(game.claimed), fresh = eligibleDays().filter(d => !have.has(d));
@@ -1798,6 +1907,8 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     $("co-count").textContent = `${owned}/${ITEMS.length}`;
     $("co-caps").textContent = left === 1 ? "1 Kapsel" : `${left} Kapseln`;
     $("co-lv").textContent = `Lv ${st.level}` + (st.current ? ` · Serie ${st.current}` : "");
+    $("co-coins").textContent = (game.coins || 0).toLocaleString("de-DE");
+    renderShop();
     $("lv-big").textContent = "LEVEL " + String(st.level).padStart(2, "0");
     $("xp-fill").style.width = Math.min(100, st.xpIn / st.xpNext * 100) + "%";
     $("xp-l").textContent = STAGES[st.stage];
@@ -1814,18 +1925,25 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     });
     const worn = Object.values(game.worn).map(id => ITEM[id] && ITEM[id].name).filter(Boolean);
     $("co-worn").textContent = worn.length ? "Trägt: " + worn.join(", ") : "Trägt nichts";
-    const normal = game.capsules + (game.gold || 0);
+    const normal = game.packQ.length + game.capsules + (game.gold || 0);
     $("co-open").disabled = !normal;
     $("co-open-t").textContent = normal ? `Kapsel öffnen (${normal})${game.gold ? ` · ${game.gold} golden` : ""}` : "Nächste Kapsel nach Feierabend";
     $("kb-coll").hidden = !left; $("kb-coll").textContent = left;
     $("album").innerHTML = ITEMS.map(it => {
       const n = game.items[it.id] || 0, worn = game.worn[it.slot] === it.id;
       return `<button type="button" class="card${n ? "" : " locked"}${worn ? " worn" : ""}" data-r="${it.r}" data-item="${it.id}" aria-label="${n ? it.name : "Noch nicht gefunden"}">
-        <canvas></canvas><b>${n ? it.name : "???"}</b><span class="r">${it.r === 4 ? "Saison · " + it.label : RARITY[it.r] + " · " + SLOTS[it.slot]}</span>${n > 1 ? `<span class="cnt">×${n}</span>` : ""}</button>`;
+        <canvas></canvas><b>${n ? it.name : "???"}</b><span class="r">${it.r === 4 ? "Saison · " + it.label : RARITY[it.r] + " · " + SLOTS[it.slot]}</span>${n > 1 ? `<span class="cnt">×${n}</span><span class="salv" role="button" tabindex="0" data-salv="${it.id}">Verwerten +${SALVAGE[it.r]}<i class="coin"></i></span>` : ""}</button>`;
     }).join("");
     $("album").querySelectorAll(".card").forEach(card => {
       const it = ITEM[card.dataset.item], n = game.items[it.id];
       pixelCanvas(card.querySelector("canvas"), 21, 13, (set, add) => paintItem(it, set, add, 21, 13, !n, 0));
+      const sv = card.querySelector("[data-salv]");
+      if (sv) sv.onclick = e => {                       // ein Doppeltes gegen Coins tauschen; mind. ein Exemplar bleibt immer
+        e.stopPropagation(); if ((game.items[it.id] || 0) < 2) return;
+        const before = JSON.stringify({ c: game.coins, n: game.items[it.id] });
+        game.items[it.id]--; game.coins += SALVAGE[it.r]; saveGame(); buzz([10, 30, 10]); renderColl();
+        say(`${it.name} verwertet · +${SALVAGE[it.r]} Coins`, () => { const b = JSON.parse(before); game.coins = b.c; game.items[it.id] = b.n; saveGame(); renderColl(); });
+      };
       card.onclick = () => {
         if (!n) { say(it.r === 4 ? `Nur ${it.label} erhältlich` : `${RARITY[it.r]}es Item · noch nicht gefunden`); return; }
         if (game.worn[it.slot] === it.id) delete game.worn[it.slot]; else game.worn[it.slot] = it.id;
@@ -1833,6 +1951,21 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       };
     });
     drawCollPreview();
+  }
+  // Shop: drei Packs, Pity-Anzeige, ausgegraut wenn zu teuer; mit #test in der Adresse ein Test-Knopf für Coins
+  function renderShop(){
+    const left = Math.max(1, PITY - game.pity + 1);
+    $("shop").innerHTML = `<div class="shop-top"><b><i class="coin"></i>${game.coins.toLocaleString("de-DE")}</b><span>Legendär garantiert<br>in ${left} Pack${left > 1 ? "s" : ""}</span></div>` +
+      PACKS.map(p => { const miss = p.price - game.coins;
+        return `<div class="pack"><canvas data-pk="${p.id}"></canvas><div><b>${p.name}</b><small>${p.desc}</small></div>
+          <button type="button" data-buy="${p.id}"${miss > 0 ? " disabled" : ""}>${miss > 0 ? `noch ${miss.toLocaleString("de-DE")} Coins` : `<i class="coin"></i>${p.price.toLocaleString("de-DE")}`}</button></div>`; }).join("") +
+      (location.hash === "#test" ? `<button type="button" class="shop-test" id="shop-test">Test: +1.000 Coins</button>` : "");
+    $("shop").querySelectorAll("[data-buy]").forEach(b => b.onclick = () => buyPack(b.dataset.buy));
+    $("shop").querySelectorAll("[data-pk]").forEach(cv => {
+      const r = cv.dataset.pk === "legendaer" ? 3 : cv.dataset.pk === "selten" ? 2 : 1;
+      drawBadge(cv, { color: r === 3 ? "#E3A300" : r === 2 ? "#3F7BFF" : "#8A857C", icon: ["....kkk....", "...kAAAk...", "..kAWAAAk..", "..kAAAAAk..", "kkkkkkkkkkk", "kWWWWWWWWWk", "kWwwwwwwwWk", "kkkkkkkkkkk"] });
+    });
+    const tb = $("shop-test"); if (tb) tb.onclick = () => { game.coins += 1000; saveGame(); renderColl(); say("+1.000 Test-Coins"); };
   }
   function drawCollPreview(){
     const cv = $("co-cv"), cols = cv.clientHeight ? Math.max(31, Math.floor(24 * cv.clientWidth / cv.clientHeight)) : 31;   // so viele Spalten, wie in die Breite passen
@@ -2065,11 +2198,30 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     let it = pick(); if (game.items[it.id]) it = pick();
     return it;
   }
-  let capItem = null, capAnim = 0;
-  const capsLeft = () => game.capsules + (game.gold || 0) + (pendingSeason() ? 1 : 0);
+  // Pack würfeln: nur reguläre Items; Pity: nach PITY Packs ohne Legendär ist eins garantiert
+  function rollRarity(leg, rare){ const x = Math.random(); return x < leg ? 3 : x < leg + rare ? 2 : 1; }
+  const pickOf = r => { const pool = REGULAR.filter(i => i.r === r); return pool[Math.floor(Math.random() * pool.length)]; };
+  function rollPack(id){
+    let items;
+    if (id === "standard") items = [rollItem(), rollItem(), rollItem()];
+    if (id === "selten") { items = [0, 1, 2].map(() => pickOf(rollRarity(.15, .30))); if (!items.some(i => i.r >= 2)) items[0] = pickOf(2); }
+    if (id === "legendaer") items = [pickOf(3), rollItem(), rollItem()];
+    if (!items.some(i => i.r === 3) && game.pity >= PITY) items[0] = pickOf(3);
+    game.pity = items.some(i => i.r === 3) ? 0 : game.pity + 1;
+    return items.sort((a, b) => a.r - b.r);           // Spannung: Seltenstes zuletzt
+  }
+  function buyPack(id){
+    const pk = PACKS.find(p => p.id === id); if (!pk || game.coins < pk.price) return;
+    game.coins -= pk.price; game.packQ.push(...rollPack(id).map(i => i.id)); saveGame(); buzz([12, 40, 12]);
+    openCapsule();
+  }
+  let capItem = null, capAnim = 0, capFromPack = false;
+  const capsLeft = () => (game.packQ || []).length + game.capsules + (game.gold || 0) + (pendingSeason() ? 1 : 0);
   function openCapsule(){
     const ps = pendingSeason();
-    if (ps) { capItem = ps.item; game.season[ps.key] = "done"; }
+    capFromPack = false;
+    if (game.packQ && game.packQ.length) { capItem = ITEM[game.packQ.shift()]; capFromPack = true; }
+    else if (ps) { capItem = ps.item; game.season[ps.key] = "done"; }
     else if (game.gold) { game.gold--; const pool = REGULAR.filter(i => i.r === (Math.random() < .25 ? 3 : 2)); capItem = pool[Math.floor(Math.random() * pool.length)]; }
     else if (game.capsules) { capItem = rollItem(); game.capsules--; }
     else return;
@@ -2103,7 +2255,8 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
         const acts = $("cap-acts"); acts.innerHTML = "";
         const btn = (label, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = fn; acts.appendChild(b); };
         if (game.worn[capItem.slot] !== capItem.id) btn("Anziehen", "", () => { game.worn[capItem.slot] = capItem.id; saveGame(); closeCapsule(); });
-        btn(capsLeft() ? `Nächste (${capsLeft()})` : "Fertig", "primary", () => { if (capsLeft()) openCapsule(); else closeCapsule(); });
+        const inPack = game.packQ && game.packQ.length, packDone = capFromPack && !inPack;   // nach dem letzten Pack-Item: Fertig
+        btn(inPack ? `Nächstes (${game.packQ.length})` : !packDone && capsLeft() ? `Nächste (${capsLeft()})` : "Fertig", "primary", () => { if (inPack || (!packDone && capsLeft())) openCapsule(); else closeCapsule(); });
         acts.hidden = false;
       }, 420);
     };
@@ -2114,13 +2267,13 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   // Reiter in der Sammlung: Zubehör / Abzeichen (Auswahl wird gemerkt)
   function setCollTab(t){
     document.querySelectorAll("[data-ctab]").forEach(b => { const on = b.dataset.ctab === t; b.setAttribute("aria-pressed", String(on)); b.setAttribute("aria-selected", String(on)); });
-    $("cp-items").hidden = t !== "items"; $("cp-badges").hidden = t !== "badges";
+    $("cp-items").hidden = t !== "items"; $("cp-badges").hidden = t !== "badges"; $("cp-shop").hidden = t !== "shop";
     try { localStorage.setItem("stempelkarte:sammlung-tab", t); } catch(e){}
     const l = $("scr-coll").querySelector(".list"); if (l) l.scrollTop = 0;
     if (game) renderColl(lastStats);                  // Bilder brauchen sichtbare Zeichenflächen, daher neu zeichnen
   }
   document.querySelectorAll("[data-ctab]").forEach(b => b.onclick = () => { buzz(5); setCollTab(b.dataset.ctab); });
-  try { const t = localStorage.getItem("stempelkarte:sammlung-tab"); if (t === "badges" || t === "items") setTimeout(() => setCollTab(t), 0); } catch(e){}
+  try { const t = localStorage.getItem("stempelkarte:sammlung-tab"); if (t === "badges" || t === "items" || t === "shop") setTimeout(() => setCollTab(t), 0); } catch(e){}
   $("lvbox").onclick = () => {
     const st = lastStats || stats(), p = st.parts, c = st.counts;
     const row = (l, n, v) => `<div style="display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px dashed var(--edge);font-size:12px"><span>${l}${n !== null ? ` <span style="color:var(--muted)">× ${n}</span>` : ""}</span><b>${v.toLocaleString("de-DE")} XP</b></div>`;
@@ -2152,7 +2305,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   setView(view);
 
 
-  function renderAll(){ if (!game) loadGame(); syncCapsules(); lastStats = syncProgress(); renderClock(); renderCalc(); renderHist(); renderColl(lastStats); setTimeout(showCeleb, 400); }
+  function renderAll(){ if (!game) loadGame(); syncCapsules(); syncCoins(); lastStats = syncProgress(); renderClock(); renderCalc(); renderHist(); renderColl(lastStats); setTimeout(showCeleb, 400); }
 
   // ---------- Doppelpunkte in Ziffernanzeigen ----------
   // Ersetzt ":" in Doto-Anzeigen durch ein eigenes, mittig sitzendes Element; das ":" bleibt unsichtbar im Text erhalten.
