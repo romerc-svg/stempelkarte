@@ -165,6 +165,28 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
 .ldig{font:900 76px/1 var(--dots);text-align:center;margin:8px 0 4px;text-shadow:0 0 18px var(--glow-txt);font-variant-numeric:tabular-nums;position:relative}
 .ldig.dim{color:var(--led-off);text-shadow:none}
 
+/* ---------- Läuft-Zustand (eingestempelt) ---------- */
+.rec-chip{display:none;align-items:center;gap:6px;padding:4px 9px 4px 7px;border-radius:99px;background:var(--accent);color:var(--accent-fg);font-size:9.5px;letter-spacing:.14em;font-weight:600;flex:none}
+.rec-chip i{width:7px;height:7px;border-radius:50%;background:currentColor;animation:recblink 1.2s steps(1) infinite}
+@keyframes recblink{50%{opacity:.2}}
+.on .rec-chip{display:inline-flex}
+.on .brand > b{display:none}
+.live{position:absolute;left:50%;top:6%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;padding:7px 16px 8px;border-radius:14px;
+  background:color-mix(in srgb,var(--lcd) 82%,transparent);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--led) 45%,transparent);pointer-events:none;z-index:2;white-space:nowrap}
+.on .live{display:flex}
+.live b{font:900 clamp(30px,10vw,40px)/1 var(--dots);color:var(--led);text-shadow:0 0 14px var(--glow-txt);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.live small{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--lrow);margin-top:4px}
+@media (max-height:720px){.live{top:3%;padding:3px 12px 4px}.live b{font-size:24px}.live small{display:none}}
+@keyframes onring{
+  0%,100%{box-shadow:inset 0 1px 0 var(--hi),inset 0 -2px 0 var(--edge),0 0 0 2px color-mix(in srgb,var(--accent) 75%,transparent),0 0 0 0 color-mix(in srgb,var(--accent) 35%,transparent)}
+  50%{box-shadow:inset 0 1px 0 var(--hi),inset 0 -2px 0 var(--edge),0 0 0 2px color-mix(in srgb,var(--accent) 75%,transparent),0 0 0 7px color-mix(in srgb,var(--accent) 0%,transparent)}}
+.on #scr-clock .plate{animation:onring 2.2s ease-in-out infinite}
+.on .read .main{background:var(--accent);border-color:var(--accent);color:color-mix(in srgb,var(--accent-fg) 78%,transparent);position:relative}
+.on .read .main b{color:var(--accent-fg)}
+.on .read .main::after{content:"";position:absolute;right:10px;top:10px;width:8px;height:8px;border-radius:50%;background:var(--accent-fg);animation:ledpulse 1.4s ease-in-out infinite}
+.on .track{background:color-mix(in srgb,var(--accent) 22%,var(--well))}
+.on .track .lane span:last-child{color:var(--accent)}
+
 /* ---------- Ablesewerte ---------- */
 .read{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin:12px 14px 0;flex:none}
 .read > *{border:1.5px solid var(--edge);border-radius:16px;padding:9px 10px 8px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);min-width:0;text-align:left}
@@ -395,19 +417,20 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   <main class="screen" id="scr-clock">
     <div class="plate">
       <span class="screw l"></span><span class="screw r"></span>
-      <div class="brand"><b>TICKO · TK-1</b>
+      <div class="brand"><b>TICKO · TK-1</b><span class="rec-chip" aria-hidden="true"><i></i>Läuft</span>
         <div class="tools">
           <div class="fmt" role="group" aria-label="Zeitformat"><button type="button" data-view="hm" aria-pressed="true">H:M</button><button type="button" data-view="dec" aria-pressed="false">Dez</button></div>
           <button type="button" class="gear" id="btn-settings" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
         </div>
       </div>
       <div class="lcd">
-        <div class="scene"><canvas id="cv" role="img" aria-label="Monster zeigt deinen Fortschritt"></canvas></div>
+        <div class="scene"><canvas id="cv" role="img" aria-label="Monster zeigt deinen Fortschritt"></canvas>
+          <div class="live" role="timer" aria-live="off"><b id="live-t">0:00:00</b><small id="live-s"></small></div></div>
         <div class="ticker"><span id="tick-t"></span><span class="car"></span></div>
       </div>
     </div>
     <div class="read">
-      <div class="main">Netto heute<b id="r-net">0:00</b><small id="r-net-s">&nbsp;</small></div>
+      <div class="main"><span id="r-net-l">Netto heute</span><b id="r-net">0:00</b><small id="r-net-s">&nbsp;</small></div>
       <button type="button" class="edit" id="r-goal-btn" aria-label="Feierabend planen"><span id="r-goal-l">Ziel heute</span><b id="r-goal">–</b><small id="r-goal-s">&nbsp;</small></button>
       <button type="button" class="edit" id="r-start-btn" aria-label="Beginn ändern">Beginn<b id="r-start">–</b><small id="r-start-s">&nbsp;</small></button>
     </div>
@@ -862,8 +885,19 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:poi
   }, 38);
 
   // ---------- Stempeluhr ----------
+  // Live-Stoppuhr: Zeit seit dem Einstempeln, jede Sekunde
+  function renderLive(){
+    const a = state.active; if (!a) return;
+    const sec = Math.max(0, Math.floor((Date.now() - a.start) / 1000));
+    $("live-t").textContent = `${Math.floor(sec / 3600)}:${String(Math.floor(sec / 60) % 60).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+    $("live-s").textContent = `Netto ${dig(netOf(sec / 60))} · seit ${clock(a.start)}`;
+  }
+  setInterval(() => { if (tab === "clock" && state.active) renderLive(); }, 1000);
+
   function renderClock(){
     const s = today();
+    renderLive();
+    $("r-net-l").textContent = s.a ? "Netto · läuft" : "Netto heute";
     $("dev").classList.toggle("on", !!s.a);
     $("r-net").textContent = dig(s.todayNet);
     $("r-net-s").textContent = s.a ? `Anw. ${dig(s.pres)}${pauseOf(s.pres) ? " −" + PAUSE_MIN : ""}` : " ";
