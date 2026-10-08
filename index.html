@@ -1062,21 +1062,21 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     ".#############.",
     "..###########.."
   ];
-  // Augen: klare 3×2-Löcher ohne Glanzpunkte; Mund: einfache Formen ohne Zahn
+  // Gesicht (Variante A): hohe Ovalaugen 2×3 mit 5 Punkten Abstand (Spalten 3–4 und 10–11), Mund mit klarer Form
   const EYES = {
-    open:  [".##...###...##.", ".##...###...##.", ".#############."],
-    look:  [".##...###...##.", ".##...###...##.", ".#############."],
-    blink: [".#############.", ".##...###...##.", ".#############."],
-    happy: [".###.#####.###.", ".##.#.###.#.##.", ".#############."],
-    shut:  [".#############.", ".#############.", ".##...###...##."],
-    wide:  [".#...#####...#.", ".#...#####...#.", ".##.#######.##."]
+    open:  [".##..#####..##.", ".##..#####..##.", ".##..#####..##."],
+    look:  [".##..#####..##.", ".##..#####..##.", ".##..#####..##."],
+    blink: [".#############.", ".##..#####..##.", ".#############."],   // nur ein Schlitz in der Mitte
+    happy: [".#############.", ".##..#####..##.", ".#.##.###.##.#."],   // ^ ^
+    shut:  [".#############.", ".#.##.###.##.#.", ".##..#####..##."],   // geschlossen, Bogen nach unten
+    wide:  [".#...#####...#.", ".#...#####...#.", ".#...#####...#."]    // aufgerissen 3×3
   };
   const MOUTH = {
-    smile: [".#####...#####.", ".######.######."],
-    grin:  [".####.....####.", ".#####...#####."],
-    oh:    [".#####...#####.", ".#####...#####."],
-    sip:   [".#############.", ".######.######."],
-    sleep: [".#############.", ".######.######."]
+    smile: [".####.###.####.", ".#####...#####."],   // Mundwinkel oben, Lächeln unten
+    grin:  [".###.......###.", ".####.....####."],   // breit offen
+    oh:    [".#####...#####.", ".#####...#####."],   // rundes O
+    sip:   [".#############.", ".######.######."],   // gespitzt
+    sleep: [".#############.", ".#####...#####."]    // kleiner Strich
   };
   const LEGS = [
     ["...##.....##...", "..###.....###.."],
@@ -1696,7 +1696,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     { id: "krone",     name: "Krone",      r: 2, slot: "kopf",    dx: 4, dy: -3, s: ["#.#.#.#", "#######", "+#+#+#+"] },
     { id: "partyhut",  name: "Partyhut",   r: 2, slot: "kopf",    dx: 5, dy: -6, s: ["..#..", "..+..", ".###.", ".+#+.", "##+##", "#####"] },
     { id: "zylinder",  name: "Zylinder",   r: 2, slot: "kopf",    dx: 4, dy: -5, s: [".#####.", ".#####.", ".+++++.", ".#####.", "#######"] },
-    { id: "brille",    name: "Sonnenbrille", r: 2, slot: "gesicht", dx: 2, dy: 5, s: ["#+++###+++#", ".+++...+++.", "..+.....+.."] },
+    { id: "brille",    name: "Sonnenbrille", r: 2, slot: "gesicht", dx: 2, dy: 5, s: ["#++#####++#", ".++.....++.", ".++.....++."] },
     { id: "heiligenschein", name: "Heiligenschein", r: 3, slot: "kopf", dx: 3, dy: -5, s: [".#######.", "#.......#", ".#######."] },
     { id: "zauberhut", name: "Zauberhut",  r: 3, slot: "kopf",    dx: 3, dy: -7, s: [".....#...", "....##...", "...###...", "..##+##..", "..#####..", ".#######.", "#########"] },
     { id: "umhang",    name: "Umhang",     r: 3, slot: "ruecken", dx: -2, dy: 3, s: ["..#.............#..", ".#+.............+#.", ".#+.............+#.", ".#+.............+#.", "##+.............+##", "##+.............+##", "#++.............++#", "#++.............++#", "#++.............++#", "##+.............+##", "###.............###"] },
@@ -1713,7 +1713,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
       active: d => d.getMonth() === 9 || (d.getMonth() === 10 && d.getDate() <= 2) },
     { id: "weihnachtsmuetze", name: "Weihnachtsmütze", r: 4, slot: "kopf", dx: 3, dy: -5, label: "1.–26. Dez.", s: ["........+", "......###", "....####.", "..######.", ".#######.", "+++++++++"],
       active: d => d.getMonth() === 11 && d.getDate() <= 26 },
-    { id: "silvesterbrille", name: "Silvesterbrille", r: 4, slot: "gesicht", dx: 2, dy: 4, label: "27.12.–6.1.", s: ["#.........#", "#+++###+++#", ".+++...+++.", "..+.....+.."],
+    { id: "silvesterbrille", name: "Silvesterbrille", r: 4, slot: "gesicht", dx: 2, dy: 4, label: "27.12.–6.1.", s: ["#.........#", "#++#####++#", ".++.....++.", ".++.....++."],
       active: d => (d.getMonth() === 11 && d.getDate() >= 27) || (d.getMonth() === 0 && d.getDate() <= 6) },
     { id: "hasenohren", name: "Hasenohren", r: 4, slot: "kopf", dx: 3, dy: -7, label: "Ostern", s: [".#.....#.", "#+#...#+#", "#+#...#+#", "#+#...#+#", "#+#...#+#", ".##...##.", "..#...#.."],
       active: d => Math.abs(new Date(d.getFullYear(), d.getMonth(), d.getDate()) - easter(d.getFullYear())) <= 7 * 864e5 },
