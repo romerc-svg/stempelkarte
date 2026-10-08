@@ -432,7 +432,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .sec{display:flex;justify-content:space-between;margin:18px 18px 0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 14px 0}
 .bdg{background:var(--panel);border-radius:14px;padding:6px 5px 7px;box-shadow:inset 0 1px 0 var(--hi),0 3px 0 var(--edge);text-align:center;font-size:8px;letter-spacing:.06em;text-transform:uppercase;min-width:0}
-.bdg canvas{display:block;width:100%;aspect-ratio:1;border-radius:50%;margin-bottom:5px}
+.bdg canvas{display:block;width:84%;margin:2px auto 5px;aspect-ratio:40/42}
 .bdg b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bdg.locked{opacity:.55}
 .bdg:active{transform:translateY(1px)}
@@ -443,7 +443,24 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 .co-season:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--c4) 55%,#000)}
 .cap-ball.season .top{background:var(--c4)}
 .reveal .rar[data-r="4"]{color:var(--c4)}
-.cel .name{font-size:clamp(24px,8vw,34px);text-align:center;text-wrap:balance}
+.cel{background:rgba(6,8,6,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+/* Abzeichen-Fenster: dunkle Spielkarte mit gestuftem Pixel-Rahmen in der Abzeichenfarbe */
+.ach{--bc:#3DDC84;--step:polygon(8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px),0 8px,4px 8px,4px 4px,8px 4px);
+  width:min(100%,330px);padding:3px;background:color-mix(in srgb,var(--bc) 75%,#0d110c);clip-path:var(--step);animation:achin .6s var(--spring);filter:drop-shadow(0 0 22px color-mix(in srgb,var(--bc) 35%,transparent))}
+@keyframes achin{from{transform:scale(.6) translateY(30px);opacity:0}}
+.ach-in{background:radial-gradient(120% 70% at 50% 18%,color-mix(in srgb,var(--bc) 14%,#121711),#0f130e 70%);clip-path:var(--step);padding:24px 20px 22px;display:flex;flex-direction:column;align-items:center;text-align:center;color:#EDE6CC}
+.ach-badge{display:block;width:150px;max-width:56%;aspect-ratio:40/42}
+.ribbon{position:relative;margin-top:-16px;padding:5px 20px 4px;background:var(--bc);color:#0d110c;font:700 10px var(--mono);letter-spacing:.2em;text-transform:uppercase;
+  clip-path:polygon(0 0,100% 0,calc(100% - 7px) 50%,100% 100%,0 100%,7px 50%);box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+.ach-head{margin-top:16px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:color-mix(in srgb,var(--bc) 55%,#EDE6CC)}
+.ach-title{margin-top:8px;font:900 clamp(26px,8.5vw,36px)/1.05 var(--dots);text-transform:uppercase;color:#F4EBD0;text-shadow:0 0 14px color-mix(in srgb,var(--bc) 45%,transparent);text-wrap:balance}
+.ach-desc{margin:10px 0 0;max-width:27ch;font-size:12px;line-height:1.55;color:#B9B39C}
+.ach-line{width:82%;height:2px;margin:16px 0 14px;background:#263024}
+.ach-reward{display:flex;align-items:center;gap:12px;font:600 13px var(--mono);letter-spacing:.1em;color:#EDE6CC}
+.ach-reward .chip{border:2px solid var(--bc);color:var(--bc);padding:3px 7px;font-size:10px;letter-spacing:.12em;border-radius:6px}
+.ach-ok{margin-top:18px;width:62%;height:46px;background:transparent;border:2px solid var(--bc);color:#F4EBD0;font:600 12px var(--mono);letter-spacing:.24em;text-transform:uppercase;
+  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px)}
+.ach-ok:active{background:color-mix(in srgb,var(--bc) 25%,transparent)}
 .card.locked b{color:var(--faint)}
 .card.worn{border-color:var(--accent)}
 .card.worn::after{content:"trägt";position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--accent-fg);font-size:8px;padding:2px 7px;border-radius:8px;letter-spacing:.12em}
@@ -631,9 +648,16 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
 
   <!-- Feier bei Abzeichen, Level, Serie, Saison -->
   <div class="capsule cel" id="cel" hidden role="dialog" aria-modal="true" aria-labelledby="cel-t">
-    <h2 id="cel-h"></h2>
-    <div class="reveal"><div class="lcd"><canvas id="cel-cv"></canvas></div><div class="name" id="cel-t"></div><div class="new" id="cel-s"></div></div>
-    <div class="cap-acts"><button type="button" class="primary" id="cel-ok">Super!</button></div>
+    <div class="ach" id="ach"><div class="ach-in">
+      <canvas class="ach-badge" id="cel-cv" aria-hidden="true"></canvas>
+      <div class="ribbon" id="cel-rib">Selten</div>
+      <div class="ach-head" id="cel-h">Abzeichen freigeschaltet</div>
+      <div class="ach-title" id="cel-t"></div>
+      <p class="ach-desc" id="cel-s"></p>
+      <div class="ach-line"></div>
+      <div class="ach-reward"><span class="chip" id="cel-chip">Kapsel</span><span id="cel-rw">+1</span></div>
+      <button type="button" class="ach-ok" id="cel-ok">OK</button>
+    </div></div>
   </div>
 
   <main class="screen" id="scr-hist" hidden>
@@ -1552,7 +1576,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   function pixelCanvas(cv, cols, rows, paint){
     const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
     const dpr = Math.min(3, window.devicePixelRatio || 1);
-    if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
     const g = new Uint8Array(cols * rows), x2 = cv.getContext("2d");
     const set = (x, y, v) => { if (x >= 0 && x < cols && y >= 0 && y < rows) g[y * cols + x] = v; };
     const add = (x, y, v) => { if (x >= 0 && x < cols && y >= 0 && y < rows && v > g[y * cols + x]) g[y * cols + x] = v; };
@@ -1600,7 +1624,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     $("badges").innerHTML = BADGES.map(b => `<button type="button" class="bdg${game.badges.includes(b.id) ? "" : " locked"}" data-b="${b.id}"><canvas></canvas><b>${b.name}</b></button>`).join("");
     $("badges").querySelectorAll(".bdg").forEach(el => {
       const b = BADGES.find(x => x.id === el.dataset.b), has = game.badges.includes(b.id);
-      pixelCanvas(el.querySelector("canvas"), 13, 13, (set, add) => paintItem({ s: ICON[b.icon] }, set, add, 13, 13, !has, 0));
+      drawBadge(el.querySelector("canvas"), { color: BSTYLE[b.id][0], icon: ICON2[b.icon], locked: !has });
       el.onclick = () => say(`${b.name}: ${b.desc}${has ? " ✓" : ""}`);
     });
     const worn = Object.values(game.worn).map(id => ITEM[id] && ITEM[id].name).filter(Boolean);
@@ -1646,6 +1670,77 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     krone:   ["#...#...#", "##.###.##", "#########", "#########", "#+#+#+#+#", "#########"],
     h100: num3("100"), h500: num3("500")
   };
+  // Pixel-Art-Wappen: Farbe und Seltenheit je Abzeichen, mehrfarbige Icons
+  // Icon-Zeichen: W creme, w creme-schattiert, A Abzeichenfarbe, a dunkle Abzeichenfarbe, k Kontur, s Funkeln
+  const BRANK = { 1: "Gewöhnlich", 2: "Selten", 3: "Episch", 4: "Legendär" };
+  const BSTYLE = {
+    erste: ["#FF7A33", 1], frueh: ["#FFC233", 2], eule: ["#8B7BFF", 2], punkt: ["#FF4D5E", 3], ziel: ["#3DDC84", 1],
+    pause: ["#2EC4B6", 2], marathon: ["#3FA7FF", 3], h100: ["#C9D1D9", 2], h500: ["#FFD24A", 4], urlaub: ["#4DD9FF", 1],
+    serie3: ["#FF6B2C", 2], serie10: ["#FF3DAA", 3], sammler: ["#B06BFF", 2], komplett: ["#FFD24A", 4]
+  };
+  const medal = n => { const d = num3(n), w = d[0].length + 4, rows = [];
+    rows.push(".." + "k".repeat(w - 4) + ".."); rows.push(".k" + "A".repeat(w - 4) + "k.");
+    d.forEach(r => rows.push("kA" + r.replace(/#/g, "W").replace(/\./g, "A") + "Ak")); rows.push(".k" + "a".repeat(w - 4) + "k."); rows.push(".." + "k".repeat(w - 4) + "..");
+    return rows; };
+  const ICON2 = {
+    stempel: ["....kkkkk....", "...kAAAAAk...", "...kAaaaAk...", "....kAAAk....", ".....kAk.....", ".....kAk.....", "..kkkkkkkkk..", ".kWWWWWWWWWk.", ".kwwwwwwwwwk.", "..kkkkkkkkk..", ".............", "..aAaAaAaAa.."],
+    sonne:   ["...W..W..W...", "....W..W..W..", "...W..W..W...", ".............", ".kkkkkkkkk...", ".kWWWWWWWkkk.", ".kWWWAWWWk.k.", ".kWWAAAWWk.k.", ".kWWWAWWWkkk.", ".kwWWWWWwk...", "..kwwwwwk....", "...kkkkk....."],
+    mond:    ["........s....", "...WWW.......", "..WWwk.....s.", ".WWwk........", ".WWw....s....", ".WWw.........", ".WWWw........", "..WWWwk..Wk..", "...WWWWWWWk..", "....wwwwwk..."],
+    ziel:    ["...kkkkkkk...", "..kAAAAAAAk..", ".kAWWWWWWWAk.", ".kAWAAAAAWAk.", ".kAWAWWWAWAk.", ".kAWAWAWAWAk.", ".kAWAWWWAWAk.", ".kAWAAAAAWAk.", ".kAWWWWWWWAk.", "..kAAAAAAAk..", "...kkkkkkk..."],
+    fahne:   [".kk..........", ".kWkkkkkkk...", ".kWAAAAAAAk..", ".kWAWAAWAAk..", ".kWAAAAAAAk..", ".kWAAWAAWAk..", ".kWkkkkkkk...", ".kWk.........", ".kWk.........", ".kWk.........", "kkWkk........", "kwwwk........"],
+    tasse:   [".kkkkkkkkk.", ".kWWWWWWWk.", "..kAAAAAk..", "...kAAAk...", "....kAk....", "....kWk....", "...kW.Wk...", "..kW.A.Wk..", ".kWAAAAAWk.", ".kkkkkkkkk."],
+    blitz:   [".......kkk.", "......kWAk.", ".....kWAk..", "....kWAk...", "...kWAAAAk.", "..kkkkWAk..", "....kWAk...", "...kWAk....", "...kAk.....", "..kAk......", "..kk......."],
+    koffer:  ["....kkkkk....", "....k...k....", ".kkkkkkkkkkk.", ".kAAAAAAAAAk.", ".kAWWAAAAAAk.", ".kAWWAAAAAAk.", ".kkkkkkkkkkk.", ".kAAAAAAAAAk.", ".kAAAAAAWWAk.", ".kAAAAAAAAAk.", ".kkkkkkkkkkk.", "..k.......k.."],
+    flamme:  ["......k......", ".....kAk.....", ".....kAAk....", "....kAAAk.k..", "...kAAAAAkAk.", "...kAAWAAAAk.", "..kAAWWWAAAk.", "..kAWWWWWAAk.", "..kAWWwWWAk..", "...kAWwWAk...", "....kkkkk...."],
+    stern:   ["......k......", ".....kWk.....", ".....kWk.....", "kkkkkkWkkkkkk", "kWWWWWWWWWWWk", ".kWWWWWWWWWk.", "..kWWWWWWWk..", "..kWWwkwWWk..", ".kWWwk.kwWWk.", ".kwk.....kwk.", ".kk.......kk."],
+    krone:   ["..k...k...k..", ".kWk.kWk.kWk.", ".kAAkAAAkAAk.", ".kAAAAAAAAAk.", ".kAWAAWAAWAk.", ".kAAAAAAAAAk.", ".kkkkkkkkkkk.", ".kWWWWWWWWWk.", ".kkkkkkkkkkk."],
+    h100: medal("100"), h500: medal("500")
+  };
+  const mixHex = (a, b, t) => { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), x = p(a), y = p(b); return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0")).join(""); };
+  // spec: { color, icon (mehrfarbig) oder sprite (#/+ wie die Monster-Sprites), locked, t (für Funkeln) }
+  function drawBadge(cv, spec){
+    const COLS = 40, ROWS = 42, w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    const g = cv.getContext("2d"), cell = Math.min(cv.width / COLS, cv.height / ROWS), pad = cell * 1.2;
+    const base = spec.locked ? "#4B5049" : spec.color;
+    const P = { k: "#0E120D", A: base, a: mixHex(base, "#000000", .45), L: mixHex(base, "#FFFFFF", .45), bg: mixHex(base, "#0E120D", spec.locked ? .82 : .86),
+                W: spec.locked ? "#666B63" : "#F4EBD0", w: spec.locked ? "#545850" : "#CFC4A3", s: spec.locked ? "#545850" : mixHex(base, "#FFFFFF", .7) };
+    // Sechseck (Spitze oben), Tiefe = Abstand zum Rand in Zellen
+    const cx = COLS / 2, cy = ROWS / 2, R = 20.2, inside = (x, y) => { const dx = Math.abs(x + .5 - cx), dy = Math.abs(y + .5 - cy); return dx <= R * .866 && dy <= R - dx * .5774; };
+    const depth = new Int8Array(COLS * ROWS).fill(-1);
+    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (inside(x, y)) depth[y * COLS + x] = 99;
+    for (let d = 0; d < 5; d++) {                        // Ring für Ring nach innen; erst sammeln, dann setzen
+      const ring = [];
+      for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+        const i = y * COLS + x; if (depth[i] !== 99) continue;
+        if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => { const xx = x + a, yy = y + b; if (xx < 0 || yy < 0 || xx >= COLS || yy >= ROWS) return true; const v = depth[yy * COLS + xx]; return v !== 99; })) ring.push(i);
+      }
+      ring.forEach(i => depth[i] = d);
+    }
+    g.clearRect(0, 0, cv.width, cv.height);
+    const ox = (cv.width - COLS * cell) / 2, oy = (cv.height - ROWS * cell) / 2;
+    const px = (x, y, col) => { g.fillStyle = col; g.fillRect(Math.floor(ox + x * cell), Math.floor(oy + y * cell), Math.ceil(cell) + .5, Math.ceil(cell) + .5); };
+    if (!spec.locked) { g.save(); g.shadowColor = base; g.shadowBlur = cell * 4; g.fillStyle = base; g.beginPath(); g.ellipse(ox + cx * cell, oy + cy * cell, R * .8 * cell, R * .85 * cell, 0, 0, 7); g.globalAlpha = .35; g.fill(); g.restore(); }
+    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+      const d = depth[y * COLS + x]; if (d < 0) continue;
+      const topLeft = (x < cx && y < cy + 2);
+      px(x, y, d === 0 ? P.k : d === 1 ? (topLeft ? P.L : P.A) : d === 2 ? (topLeft ? P.A : P.a) : d === 3 ? P.k : P.bg);
+    }
+    // Icon
+    let rows = spec.icon, map = ch => P[ch];
+    if (!rows) { rows = spec.sprite; map = ch => ch === "#" ? P.W : ch === "+" ? P.w : null; }
+    const iw = Math.max(...rows.map(r => r.length)), ih = rows.length, sc = iw * 2 <= 26 && ih * 2 <= 26 ? 2 : 1;
+    const x0 = Math.round(cx - iw * sc / 2), y0 = Math.round(cy - ih * sc / 2) + 1;
+    rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) { const ch = r[i]; if (ch === "." || ch === "o") continue; const col = map(ch); if (!col) continue;
+      for (let a = 0; a < sc; a++) for (let b = 0; b < sc; b++) px(x0 + i * sc + a, y0 + j * sc + b, col); } });
+    // Funkeln
+    if (!spec.locked) [[9, 14], [30, 13], [9, 28], [31, 29]].forEach(([x, y], k) => {
+      if (spec.t !== undefined && (Math.floor(spec.t / 400) + k) % 3 === 0) return;
+      px(x, y, P.s); px(x - 1, y, P.s); px(x + 1, y, P.s); px(x, y - 1, P.s); px(x, y + 1, P.s);
+    });
+  }
+
   const BADGES = [
     { id: "erste",     name: "Erster Stempel", icon: "stempel", desc: "Den ersten Arbeitstag gestempelt",        test: s => s.work.length > 0 },
     { id: "frueh",     name: "Frühaufsteher",  icon: "sonne",   desc: "Vor 7 Uhr eingestempelt",                 test: s => s.work.some(e => new Date(e.start).getHours() < 7) },
@@ -1705,18 +1800,25 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
   }
   function showCeleb(){
     if (splashOn || !celebQ.length || !$("cel").hidden || !$("cap").hidden) return;
-    const c = celebQ.shift(); let icon, title, sub, head;
-    if (c.kind === "badge") { const b = BADGES.find(x => x.id === c.id); head = "Abzeichen freigeschaltet"; title = b.name; sub = b.desc + " · +1 Kapsel"; icon = (set, add) => paintItem({ s: ICON[b.icon] }, set, add, 26, 18, false, 0); }
-    if (c.kind === "level") { head = "Level aufgestiegen"; title = "Level " + c.level; sub = (c.evolved ? `Dein Monster ist jetzt ein ${STAGES[stageOf(c.level)]}! ` : "") + "+1 Kapsel"; icon = (set, add) => paintMonster(set, add, 26, 18, performance.now()); }
-    if (c.kind === "streak") { head = "Serie"; title = `${c.n} Wochen im Ziel`; sub = "Goldene Kapsel erhalten · garantiert selten oder besser"; icon = (set, add) => paintItem({ s: ICON.flamme }, set, add, 26, 18, false, 0); }
-    if (c.kind === "season") { const it = ITEM[c.id]; head = "Saison-Kapsel"; title = it.name; sub = `Nur ${it.label}: eine Saison-Kapsel gratis. Öffne sie in der Sammlung.`; icon = (set, add) => paintItem(it, set, add, 26, 18, true, 0); }
-    $("cel-h").textContent = head; $("cel-t").textContent = title; $("cel-s").textContent = sub;
+    const c = celebQ.shift(); let spec, rib, head, title, sub, chip = "Kapsel", rw = "+1";
+    const monsterRows = () => BODY.map((r, j) => r || (j >= 5 && j <= 7 ? EYES.happy[j - 5] : MOUTH.grin[j - 9])).concat(LEGS[0]);
+    if (c.kind === "badge") { const b = BADGES.find(x => x.id === c.id), [col, rk] = BSTYLE[b.id];
+      spec = { color: col, icon: ICON2[b.icon] }; rib = BRANK[rk]; head = "Abzeichen freigeschaltet"; title = b.name; sub = b.desc + "."; }
+    if (c.kind === "level") { spec = { color: "#FFD24A", sprite: monsterRows() }; rib = "Level " + c.level; head = "Level aufgestiegen";
+      title = "Level " + c.level; sub = c.evolved ? `Dein Monster ist jetzt ein ${STAGES[stageOf(c.level)]}!` : "Dein Monster wird immer erfahrener."; }
+    if (c.kind === "streak") { spec = { color: "#FF6B2C", icon: ICON2.flamme }; rib = "Serie"; head = "Serie erreicht"; title = `${c.n} Wochen`;
+      sub = `${c.n} Wochen in Folge im Ziel. Garantiert selten oder besser.`; chip = "Gold"; rw = "+1 Kapsel"; }
+    if (c.kind === "season") { const it = ITEM[c.id]; spec = { color: "#9B4DFF", sprite: it.s }; rib = "Saison"; head = "Saison-Kapsel"; title = it.name;
+      sub = `Nur ${it.label} erhältlich. Öffne die Kapsel in der Sammlung.`; rw = "+1 Saison"; }
+    $("ach").style.setProperty("--bc", spec.color);
+    $("cel-rib").textContent = rib; $("cel-h").textContent = head; $("cel-t").textContent = title; $("cel-s").textContent = sub;
+    $("cel-chip").textContent = chip; $("cel-rw").textContent = rw;
     $("cel").hidden = false; buzz([15, 40, 15, 40, 30]);
-    const t0 = performance.now(), sparks = [];
+    const t0 = performance.now();
     (function loop(t){
       if ($("cel").hidden) return;
-      pixelCanvas($("cel-cv"), 26, 18, (set, add) => { icon(set, add); if (Math.random() < .6) sparks.push({ x: Math.random() * 26, y: Math.random() * 18, l: 6 }); sparks.forEach(sp => { if (sp.l-- > 0) add(sp.x | 0, sp.y | 0, sp.l > 3 ? 2 : 1); }); });
-      if (t - t0 < 60000) requestAnimationFrame(loop);
+      drawBadge($("cel-cv"), Object.assign({ t }, spec));
+      if (t - t0 < 60000) setTimeout(() => requestAnimationFrame(loop), 120);
     })(t0);
   }
   $("cel-ok").onclick = () => { $("cel").hidden = true; renderAll(); setTimeout(showCeleb, 250); };
@@ -2186,7 +2288,7 @@ button{border:0;background:none;padding:0;cursor:pointer;touch-action:manipulati
     spLast = t;
     const w = spcv.clientWidth, h = spcv.clientHeight, dpr = Math.min(3, window.devicePixelRatio || 1);
     if (w && h) {
-      if (spcv.width !== Math.round(w * dpr)) { spcv.width = Math.round(w * dpr); spcv.height = Math.round(h * dpr); }
+      if (spcv.width !== Math.round(w * dpr) || spcv.height !== Math.round(h * dpr)) { spcv.width = Math.round(w * dpr); spcv.height = Math.round(h * dpr); }
       const cols = 25, cell = Math.min(spcv.width / cols, spcv.height / 20), rows = Math.floor(spcv.height / cell);
       const ox = (spcv.width - cols * cell) / 2, oy = (spcv.height - rows * cell) / 2;
       const grid = new Uint8Array(cols * rows);
